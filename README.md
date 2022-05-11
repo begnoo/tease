@@ -32,4 +32,5 @@ prikaz razlika između određenih ažuriranja ili određenih grana
 * Mikroservis za rukovanje repozitorijumima - Go
 * Email mikroservis - Go ili Python
 * Veb interfejs - TypeScript, React
+
 Kao potencijalno proširenje moguće je implementirati repozitorijume specifično predviđene za slike, video snimke ili binarne podaatke.
