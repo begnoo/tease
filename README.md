@@ -16,7 +16,7 @@ preuzimanje repozitorijuma
 * _branch_ -
 kreiranje grane unutar repozitorijuma, koja ima zejedničku početnu tačku sa podrazumevanom glavnom granom ili sa specifičnom granom repozitorijuma
 * _commit_ - 
-Lokalno čuvanje izmena nad izvorim kodu u repozitorijumu
+Lokalno čuvanje izmena nad izvornom kodu u repozitorijumu
 * _push_ -
 ažuriranje repozitorijuma kroz slanje novih sačuvanih lokalnih izmena
 * _pull_ -
