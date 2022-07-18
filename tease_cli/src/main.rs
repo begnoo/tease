@@ -1,6 +1,6 @@
 mod commands;
 
-use crate::commands::create::create_repo;
+use crate::commands::{create::create_repo, add::add_from_path, read::read_object};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
@@ -31,6 +31,11 @@ enum Commands {
         /// Commit message for added changes
         message: Option<String> 
     },
+
+    Read { 
+        /// read object
+        object: String 
+    },
 }
 
 fn main() {
@@ -46,12 +51,22 @@ fn main() {
         }
         
         Some(Commands::Add { file_path }) => {
-            println!("tease cli trying to add {:?}...", file_path.as_ref().map_or(".", |file_path| file_path));
+            let deref_file_path = file_path.as_ref().map_or(".", |file_path| file_path);
+            println!("tease cli trying to add {:?}...", deref_file_path);
+            let result = add_from_path(deref_file_path.to_string());
+            println!("{0}", result);
         }
         
         Some(Commands::Commit { message }) =>  {
             let commit_message =  message.as_ref().map_or("default", |message| message);
             println!("tease cli trying to commit {:?}...", commit_message);
+        }
+
+        Some(Commands::Read { object: object_path }) =>  {
+            
+            println!("tease cli trying to read {:?}...", object_path.to_string());
+            read_object(object_path)
+
         }
 
         None => {

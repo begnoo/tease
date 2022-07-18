@@ -9,3 +9,5 @@ about = "Beachlor degree project"
 
 [dependencies]
 clap = {version = "3.2.12", features = ["derive"]}
+sha1 = "0.10.1"
+flate2 = "1.0.24"
