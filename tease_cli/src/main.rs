@@ -1,4 +1,5 @@
 mod commands;
+mod index_structs;
 
 use crate::commands::{create::create_repo, add::add_from_path, read::read_object};
 use clap::{Parser, Subcommand};
@@ -32,8 +33,9 @@ enum Commands {
         message: Option<String> 
     },
 
+    /// read object
     Read { 
-        /// read object
+        // object name
         object: String 
     },
 }
