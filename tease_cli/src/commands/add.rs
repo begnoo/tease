@@ -29,7 +29,7 @@ pub struct ObjectInfo {
 }
 
 pub fn add_from_path(path: String) -> String {
-    let file_md = metadata(path.to_string()).unwrap();
+    let file_md = metadata(path.to_string()).expect("Couldn't find specified path.");
     
     if file_md.is_dir() {
         return "That's a directory".to_string(); 

@@ -23,8 +23,10 @@ pub struct Index {
 pub fn read_index() -> Index {
     let index_binary = fs::read(Path::new(".tease").join("index"))
         .expect("Couldn't read index file");
-    let index: Index = bincode::deserialize(&index_binary).unwrap();
+    let mut index: Index = bincode::deserialize(&index_binary).unwrap();
     
+    index.rows.sort_by(|a, b| Ord::cmp(&a.file_name, &b.file_name));
+
     index
 }
 

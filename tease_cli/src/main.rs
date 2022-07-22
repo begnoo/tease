@@ -1,7 +1,7 @@
 mod commands;
 mod index_structs;
 
-use crate::commands::{create::create_repo, add::add_from_path, read::read_object, reset::reset_index_row};
+use crate::commands::{create::create_repo, add::add_from_path, read::read_object, reset::reset_index_row, commit::commit};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
@@ -68,6 +68,7 @@ fn main() {
         Some(Commands::Commit { message }) =>  {
             let commit_message =  message.as_ref().map_or("default", |message| message);
             println!("tease cli trying to commit {:?}...", commit_message);
+            commit();
         }
 
         Some(Commands::Read { object: object_path }) =>  {
