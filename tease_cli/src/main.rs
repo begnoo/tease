@@ -30,7 +30,7 @@ enum Commands {
     /// Commit added file changes to repo
     Commit { 
         /// Commit message for added changes
-        message: Option<String> 
+        message: Vec<String> 
     },
 
     /// read object
@@ -66,9 +66,8 @@ fn main() {
         }
         
         Some(Commands::Commit { message }) =>  {
-            let commit_message =  message.as_ref().map_or("default", |message| message);
-            println!("tease cli trying to commit {:?}...", commit_message);
-            commit();
+            println!("tease cli trying to commit {:?}...", message.join(" ").to_string());
+            commit(message.join(" ").to_string());
         }
 
         Some(Commands::Read { object: object_path }) =>  {

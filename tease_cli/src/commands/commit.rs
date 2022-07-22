@@ -1,9 +1,40 @@
+use sha1::{Sha1, Digest};
+
 use crate::index_structs::{index_tree::{add_to_tree, IndexTreeNode, _print_tree, extract_trees, set_hash_for_node}, index::{Index, read_index}};
 
-pub fn commit() -> () {
+use super::add::compress_and_write_object;
+
+pub struct Commit {
+    tree: String,
+    parent: String,
+    author: String,
+    commiter: String,
+    message: String
+}
+
+pub fn commit(message: String) -> () {
     let repo_tree = create_tree();
+    extract_trees(&repo_tree);
+
+    let new_commit = Commit{
+        tree: repo_tree.sha1_hash,
+        parent: "".to_string(),
+        author: "".to_string(),
+        commiter: "".to_string(),
+        message
+    };
+
+    let commit_content = format!("tree {}\nparent {}\nauthor {}\ncommiter {}\n\n{}", new_commit.tree, new_commit.parent, new_commit.author, new_commit.commiter, new_commit.message);
+
+    let mut hasher = Sha1::new();
+    hasher.update(commit_content.as_bytes());
     
-    extract_trees(&repo_tree)
+    let binary_hash = hasher.finalize();
+    let string_hash_vector: Vec<String> = binary_hash.iter().map(|n| format!("{:x?}", n)).collect();
+
+    let commit_sha1 = string_hash_vector.join("");
+
+    compress_and_write_object(commit_content.as_bytes(), commit_sha1).expect("Couldn't commit.")
 }
 
 
