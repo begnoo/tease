@@ -16,8 +16,8 @@ use flate2::write::ZlibEncoder;
 use sha1::{Sha1, Digest};
 
 use crate::index_structs::index::IndexRow;
+use crate::index_structs::index::add_index_row;
 use crate::index_structs::index::read_index;
-use crate::index_structs::index::save_index;
 
 
 #[derive(Debug)]
@@ -106,9 +106,7 @@ fn add_to_index(sha1_hash: &String, filename: &String, file_size: u32) {
         user_id: "Nzm za sada".to_string(),
     };
 
-    let mut index = read_index();
-    index.rows.push(index_row);
-    save_index(index).expect("Couldn't update index value");
+    add_index_row(index_row).unwrap();
 
     let new_index = read_index();
     println!("{:?}", new_index);

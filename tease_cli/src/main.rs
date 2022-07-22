@@ -1,7 +1,7 @@
 mod commands;
 mod index_structs;
 
-use crate::commands::{create::create_repo, add::add_from_path, read::read_object};
+use crate::commands::{create::create_repo, add::add_from_path, read::read_object, reset::reset_index_row};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
@@ -38,6 +38,12 @@ enum Commands {
         // object name
         object: String 
     },
+
+    /// delete file from index, or return to older version
+    Reset { 
+        // file name
+        filename: String 
+    },
 }
 
 fn main() {
@@ -65,10 +71,14 @@ fn main() {
         }
 
         Some(Commands::Read { object: object_path }) =>  {
-            
             println!("tease cli trying to read {:?}...", object_path.to_string());
             read_object(object_path)
+        }
 
+        
+        Some(Commands::Reset { filename }) =>  {
+            println!("tease cli trying to delete {:?}...", filename.to_string());
+            reset_index_row(filename.to_string());
         }
 
         None => {

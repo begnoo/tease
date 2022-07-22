@@ -22,10 +22,44 @@ pub struct Index {
 
 pub fn read_index() -> Index {
     let index_binary = fs::read(Path::new(".tease").join("index"))
-        .expect("Coundn't read index file");
+        .expect("Couldn't read index file");
     let index: Index = bincode::deserialize(&index_binary).unwrap();
     
     index
+}
+
+
+// TODO : tree
+pub fn add_index_row(index_row: IndexRow) -> Result<(), Error> {
+    let mut index = read_index();
+
+    let existing_row = index.rows.iter().find(|row| row.blob_hash == index_row.blob_hash && row.file_name == index_row.file_name);
+    if !existing_row.is_none() {
+        return Ok(());    
+    }
+
+    let same_name_row = index.rows.iter().position(|row| row.blob_hash != index_row.blob_hash && row.file_name == index_row.file_name);
+    if !same_name_row.is_none() {
+        let same_name_row_index = same_name_row.unwrap();
+        let _old_value = std::mem::replace(&mut index.rows[same_name_row_index], index_row);
+        save_index(index).expect("Couldn't update index value");
+
+        return Ok(());
+    }
+
+    index.rows.push(index_row);
+    save_index(index).expect("Couldn't update index value");
+
+    Ok(())
+}
+
+pub fn remove_index_row(filename: String) -> Result<(), Error> {
+    let mut index = read_index();
+    let same_name_row = index.rows.iter().position(|row| row.file_name == filename);
+    index.rows.remove(same_name_row.expect("No such file in index."));
+    save_index(index)?;
+
+    Ok(())
 }
 
 pub fn save_index(index: Index) -> Result<(), Error> {
