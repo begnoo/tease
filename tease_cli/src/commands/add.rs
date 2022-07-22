@@ -72,7 +72,7 @@ fn get_sha1_hash(object_data: &[u8]) -> String {
 }
 
 
-fn compress_and_write_object(object_data: &[u8], name: String) -> Result<(), Error> {
+pub fn compress_and_write_object(object_data: &[u8], name: String) -> Result<(), Error> {
     let mut e = ZlibEncoder::new(Vec::new(), Compression::default());
     e.write_all(object_data)?;
     let compressed_bytes = e.finish().unwrap();
