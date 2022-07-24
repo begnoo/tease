@@ -1,24 +1,23 @@
 use std::fs::metadata;
 use std::fs::read_to_string;
+use std::fs::read_dir;
 use std::fs::File;
 
+
 use std::io::Error;
-use std::io::Write;
 
 use std::os::windows::prelude::MetadataExt;
 use std::path::Path;
 
 use std::time::{UNIX_EPOCH};
 
-use flate2::Compression;
-use flate2::write::ZlibEncoder;
-
-use sha1::{Sha1, Digest};
-
 use crate::index_structs::index::IndexRow;
 use crate::index_structs::index::add_index_row;
 use crate::index_structs::index::read_index;
+use crate::index_structs::index::save_index;
+use crate::utils::blob_writer::compress_and_write_object;
 
+use sha1::{Sha1, Digest};
 
 #[derive(Debug)]
 pub struct ObjectInfo {
@@ -32,10 +31,22 @@ pub fn add_from_path(path: String) -> String {
     let file_md = metadata(path.to_string()).expect("Couldn't find specified path.");
     
     if file_md.is_dir() {
-        return "That's a directory".to_string(); 
+        return handle_dir(path.to_string()); 
     }
 
     add_file(path.to_string()).unwrap()
+}
+
+fn handle_dir(dir_path: String) -> String {
+    let dir = Path::new(&dir_path);
+    for entry in read_dir(dir).expect(&format!("Couldn't read dir {}", dir_path)) {
+        let file_entry = entry.unwrap();
+        let path = file_entry.path();
+        let path_str = path.to_str().unwrap().to_string().replace("\\", "/");
+        add_from_path(path_str.to_string());
+    }
+
+    format!("Added folder {}", dir_path)
 }
 
 pub fn add_file(filename: String) -> Result<String, Error> {
@@ -71,19 +82,6 @@ fn get_sha1_hash(object_data: &[u8]) -> String {
     string_hash_vector.join("")
 }
 
-
-pub fn compress_and_write_object(object_data: &[u8], name: String) -> Result<(), Error> {
-    let mut e = ZlibEncoder::new(Vec::new(), Compression::default());
-    e.write_all(object_data)?;
-    let compressed_bytes = e.finish().unwrap();
-
-    let mut file = File::create(Path::new(".tease").join("objects").join(name))?;
-    file.write_all(&compressed_bytes)?;
-
-    Ok(())
-}
-
-
 fn add_to_index(sha1_hash: &String, filename: &String, file_size: u32) {
     let file = File::open(Path::new(filename))
         .expect("Couldn't read added file");
@@ -110,4 +108,27 @@ fn add_to_index(sha1_hash: &String, filename: &String, file_size: u32) {
 
     let new_index = read_index();
     println!("{:?}", new_index);
+}
+
+
+pub fn delete_from_path(path: String) -> String {
+    let mut index = read_index();
+
+    let mut found = false;
+    
+    for row in index.rows.iter_mut() {
+        if row.file_name == path {
+            row.staging = 2;
+            found = true;
+            break;
+        }
+    }
+
+    if found {
+        save_index(index).expect("Couldn't save index");
+        
+        return format!("Deleted file {}", path);
+    }
+
+    format!("File not deleted localy {}", path)
 }

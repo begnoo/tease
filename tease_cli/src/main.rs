@@ -1,8 +1,10 @@
 mod commands;
 mod index_structs;
+mod utils;
 
-use crate::commands::{create::create_repo, add::add_from_path, read::read_object, reset::reset_index_row, commit::commit};
+use crate::commands::{create::create_repo, add::{add_from_path, delete_from_path}, read::read_object, reset::reset_index_row, commit::commit};
 use clap::{Parser, Subcommand};
+use commands::status::status;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -24,7 +26,10 @@ enum Commands {
     /// Add file changes to commit 
     Add {
         /// Path to file or folder which you want to add to the commit, if left empty all changes will be added.
-        file_path: Option<String>
+        file_path: Option<String>,
+
+        #[clap(short, long, value_parser)]
+        mode: Option<String>,
     },
     
     /// Commit added file changes to repo
@@ -44,6 +49,9 @@ enum Commands {
         // file name
         filename: String 
     },
+
+    // show current status of tracked and untracked files
+    Status,
 }
 
 fn main() {
@@ -58,10 +66,25 @@ fn main() {
             println!("{0}", result);
         }
         
-        Some(Commands::Add { file_path }) => {
-            let deref_file_path = file_path.as_ref().map_or(".", |file_path| file_path);
+        Some(Commands::Add { file_path, mode }) => {
+            let deref_file_path = file_path.as_ref().unwrap().to_string();
+            let deref_mode: String;
+
+            if !mode.is_none() {
+                deref_mode = mode.as_ref().unwrap().to_string()
+            } else {
+                deref_mode = "".to_string();
+            }
+
             println!("tease cli trying to add {:?}...", deref_file_path);
-            let result = add_from_path(deref_file_path.to_string());
+
+            let result: String;
+            if deref_mode == "d" {
+                result = delete_from_path(deref_file_path.to_string());
+            } else {
+                result = add_from_path(deref_file_path.to_string());
+            }            
+
             println!("{0}", result);
         }
         
@@ -79,6 +102,10 @@ fn main() {
         Some(Commands::Reset { filename }) =>  {
             println!("tease cli trying to delete {:?}...", filename.to_string());
             reset_index_row(filename.to_string());
+        }
+
+        Some(Commands::Status) => {
+            status();
         }
 
         None => {

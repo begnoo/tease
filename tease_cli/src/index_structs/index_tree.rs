@@ -4,7 +4,7 @@ use std::collections::VecDeque;
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
 
-use crate::commands::add::compress_and_write_object;
+use crate::utils::blob_writer::compress_and_write_object;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IndexTreeNode {

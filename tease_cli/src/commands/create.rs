@@ -17,6 +17,9 @@ pub fn create_repo(repo_name: String) -> String {
             create_tease_file(Path::new(&repo_name).join(".tease").join("log").as_path(), "# Commit log")
                 .expect(&format!("Couldn't create log file for repo {:?}", repo_name).to_string());
 
+            create_tease_file(Path::new(&repo_name).join(".tease").join("HEAD").as_path(), "# Current head")
+                .expect(&format!("Couldn't create log file for repo {:?}", repo_name).to_string());
+
             create_index_file(Path::new(&repo_name).join(".tease").join("index").as_path())
                 .expect(&format!("Couldn't create index file for repo {:?}", repo_name).to_string());
 

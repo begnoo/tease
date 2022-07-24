@@ -1,8 +1,7 @@
 use sha1::{Sha1, Digest};
 
-use crate::index_structs::{index_tree::{add_to_tree, IndexTreeNode, _print_tree, extract_trees, set_hash_for_node}, index::{Index, read_index}};
+use crate::{index_structs::{index_tree::{add_to_tree, IndexTreeNode, extract_trees, set_hash_for_node}, index::{Index, read_index, flush_index}}, utils::blob_writer::compress_and_write_object};
 
-use super::add::compress_and_write_object;
 
 pub struct Commit {
     tree: String,
@@ -13,6 +12,12 @@ pub struct Commit {
 }
 
 pub fn commit(message: String) -> () {
+
+    if !has_added_files() {
+        println!("Nothing to commit.");
+        return ;
+    }
+
     let repo_tree = create_tree();
     extract_trees(&repo_tree);
 
@@ -34,9 +39,17 @@ pub fn commit(message: String) -> () {
 
     let commit_sha1 = string_hash_vector.join("");
 
-    compress_and_write_object(commit_content.as_bytes(), commit_sha1).expect("Couldn't commit.")
+    compress_and_write_object(commit_content.as_bytes(), commit_sha1.to_string()).expect("Couldn't commit.");
+    flush_index();
+
+    println!("Commited {}", commit_sha1);
 }
 
+fn has_added_files() -> bool {
+    let index = read_index();
+
+    index.rows.iter().any(|row| row.staging == 0)
+}
 
 pub fn create_tree() -> IndexTreeNode {
     let index: Index = read_index();
@@ -54,7 +67,7 @@ pub fn create_tree() -> IndexTreeNode {
 
     set_hash_for_node(& mut root_node);
 
-    _print_tree(&root_node);
+    // _print_tree(&root_node);
 
     root_node
 }

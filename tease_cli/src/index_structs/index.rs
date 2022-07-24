@@ -75,3 +75,14 @@ pub fn save_index(index: Index) -> Result<(), Error> {
 
     Ok(())
 }
+
+pub fn flush_index() -> () {
+    let mut index = read_index();
+    index.rows.retain(|row| row.staging != 2);
+
+    for row in index.rows.iter_mut() {
+        row.staging = 1;
+    }
+
+    save_index(index).expect("Couldn't flush index.");
+}
