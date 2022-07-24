@@ -1,5 +1,11 @@
 use sha1::{Sha1, Digest};
 
+use std::fs::OpenOptions;
+use std::fs::read_to_string;
+
+use std::io::Write;
+use std::path::Path;
+
 use crate::{index_structs::{index_tree::{add_to_tree, IndexTreeNode, extract_trees, set_hash_for_node}, index::{Index, read_index, flush_index}}, utils::blob_writer::compress_and_write_object};
 
 
@@ -23,7 +29,7 @@ pub fn commit(message: String) -> () {
 
     let new_commit = Commit{
         tree: repo_tree.sha1_hash,
-        parent: "".to_string(),
+        parent: read_head(),
         author: "".to_string(),
         commiter: "".to_string(),
         message
@@ -40,6 +46,7 @@ pub fn commit(message: String) -> () {
     let commit_sha1 = string_hash_vector.join("");
 
     compress_and_write_object(commit_content.as_bytes(), commit_sha1.to_string()).expect("Couldn't commit.");
+    update_head(commit_sha1.to_string()).unwrap();
     flush_index();
 
     println!("Commited {}", commit_sha1);
@@ -50,6 +57,20 @@ fn has_added_files() -> bool {
 
     index.rows.iter().any(|row| row.staging == 0)
 }
+
+fn read_head() -> String {
+    read_to_string(Path::new(".tease").join("HEAD"))
+        .expect("Something went wrong reading the file")
+}
+
+fn update_head(commit_sha1: String) -> Result<(), std::io::Error>{
+    let mut file = OpenOptions::new()
+                                    .write(true)
+                                    .open(Path::new(".tease").join("HEAD"))
+                                    .expect("Couldn't read HEAD");
+    write!(file, "{}", commit_sha1)
+}
+
 
 pub fn create_tree() -> IndexTreeNode {
     let index: Index = read_index();
@@ -66,8 +87,6 @@ pub fn create_tree() -> IndexTreeNode {
     }
 
     set_hash_for_node(& mut root_node);
-
-    // _print_tree(&root_node);
 
     root_node
 }
