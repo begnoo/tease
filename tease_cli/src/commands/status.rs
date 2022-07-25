@@ -1,25 +1,17 @@
-use glob::glob;
-
 use crate::index_structs::index::Index;
 use crate::index_structs::index::IndexRow;
 use crate::index_structs::index::read_index;
 use crate::utils::blob_writer::get_current_branch;
 use crate::utils::blob_writer::get_metadata_change;
 use crate::utils::blob_writer::read_file_md;
+use crate::utils::glob::get_all_repo_paths;
 
 use colored::Colorize;
 
 use std::os::windows::prelude::MetadataExt;
 
 pub fn status() {
-    let path_entries = glob("./**/*").expect("Failed to read glob pattern");
-    let entries = path_entries.into_iter()
-                                            .map(|entry| entry.unwrap()
-                                                                                            .to_str()
-                                                                                            .unwrap()
-                                                                                            .to_string()
-                                                                                            .replace("\\", "/"))
-                                                                                            .collect();
+    let entries = get_all_repo_paths();
 
     let index = read_index();
     

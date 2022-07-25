@@ -59,6 +59,10 @@ pub fn create_index_file(path: &Path) -> () {
 }
 
 pub fn create_tease_folder(path: &Path) -> () {
+    if path.exists() {
+        return ;
+    }
+
     create_dir(path).expect(&format!("Couldn't create folder {:?}", path.to_str().unwrap().to_string()));
 }
 

@@ -1,17 +1,10 @@
 use sha1::{Sha1, Digest};
 
+use crate::index_structs::commit::Commit;
 use crate::utils::blob_writer::read_head;
 use crate::utils::blob_writer::update_head;
 use crate::{index_structs::{index_tree::{add_to_tree, IndexTreeNode, extract_trees, set_hash_for_node}, index::{Index, read_index, flush_index}}, utils::blob_writer::compress_and_write_object};
 
-
-pub struct Commit {
-    tree: String,
-    parent: String,
-    author: String,
-    commiter: String,
-    message: String
-}
 
 pub fn commit(message: String) -> () {
 
@@ -23,7 +16,7 @@ pub fn commit(message: String) -> () {
     let repo_tree = create_tree();
     extract_trees(&repo_tree);
 
-    let new_commit = Commit{
+    let new_commit = Commit {
         tree: repo_tree.sha1_hash,
         parent: read_head(),
         author: "".to_string(),

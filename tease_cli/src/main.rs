@@ -102,7 +102,9 @@ fn main() {
 
         Some(Commands::Read { object: object_path }) =>  {
             println!("tease cli trying to read {:?}...", object_path.to_string());
-            read_object(object_path)
+            let s = read_object(object_path);
+            println!("{}", s);
+
         }
 
         
