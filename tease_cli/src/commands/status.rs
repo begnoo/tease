@@ -3,6 +3,7 @@ use glob::glob;
 use crate::index_structs::index::Index;
 use crate::index_structs::index::IndexRow;
 use crate::index_structs::index::read_index;
+use crate::utils::blob_writer::get_current_branch;
 use crate::utils::blob_writer::get_metadata_change;
 use crate::utils::blob_writer::read_file_md;
 
@@ -82,6 +83,9 @@ fn format_data(
         to_be_deleted_vec: &Vec<String>,
         deleted_vec: &Vec<String>
     ) -> () {
+
+    let current_branch_ref = get_current_branch();
+    println!("You are on the branch: {:?}", current_branch_ref);
 
     let staged = staged_vec.join("\n\t");
     let unstaged = unstaged_vec.join("\n\t");

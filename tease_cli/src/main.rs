@@ -4,7 +4,7 @@ mod utils;
 
 use crate::commands::{create::create_repo, add::{add_from_path, delete_from_path}, read::read_object, reset::reset_index_row, commit::commit};
 use clap::{Parser, Subcommand};
-use commands::status::status;
+use commands::{status::status, branch::{create_branch, switch_to_branch}};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -52,6 +52,13 @@ enum Commands {
 
     // show current status of tracked and untracked files
     Status,
+
+    // create or change branch
+    Branch {
+        name: String,
+        #[clap(short, long, value_parser)]
+        mode: Option<String>,
+    }
 }
 
 fn main() {
@@ -79,7 +86,7 @@ fn main() {
             println!("tease cli trying to add {:?}...", deref_file_path);
 
             let result: String;
-            if deref_mode == "d" {
+            if deref_mode == "delete" {
                 result = delete_from_path(deref_file_path.to_string());
             } else {
                 result = add_from_path(deref_file_path.to_string());
@@ -106,6 +113,22 @@ fn main() {
 
         Some(Commands::Status) => {
             status();
+        }
+
+        Some(Commands::Branch { name, mode }) => { 
+            let deref_mode: String;
+
+            if !mode.is_none() {
+                deref_mode = mode.as_ref().unwrap().to_string()
+            } else {
+                deref_mode = "".to_string();
+            }
+
+            if deref_mode == "create" {
+                create_branch(name.to_string());
+            } else {
+                switch_to_branch(name.to_string());
+            }
         }
 
         None => {

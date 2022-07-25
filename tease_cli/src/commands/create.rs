@@ -1,10 +1,8 @@
-use std::io::Write;
 use std::fs;
-use std::fs::File;
 use std::path::Path;
 
 
-use crate::index_structs::index::Index;
+use crate::utils::blob_writer::{create_tease_file, create_tease_folder, create_index_file};
 
 pub fn create_repo(repo_name: String) -> String {
 
@@ -15,50 +13,20 @@ pub fn create_repo(repo_name: String) -> String {
 
     match fs::create_dir_all(path_buff.as_path()) {
         Ok(_folder) => {
-            create_tease_file(Path::new(&repo_name).join(".tease").join("log").as_path(), "# Commit log")
-                .expect(&format!("Couldn't create log file for repo {:?}", repo_name).to_string());
 
-            create_tease_file(Path::new(&repo_name).join(".tease").join("HEAD").as_path(), "# Current head")
-                .expect(&format!("Couldn't create log file for repo {:?}", repo_name).to_string());
+            create_index_file(Path::new(&repo_name).join(".tease").join("index").as_path());
+            create_tease_file(Path::new(&repo_name).join(".tease").join("HEAD").as_path(), "refs/heads/master".to_string());
+            create_tease_file(Path::new(&repo_name).join(".tease").join("log").as_path(), "# Commit log".to_string());
+            
+            create_tease_folder(Path::new(&repo_name).join(".tease").join("objects").as_path());
 
-            create_index_file(Path::new(&repo_name).join(".tease").join("index").as_path())
-                .expect(&format!("Couldn't create index file for repo {:?}", repo_name).to_string());
-
-            create_tease_folder(Path::new(&repo_name).join(".tease").join("objects").as_path())
-                .expect(&format!("Couldn't create objects folder for repo {:?}", repo_name).to_string());
+            create_tease_folder(Path::new(&repo_name).join(".tease").join("refs").as_path());
+            create_tease_folder(Path::new(&repo_name).join(".tease").join("refs").join("heads").as_path());
+            create_tease_file(Path::new(&repo_name).join(".tease").join("refs").join("heads").join("master").as_path(), "# Starting commit".to_string());
 
             format!("tease cli successfully created a new repo named {:?}", repo_name).to_string()
         },
         Err(error) => format!("Problem creating the folder: {0}", error.to_string()).to_string(),
     }
 
-}
-
-
-fn create_tease_file(path: &Path, message: &str) -> std::io::Result<()> {
-    let mut file = File::create(path)?;
-    file.write_all(message.as_bytes())?;
-
-    Ok(())
-}
-
-fn create_index_file(path: &Path) -> std::io::Result<()> {
-
-    // TODO: serialize index -> index fajl, sredi tree i commit -> branch 
-
-    let index = Index {
-        rows: Vec::new(),
-    };
-    let mut file = File::create(path)?;
-
-    let encoded_index: Vec<u8> = bincode::serialize(&index).unwrap();
-    file.write(&encoded_index)?;
-
-    Ok(())
-}
-
-fn create_tease_folder(path: &Path) -> std::io::Result<()> {
-    fs::create_dir(path)?;
-
-    Ok(())
 }

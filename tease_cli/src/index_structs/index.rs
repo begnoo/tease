@@ -24,7 +24,6 @@ pub fn read_index() -> Index {
     let index_binary = fs::read(Path::new(".tease").join("index"))
         .expect("Couldn't read index file");
     let mut index: Index = bincode::deserialize(&index_binary).unwrap();
-    
     index.rows.sort_by(|a, b| Ord::cmp(&a.file_name, &b.file_name));
 
     index
@@ -65,11 +64,7 @@ pub fn remove_index_row(filename: String) -> Result<(), Error> {
 }
 
 pub fn save_index(index: Index) -> Result<(), Error> {
-    let mut index_file = fs::OpenOptions::new()
-                                    .write(true)
-                                    .open(Path::new(".tease").join("index"))
-                                    .unwrap();
-    
+    let mut index_file = fs::File::create(Path::new(".tease").join("index")).unwrap();
     let index_binary: Vec<u8> = bincode::serialize(&index).unwrap();
     index_file.write(&index_binary)?;
 
