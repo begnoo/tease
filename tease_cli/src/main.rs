@@ -4,7 +4,7 @@ mod utils;
 
 use crate::commands::{create::create_repo, add::{add_from_path, delete_from_path}, read::read_object, reset::reset_index_row, commit::commit};
 use clap::{Parser, Subcommand};
-use commands::{status::status, branch::{create_branch, switch_to_branch}};
+use commands::{status::status, branch::{create_branch, switch_to_branch}, diff::diff};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -58,6 +58,12 @@ enum Commands {
         name: String,
         #[clap(short, long, value_parser)]
         mode: Option<String>,
+    },
+
+    // show difference between two files
+    Diff {
+        blob_a: String,
+        blob_b: String
     }
 }
 
@@ -131,6 +137,10 @@ fn main() {
             } else {
                 switch_to_branch(name.to_string());
             }
+        }
+
+        Some(Commands::Diff {blob_a, blob_b}) => {
+            diff(blob_a.to_string(), blob_b.to_string());
         }
 
         None => {
