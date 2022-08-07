@@ -6,12 +6,21 @@ use crate::{commands::{create::create_repo, add::{add_from_path, delete_from_pat
 use commands::{status::status, branch::{create_branch, switch_to_branch}, diff::diff_file, merge::{merge_file, merge}, command_enum::{Args, Commands}};
 use clap::{Parser};
 
-// TODO: proveri lock za merge
-// TODO: dodati zabranu prelaza na drugi branch ako posoje neke necommitovane izmene
-// TODO: dodati zabranu merge ako ima ne commitovanih izmena
-// TODO: diff, merge, packfile, author, commiter, |.| dodavanje na add
+// 08.08 ako stignes (vrv neces)
+// TODO: proveri lock za merge*
+// TODO: dodati zabranu prelaza na drugi branch ako posoje neke necommitovane izmene*
+// TODO: dodati zabranu merge ako ima ne commitovanih izmena*
+// TODO: packfile, author*, commiter*, |.| dodavanje na add*
+
+// Web
+// povezi sa user servisom (email, username, login)
+// povezi sa repo serverom (push, pull, clone)
+
+// Malo radi web-a pa onda (uradi bar user i repo service)
 // TODO: sredi log da prikazuje commitove po redosledu a ne po roditeljima (mozda bitno samo za front)
 // TODO: dodaj info o razlici kod commitova (+) (-)
+
+// Ako ne stignes do 20-25of -> ubi se
 fn main() {
     let args = Args::parse();
 
