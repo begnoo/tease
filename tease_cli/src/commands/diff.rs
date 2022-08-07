@@ -31,8 +31,7 @@ impl Display for DiffLine {
             "add" => write!(f, "{}", format!("+ {} {} {}", self.line.number, self.new_number, self.line.content).green()),
             "del" => write!(f, "{}", format!("- {} {} {}", self.line.number, self.new_number, self.line.content).red()),
             _ => write!(f, "{}", format!("= {} {} {}", self.line.number, self.new_number, self.line.content)),
-    }
-
+        }
     }
 }
 
@@ -108,7 +107,6 @@ fn shortest_edit(a_lines: &Vec<Line>, b_lines: &Vec<Line>) -> Vec<Vec<i32>> {
     let a_size = a_lines.len() as i32;
     let b_size = b_lines.len() as i32;
     let max_size = a_size + b_size;
-    println!("max size {}", max_size);
     let mut trace: Vec<Vec<i32>> = vec![];
     let mut state_vec = vec![0; (2 * max_size) as usize];
 

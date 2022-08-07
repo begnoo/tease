@@ -1,3 +1,5 @@
+use crate::commands::read::read_object;
+
 #[derive(Debug)]
 pub struct Line {
     pub content: String,
@@ -15,4 +17,9 @@ pub fn get_content_from_blob(blob: String) -> Vec<Line> {
             .enumerate()
             .map(|(index, line)| Line {content: line.trim().to_string(), number: index + 1})
             .collect()
+}
+
+pub fn get_content_from_sha1(sha1: String) -> Vec<Line> {
+    let blob = read_object(&sha1);
+    get_content_from_blob(blob)
 }

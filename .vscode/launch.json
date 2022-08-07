@@ -8,8 +8,9 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceFolder}/tease_cli/target/debug/tease_cli.exe",
-            "args": [],
+            "program": "${workspaceFolder}/tease_cli/target/debug/repo/tease_cli.exe",
+            "args": ["merge", "67f0587b1832c6a990c167b6a380c0d589157b19", "1486bfc687ca5b67165729b45429e2045bb2c80", 
+            "d859e2b50497146bb7aae74b869551a4feadcc1"],
             "cwd": "${workspaceFolder}"
         }
     ]

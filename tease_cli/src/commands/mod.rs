@@ -8,4 +8,4 @@ pub mod branch;
 pub mod goback;
 pub mod diff;
 pub mod merge;
-
+pub mod command_enum;
