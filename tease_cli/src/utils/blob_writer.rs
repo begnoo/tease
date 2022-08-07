@@ -53,6 +53,7 @@ pub fn create_tease_file(path: &Path, message: String) -> () {
 pub fn create_index_file(path: &Path) -> () {
     let index = Index {
         rows: Vec::new(),
+        is_merging: false
     };
     let mut file = File::create(path).expect(&format!("Couldn't create file {:?}", path.to_str().unwrap().to_string()));
     let encoded_index: Vec<u8> = bincode::serialize(&index).expect("Couldn't serialize index");

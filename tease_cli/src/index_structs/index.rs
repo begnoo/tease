@@ -17,7 +17,8 @@ pub struct IndexRow {
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Index {
-    pub rows: Vec<IndexRow>
+    pub rows: Vec<IndexRow>,
+    pub is_merging: bool
 }
 
 pub fn read_index() -> Index {
@@ -27,6 +28,10 @@ pub fn read_index() -> Index {
     index.rows.sort_by(|a, b| Ord::cmp(&a.file_name, &b.file_name));
 
     index
+}
+
+pub fn is_merging() -> bool{
+    read_index().is_merging
 }
 
 
@@ -78,5 +83,6 @@ pub fn flush_index() -> () {
         row.staging = 1;
     }
 
+    index.is_merging = false;
     save_index(index).expect("Couldn't flush index.");
 }

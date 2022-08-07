@@ -2,10 +2,16 @@ mod commands;
 mod index_structs;
 mod utils;
 
-use crate::commands::{create::create_repo, add::{add_from_path, delete_from_path}, read::read_object, reset::reset_index_row, commit::commit};
+use crate::{commands::{create::create_repo, add::{add_from_path, delete_from_path}, read::read_object, reset::reset_index_row, commit::commit}, index_structs::index::is_merging};
 use commands::{status::status, branch::{create_branch, switch_to_branch}, diff::diff_file, merge::{merge_file, merge}, command_enum::{Args, Commands}};
 use clap::{Parser};
 
+// TODO: proveri lock za merge
+// TODO: dodati zabranu prelaza na drugi branch ako posoje neke necommitovane izmene
+// TODO: dodati zabranu merge ako ima ne commitovanih izmena
+// TODO: diff, merge, packfile, author, commiter, |.| dodavanje na add
+// TODO: sredi log da prikazuje commitove po redosledu a ne po roditeljima (mozda bitno samo za front)
+// TODO: dodaj info o razlici kod commitova (+) (-)
 fn main() {
     let args = Args::parse();
 
@@ -49,6 +55,7 @@ fn main() {
         }
         
         Some(Commands::Reset { filename }) =>  {
+
             println!("tease cli trying to delete {:?}...", filename.to_string());
             reset_index_row(filename.to_string());
         }
@@ -57,7 +64,13 @@ fn main() {
             status();
         }
 
-        Some(Commands::Branch { name, mode }) => { 
+        Some(Commands::Branch { name, mode }) => {
+
+            if is_merging() {
+                println!("Please confirm merge before branching.");
+                return ;
+            }
+            
             let deref_mode: String;
 
             if !mode.is_none() {
@@ -88,6 +101,11 @@ fn main() {
         }
 
         Some(Commands::Merge {branch}) => {
+            if is_merging() {
+                println!("Please confirm merge before branching.");
+                return ;
+            }
+
             merge(branch.to_string());
         }
 

@@ -1,9 +1,6 @@
 use crate::{utils::blob_writer::{create_tease_file, tease_file_exists, update_current_branch, read_head_commit}, commands::goback::go_back};
 use std::path::Path;
 
-// TODO: dodati zabranu prelaza na drugi branch ako posoje neke necommitovane izmene
-// TODO: dodati zabranu merge ako ima ne commitovanih izmena
-// TODO: diff, merge, packfile, author, commiter, |.| dodavanje na add
 
 pub fn create_branch(name: String) -> () {
     let branch_head = format!("refs/heads/{}", name.to_string());

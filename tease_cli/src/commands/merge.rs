@@ -53,7 +53,7 @@ struct IndexObject {
     path: String,
 }
 
-// TODO: sredi log da prikazuje commitove po redosledu a ne po roditeljima (mozda bitno samo za front)
+
 pub fn merge(branch_name: String) {
     let branch_head = format!("refs/heads/{}", branch_name.to_string());
 
@@ -170,6 +170,7 @@ fn handle_rows_to_remove(to_remove: & Vec<IndexObject>) {
         }
     }
 
+    new_index.is_merging = true;
     save_index(new_index).expect("Couldn't update rows to remove while merging");
 }
 
