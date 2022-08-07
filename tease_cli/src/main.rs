@@ -3,7 +3,7 @@ mod index_structs;
 mod utils;
 
 use crate::commands::{create::create_repo, add::{add_from_path, delete_from_path}, read::read_object, reset::reset_index_row, commit::commit};
-use commands::{status::status, branch::{create_branch, switch_to_branch}, diff::diff_file, merge::merge_file, command_enum::{Args, Commands}};
+use commands::{status::status, branch::{create_branch, switch_to_branch}, diff::diff_file, merge::{merge_file, merge}, command_enum::{Args, Commands}};
 use clap::{Parser};
 
 fn main() {
@@ -13,8 +13,7 @@ fn main() {
         Some(Commands::Create { repo_name }) => {
             let deref_repo_name = repo_name.as_ref().map_or("tease_repo", |repo_name| repo_name);
             println!("tease cli trying to create {:?}...", deref_repo_name);            
-            let result = create_repo(deref_repo_name.to_string());
-            println!("{0}", result);
+            let _result = create_repo(deref_repo_name.to_string());
         }
         
         Some(Commands::Add { file_path, mode }) => {
@@ -29,14 +28,12 @@ fn main() {
 
             println!("tease cli trying to add {:?}...", deref_file_path);
 
-            let result: String;
+            let _result: String;
             if deref_mode == "delete" {
-                result = delete_from_path(deref_file_path.to_string());
+                _result = delete_from_path(deref_file_path.to_string());
             } else {
-                result = add_from_path(deref_file_path.to_string());
+                _result = add_from_path(deref_file_path.to_string());
             }            
-
-            println!("{0}", result);
         }
         
         Some(Commands::Commit { message }) =>  {
@@ -83,8 +80,15 @@ fn main() {
             }
         }
 
-        Some(Commands::Merge {blob_a, blob_b, blob_o}) => {
-            merge_file(blob_a.to_string(), blob_b.to_string(), blob_o.to_string());
+        Some(Commands::MergeFile {blob_a, blob_b, blob_o}) => {
+            let chunks = merge_file(blob_a.to_string(), blob_b.to_string(), blob_o.to_string());
+            for chunk in chunks.iter() {
+                println!("{}", chunk);
+            }
+        }
+
+        Some(Commands::Merge {branch}) => {
+            merge(branch.to_string());
         }
 
         None => {

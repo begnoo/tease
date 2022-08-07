@@ -14,6 +14,7 @@ use flate2::write::ZlibEncoder;
 
 use std::time::{UNIX_EPOCH};
 
+use crate::commands::read::read_object;
 use crate::index_structs::index::Index;
 
 
@@ -77,7 +78,7 @@ pub fn get_current_branch() -> String {
         .expect("Something went wrong reading the HEAD file")
 }
 
-pub fn read_head() -> String {
+pub fn read_head_commit() -> String {
     let current_ref_head = get_current_branch();
     let head_commit = read_to_string(Path::new(".tease").join(current_ref_head.to_string()))
         .expect(&format!("Couldn't read {}", current_ref_head));
@@ -96,4 +97,26 @@ pub fn tease_file_exists(path: String) -> bool {
     let md = metadata(Path::new(".tease").join(path));
 
     md.is_ok()
+}
+
+pub fn read_tree_from_commit(commit_sha1: &String) -> String {
+    let commit_content = read_object(commit_sha1);
+
+    let mut parts: Vec<&str> = commit_content.split("\n").collect();
+
+    parts = parts[0].split(" ").collect();
+    parts[1].to_string()
+}
+
+pub fn trail_commit_history(commit_sha1: &String, trail: &mut Vec<String>) {
+    let commit_content = read_object(commit_sha1);
+    let mut parts: Vec<&str> = commit_content.split("\n").collect();
+    parts = parts[1].split(" ").collect();
+    
+    if parts[1] == "#" {
+        return ;
+    }
+    trail.push(parts[1].to_string());
+
+    trail_commit_history(&parts[1].to_string(), trail);
 }

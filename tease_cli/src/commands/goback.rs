@@ -1,34 +1,25 @@
 use std::{path::Path, fs::{metadata, remove_dir_all, remove_file}};
 
-use crate::{utils::{blob_writer::{create_tease_file, create_tease_folder, create_index_file}, glob::get_all_repo_paths}, index_structs::index::{read_index, save_index}};
+use crate::{utils::{blob_writer::{create_tease_file, create_tease_folder, create_index_file, read_tree_from_commit}, glob::get_all_repo_paths}, index_structs::index::{read_index, save_index}};
 
 use super::{read::read_object, add::add_file};
 
 pub fn go_back(commit_sha1: String) -> () {
     create_index_file(Path::new(".tease").join("index").as_path());
-
-    let commit_content = read_object(&commit_sha1);
-
-    let mut parts: Vec<&str> = commit_content.split("\n").collect();
-
-    parts = parts[0].split(" ").collect();
-    let root_tree = parts[1].to_string();
-    delete_trail();
-
+    let root_tree = read_tree_from_commit(&commit_sha1);
+    
+    delete_all();
     traverse_commit_tree(root_tree.to_string(), "".to_string());
     update_index();
 }
 
-fn delete_trail() {
+pub fn delete_all() {
     let all_entries = get_all_repo_paths();
-    println!("{:?}", all_entries);
     for entry in all_entries.iter() {
         // let path = Path::new(entry);
         let file_md = metadata(entry.to_string());
         match file_md {
             Ok(md) => {
-                println!("{:?}", entry);
-                println!("{:?}", md);
                 if md.is_dir() {
                     remove_dir_all(entry.to_string()).unwrap();
                 } else {
@@ -54,12 +45,8 @@ fn traverse_commit_tree(root_tree: String, prev_path: String) {
     let tree_content = read_object(&root_tree);
     let lines: Vec<&str> = tree_content.split("\n").collect();
 
-    println!("{:?}", lines);
-
     for line in lines {
-        let parts: Vec<&str> = line.split(" ").collect();
-        println!("{:?}", parts);
-        
+        let parts: Vec<&str> = line.split(" ").collect();        
         if parts[0] == "blob" {
             let blob_object = read_object(&parts[2].to_string());
             let blob_content = blob_object.split("\0").collect::<Vec<&str>>()[1];

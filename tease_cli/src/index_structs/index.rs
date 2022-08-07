@@ -4,7 +4,7 @@ use std::path::Path;
 use std::io::{Write, Error};
 
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Default, Clone)]
 pub struct IndexRow {
     pub data_change_date: u64,
     pub meta_change_date: u64,
@@ -30,7 +30,6 @@ pub fn read_index() -> Index {
 }
 
 
-// TODO : tree
 pub fn add_index_row(index_row: IndexRow) -> Result<(), Error> {
     let mut index = read_index();
 

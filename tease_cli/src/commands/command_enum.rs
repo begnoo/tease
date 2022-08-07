@@ -61,9 +61,13 @@ pub enum Commands {
     },
     
     //merge files
-    Merge {
+    MergeFile {
         blob_a: String,
         blob_b: String,
         blob_o: String,
+    },
+
+    Merge {
+        branch: String,
     }
 }

@@ -24,9 +24,9 @@ pub fn create_repo(repo_name: String) -> String {
             create_tease_folder(Path::new(&repo_name).join(".tease").join("refs").join("heads").as_path());
             create_tease_file(Path::new(&repo_name).join(".tease").join("refs").join("heads").join("master").as_path(), "# Starting commit".to_string());
 
-            format!("tease cli successfully created a new repo named {:?}", repo_name).to_string()
+            format!("tease cli successfully created a new repo named {:?}", repo_name)
         },
-        Err(error) => format!("Problem creating the folder: {0}", error.to_string()).to_string(),
+        Err(error) => format!("Problem creating the folder: {}", error.to_string()),
     }
 
 }

@@ -61,7 +61,6 @@ pub fn add_file(filename: String) -> Result<String, Error> {
     };
 
     let object_data = format!("{} {}\0{}", object_info.object_type, object_info.size, object_info.content);
-    print!("{}", object_data);
 
     let sha1_hash = get_sha1_hash(object_data.as_bytes());
     compress_and_write_object(object_data.as_bytes(), sha1_hash.to_string())
@@ -104,9 +103,6 @@ fn add_to_index(sha1_hash: &String, filename: &String, file_size: u32) {
     };
 
     add_index_row(index_row).unwrap();
-
-    let new_index = read_index();
-    println!("{:?}", new_index);
 }
 
 
