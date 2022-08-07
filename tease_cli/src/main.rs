@@ -4,7 +4,7 @@ mod utils;
 
 use crate::commands::{create::create_repo, add::{add_from_path, delete_from_path}, read::read_object, reset::reset_index_row, commit::commit};
 use clap::{Parser, Subcommand};
-use commands::{status::status, branch::{create_branch, switch_to_branch}, diff::diff};
+use commands::{status::status, branch::{create_branch, switch_to_branch}, diff::diff_file, merge::merge_file};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -64,6 +64,13 @@ enum Commands {
     Diff {
         blob_a: String,
         blob_b: String
+    },
+    
+    //merge files
+    Merge {
+        blob_a: String,
+        blob_b: String,
+        blob_o: String,
     }
 }
 
@@ -139,7 +146,14 @@ fn main() {
         }
 
         Some(Commands::Diff {blob_a, blob_b}) => {
-            diff(blob_a.to_string(), blob_b.to_string());
+            let diff_lines = diff_file(blob_a.to_string(), blob_b.to_string());
+            for diff_line in diff_lines.iter() {
+                println!("{}", diff_line);
+            }
+        }
+
+        Some(Commands::Merge {blob_a, blob_b, blob_o}) => {
+            merge_file(blob_a.to_string(), blob_b.to_string(), blob_o.to_string());
         }
 
         None => {

@@ -1,12 +1,10 @@
+use std::fmt::{Display, Formatter, Result};
+
 use colored::Colorize;
 
-use super::read::read_object;
+use crate::utils::lines::{get_content_from_blob, Line};
 
-#[derive(Debug)]
-pub struct Line {
-    pub content: String,
-    pub number: u64
-}
+use super::read::read_object;
 
 #[derive(Debug)]
 pub struct Point {
@@ -20,9 +18,25 @@ pub struct Snake {
     pub points: Vec<Point>,
 }
 
-pub fn diff(a_sha1_blob: String, b_sha1_blob: String) {
-    // let a_blob = "blob 164\0use crate::index_structs::index::remove_index_row;\n\npub fn reset_index_row(filename: String) {\nremove_index_row(filename);\n}".to_string();
-    // let b_blob = "blob 278\0use crate::index_structs::index::remove_index_row;\ndwdfad\ngsghz\nhzht\npub fn reset_index_row(filename: String) {\nMajku mu jebem jel radi vise\nauuuuuuuu samo da radi\nremove_index_row(filename);\nboze moj\nmolim te radi\n}".to_string();
+#[derive(Debug)]
+pub struct DiffLine {
+    pub line: Line,
+    pub state: String,
+    pub new_number: usize
+}
+
+impl Display for DiffLine {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        match self.state.as_str() {
+            "add" => write!(f, "{}", format!("+ {} {} {}", self.line.number, self.new_number, self.line.content).green()),
+            "del" => write!(f, "{}", format!("- {} {} {}", self.line.number, self.new_number, self.line.content).red()),
+            _ => write!(f, "{}", format!("= {} {} {}", self.line.number, self.new_number, self.line.content)),
+    }
+
+    }
+}
+
+pub fn diff_file(a_sha1_blob: String, b_sha1_blob: String) -> Vec<DiffLine> {
     let a_blob = read_object(&a_sha1_blob);
     let b_blob = read_object(&b_sha1_blob);
     let a_lines = get_content_from_blob(a_blob);
@@ -30,38 +44,35 @@ pub fn diff(a_sha1_blob: String, b_sha1_blob: String) {
     let mut path_trace = shortest_edit(&a_lines, &b_lines);
     let mut path = retrace(& mut path_trace, a_lines.len(), b_lines.len());
     path.reverse();
-    println!("{:?}", path);
-    format_lines(&path, &a_lines, &b_lines);
-    // println!("Number of needed moves: {}", path_len);
+    diff_by_line(&path, &a_lines, &b_lines)
 }
 
-fn format_lines(path: &Vec<Snake>, a_lines: &Vec<Line>, b_lines: &Vec<Line>) {
-    println!("len {}", path.len());
+pub fn diff_by_line(path: &Vec<Snake>, a_lines: &Vec<Line>, b_lines: &Vec<Line>) -> Vec<DiffLine> {
+    let mut diff_lines: Vec<DiffLine> = vec![];
+    let mut count = 0;
+
     for snake in path.iter() {
         for points in snake.points.windows(2) {
             let start = &points[0];
             let end = &points[1];
-            
-            let a_line = get_line_by_index(&a_lines, start.x);
-            let b_line = get_line_by_index(&b_lines, start.y);
 
             if start.x == end.x {
-                println!("{}", format!("+ {}", b_line).green());
+                count = count + 1;
+                diff_lines.push(DiffLine { line: line_from(&b_lines[start.y as usize]), state: "add".to_string(), new_number: count });
             } else if start.y == end.y {
-                println!("{}", format!("- {}", a_line).red());
+                diff_lines.push(DiffLine { line: line_from(&a_lines[start.x as usize]), state: "del".to_string(), new_number: 0 });
             } else {
-                println!("{}", format!("= {}", if a_line == "" { b_line } else { a_line }));
+                count = count + 1;
+                let equ_line = if (start.x as usize) < a_lines.len() { &a_lines[start.x as usize] } else { &b_lines[start.x as usize] };
+                diff_lines.push(DiffLine { line: line_from(equ_line), state: "equ".to_string(), new_number: count });
             }
         }
     }
+    diff_lines
 }
 
-
-fn get_line_by_index(lines: &Vec<Line>, index: i32) -> &str {
-    if (index as usize) < lines.len() {
-         return &lines[index as usize].content; 
-        } 
-     ""
+fn line_from(line: &Line) -> Line {
+    Line { content: line.content.to_string(), number: line.number }
 }
 
     //       A     B     C     A     B     B     A
@@ -187,15 +198,3 @@ fn get_usize_index(k: i32, max_size: i32) -> usize {
     k as usize
 }
 
-fn get_content_from_blob(blob: String) -> Vec<Line> {
-    let parts: Vec<&str> = blob.split("\0").collect();
-    let content: Vec<String> = parts[1].to_string()
-                            .split("\n")
-                            .map(|line| line.to_string())
-                            .collect();
-    
-    content.iter()
-            .enumerate()
-            .map(|(index, line)| Line {content: line.trim().to_string(), number: (index + 1) as u64})
-            .collect()
-}
