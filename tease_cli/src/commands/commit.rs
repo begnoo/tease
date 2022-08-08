@@ -1,6 +1,7 @@
 use sha1::{Sha1, Digest};
 
 use crate::index_structs::commit::Commit;
+use crate::index_structs::index::is_merging;
 use crate::utils::blob_writer::has_added_files;
 use crate::utils::blob_writer::read_head_commit;
 use crate::utils::blob_writer::update_head;
@@ -8,6 +9,7 @@ use crate::{index_structs::{index_tree::{add_to_tree, IndexTreeNode, extract_tre
 
 
 pub fn commit(message: String) -> () {
+    let index = read_index();
 
     if !has_added_files() {
         println!("Nothing to commit.");
@@ -19,7 +21,7 @@ pub fn commit(message: String) -> () {
 
     let new_commit = Commit {
         tree: repo_tree.sha1_hash,
-        parent: read_head_commit(),
+        parent: if is_merging() { format!("{} {}", read_head_commit(), index.incoming_merge) } else { read_head_commit() },
         author: "".to_string(),
         commiter: "".to_string(),
         message

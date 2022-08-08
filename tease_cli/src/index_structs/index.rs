@@ -18,7 +18,8 @@ pub struct IndexRow {
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Index {
     pub rows: Vec<IndexRow>,
-    pub is_merging: bool
+    pub is_merging: bool,
+    pub incoming_merge: String,
 }
 
 pub fn read_index() -> Index {

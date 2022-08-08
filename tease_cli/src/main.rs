@@ -9,6 +9,7 @@ use utils::blob_writer::has_added_files;
 
 // 08.08 ako stignes (vrv neces)
 // TODO: packfile, author*, commiter*, |.| dodavanje na add*
+// TODO: proveri da li je vec merge granu*
 
 // Web
 // povezi sa user servisom (email, username, login)

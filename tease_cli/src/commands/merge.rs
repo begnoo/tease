@@ -67,14 +67,27 @@ pub fn merge(branch_name: String) {
     let mut branch_index = extract_index_from_commit(branch_head_commit.to_string());
 
     let current_head_commit = read_head_commit();
-    let common_commit = find_common_commit(current_head_commit, branch_head_commit);
+    let common_commit = find_common_commit(current_head_commit, branch_head_commit.to_string());
+
+    if common_commit == "merged" {
+        println!("Branch is already merged");
+        return ;
+    }
+
     let mut common_index = extract_index_from_commit(common_commit.to_string());
-    
     let mut index = read_index();
 
     delete_all();
     create_index_file(Path::new(".tease").join("index").as_path());
-    handle_index_diff(&mut index, &mut common_index, &mut branch_index)
+    handle_index_diff(&mut index, &mut common_index, &mut branch_index);
+    update_index_for_merge(branch_head_commit);
+}
+
+fn update_index_for_merge(incoming_head: String) {
+    let mut index = read_index();
+    index.is_merging = true;
+    index.incoming_merge = incoming_head;
+    save_index(index).expect("Couldn't update index for merge");
 }
 
 fn handle_index_diff(old_index: &mut Index, common_index: &mut Vec<IndexObject>, branch_index: &mut Vec<IndexObject>) {
@@ -110,7 +123,7 @@ fn handle_index_diff(old_index: &mut Index, common_index: &mut Vec<IndexObject>,
 
     handle_residual_branch_rows(branch_index);
     handle_residual_current_rows(old_index, &common_index);
-    handle_rows_to_remove(&to_delete)
+    handle_rows_to_remove(&to_delete);
 }
 
 fn handle_residual_current_rows(old_index: & Index, common_index: & Vec<IndexObject>) {
@@ -170,7 +183,6 @@ fn handle_rows_to_remove(to_remove: & Vec<IndexObject>) {
         }
     }
 
-    new_index.is_merging = true;
     save_index(new_index).expect("Couldn't update rows to remove while merging");
 }
 
@@ -194,9 +206,17 @@ fn extract_index_from_commit(commit: String) -> Vec<IndexObject> {
     temp_index
 }
 
+fn is_already_merged(history: &Vec<String>, branch_head: String) -> bool {
+    history.iter().find(|commit| commit.to_string() == branch_head).is_some()
+}
+
 fn find_common_commit(current: String, incoming: String) -> String {
     let mut current_history: Vec<String> = vec![current.to_string()];
     trail_commit_history(&current, &mut current_history);
+
+    if is_already_merged(&current_history, incoming.to_string()) {
+        return "merged".to_string();
+    }
 
     let mut incoming_history: Vec<String> = vec![incoming.to_string()];
     trail_commit_history(&incoming, &mut incoming_history);

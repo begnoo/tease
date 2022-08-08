@@ -54,7 +54,8 @@ pub fn create_tease_file(path: &Path, message: String) -> () {
 pub fn create_index_file(path: &Path) -> () {
     let index = Index {
         rows: Vec::new(),
-        is_merging: false
+        is_merging: false,
+        incoming_merge: "".to_string(),
     };
     let mut file = File::create(path).expect(&format!("Couldn't create file {:?}", path.to_str().unwrap().to_string()));
     let encoded_index: Vec<u8> = bincode::serialize(&index).expect("Couldn't serialize index");
@@ -118,6 +119,11 @@ pub fn trail_commit_history(commit_sha1: &String, trail: &mut Vec<String>) {
     if parts[1] == "#" {
         return ;
     }
+
+    if parts.len() > 2 {
+        trail.push(parts[2].to_string());
+    }
+
     trail.push(parts[1].to_string());
 
     trail_commit_history(&parts[1].to_string(), trail);
