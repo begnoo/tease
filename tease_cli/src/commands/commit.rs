@@ -1,6 +1,7 @@
 use sha1::{Sha1, Digest};
 
 use crate::index_structs::commit::Commit;
+use crate::utils::blob_writer::has_added_files;
 use crate::utils::blob_writer::read_head_commit;
 use crate::utils::blob_writer::update_head;
 use crate::{index_structs::{index_tree::{add_to_tree, IndexTreeNode, extract_trees, set_hash_for_node}, index::{Index, read_index, flush_index}}, utils::blob_writer::compress_and_write_object};
@@ -39,12 +40,6 @@ pub fn commit(message: String) -> () {
     flush_index();
 
     println!("Commited {}", commit_sha1);
-}
-
-fn has_added_files() -> bool {
-    let index = read_index();
-
-    index.rows.iter().any(|row| row.staging == 0 || row.staging == 2)
 }
 
 pub fn create_tree() -> IndexTreeNode {

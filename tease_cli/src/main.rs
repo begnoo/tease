@@ -5,11 +5,9 @@ mod utils;
 use crate::{commands::{create::create_repo, add::{add_from_path, delete_from_path}, read::read_object, reset::reset_index_row, commit::commit}, index_structs::index::is_merging};
 use commands::{status::status, branch::{create_branch, switch_to_branch}, diff::diff_file, merge::{merge_file, merge}, command_enum::{Args, Commands}};
 use clap::{Parser};
+use utils::blob_writer::has_added_files;
 
 // 08.08 ako stignes (vrv neces)
-// TODO: proveri lock za merge*
-// TODO: dodati zabranu prelaza na drugi branch ako posoje neke necommitovane izmene*
-// TODO: dodati zabranu merge ako ima ne commitovanih izmena*
 // TODO: packfile, author*, commiter*, |.| dodavanje na add*
 
 // Web
@@ -77,6 +75,11 @@ fn main() {
 
             if is_merging() {
                 println!("Please confirm merge before branching.");
+                return ;
+            }
+
+            if has_added_files() {
+                println!("Please commit your changes before switching branches.");
                 return ;
             }
             

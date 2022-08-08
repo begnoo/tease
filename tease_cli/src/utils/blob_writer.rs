@@ -16,6 +16,7 @@ use std::time::{UNIX_EPOCH};
 
 use crate::commands::read::read_object;
 use crate::index_structs::index::Index;
+use crate::index_structs::index::read_index;
 
 
 pub fn compress_and_write_object(object_data: &[u8], name: String) -> Result<(), Error> {
@@ -120,4 +121,10 @@ pub fn trail_commit_history(commit_sha1: &String, trail: &mut Vec<String>) {
     trail.push(parts[1].to_string());
 
     trail_commit_history(&parts[1].to_string(), trail);
+}
+
+pub fn has_added_files() -> bool {
+    let index = read_index();
+
+    index.rows.iter().any(|row| row.staging == 0 || row.staging == 2)
 }
