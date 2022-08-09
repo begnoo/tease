@@ -9,7 +9,8 @@ use utils::blob_writer::has_added_files;
 
 // 08.08 ako stignes (vrv neces)
 // TODO: packfile, author*, commiter*, |.| dodavanje na add*
-// TODO: proveri da li je vec merge granu*
+// TODO: rekurzivne funkcije -> iterativne
+// TODO: skinuti lock za branch pri create modu i preneti trenutne izmene i dodate fajlove
 
 // Web
 // povezi sa user servisom (email, username, login)
