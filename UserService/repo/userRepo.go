@@ -4,7 +4,6 @@ import (
 	"UserService/domain"
 	"fmt"
 	"log"
-	"os"
 
 	"gorm.io/gorm"
 )
@@ -14,35 +13,35 @@ type UserRepo struct {
 	db     *gorm.DB
 }
 
-func NewUserRepo() UserRepo {
+func ProvideUserRepo(logger *log.Logger, db *gorm.DB) UserRepo {
 	return UserRepo{
-		logger: log.New(os.Stdout, "USER_REPO", 1),
-		db:     GetConnection(),
+		logger: logger,
+		db:     db,
 	}
 }
 
 func (repo *UserRepo) Create(user domain.User) (domain.User, error) {
-	res := repo.db.Create(user)
+	res := repo.db.Create(&user)
 
 	return user, repo.HandleError(res)
 }
 
-func (repo *UserRepo) ReadAll() (*[]domain.User, error) {
-	var users *[]domain.User
-	res := repo.db.Take(users, "User")
+func (repo *UserRepo) ReadAll() ([]domain.User, error) {
+	var users []domain.User
+	res := repo.db.Find(&users)
 
 	return users, repo.HandleError(res)
 }
 
-func (repo *UserRepo) ReadById(id int64) (domain.User, error) {
-	var user domain.User
+func (repo *UserRepo) ReadById(id int64) (*domain.User, error) {
+	var user *domain.User
 	res := repo.db.Preload("User").Where("users.id = ?", id).First(user)
 
 	return user, repo.HandleError(res)
 }
 
-func (repo *UserRepo) ReadByEmail(email string) (domain.User, error) {
-	var user domain.User
+func (repo *UserRepo) ReadByEmail(email string) (*domain.User, error) {
+	var user *domain.User
 	res := repo.db.Preload("User").Where("users.email = ?", email).First(user)
 
 	return user, repo.HandleError(res)

@@ -1,13 +1,16 @@
 package controllers
 
 import (
+	"UserService/di"
 	"UserService/domain"
-	"UserService/service"
+	"UserService/request"
+	"UserService/utils"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
+	"github.com/devfeel/mapper"
 	"github.com/gorilla/mux"
 )
 
@@ -17,31 +20,39 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	result := struct_to_json(id)
-	fmt.Print(result)
+	result := utils.StructToJson(id)
 	io.WriteString(w, result)
 }
 
 func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
+	userService := di.InitializeUserService()
 
-	user := domain.User{
-		Username: "ovca",
-		Email:    "foca@goca.com",
-		Password: "blabla",
+	data, err := userService.ReadAll()
+
+	if err != nil {
+		io.WriteString(w, fmt.Sprintf("Error: %s", err))
 	}
 
-	result := struct_to_json(user)
-	fmt.Print(result)
+	result := utils.StructToJson(data)
 	io.WriteString(w, result)
 }
 
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 
-	var user domain.User
-	json.NewDecoder(r.Body).Decode(&user)
+	var requestBody request.CreateUserRequest
+	json.NewDecoder(r.Body).Decode(&requestBody)
+	valid, errors := utils.ValidateStruct(requestBody)
+	if !valid {
+		w.WriteHeader(http.StatusBadRequest)
+		io.WriteString(w, errors)
+		return
+	}
 
-	userService := service.NewUserService()
+	var user domain.User
+	mapper.AutoMapper(&requestBody, &user)
+
+	userService := di.InitializeUserService()
 	res, err := userService.CreateUser(user)
 
 	if err != nil {
@@ -51,6 +62,6 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	result := struct_to_json(res)
+	result := utils.StructToJson(res)
 	io.WriteString(w, result)
 }

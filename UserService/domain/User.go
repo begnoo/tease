@@ -11,6 +11,10 @@ type User struct {
 	Profile Profile
 }
 
+func (domain *User) TableName() string {
+	return "users"
+}
+
 type Profile struct {
 	gorm.Model
 	FirstName string

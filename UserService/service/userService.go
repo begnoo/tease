@@ -4,21 +4,26 @@ import (
 	"UserService/domain"
 	"UserService/repo"
 	"log"
-	"os"
 )
 
+type ServiceLogger log.Logger
+
 type UserService struct {
-	logger *log.Logger
-	repo   repo.UserRepo
+	logger *ServiceLogger
+	repo   *repo.UserRepo
 }
 
-func NewUserService() UserService {
+func ProvideUserService(userRepo repo.UserRepo, logger *ServiceLogger) UserService {
 	return UserService{
-		logger: log.New(os.Stdout, "USER_SERVICE", 1),
-		repo:   repo.NewUserRepo(),
+		logger: logger,
+		repo:   &userRepo,
 	}
 }
 
 func (service *UserService) CreateUser(user domain.User) (domain.User, error) {
 	return service.repo.Create(user)
+}
+
+func (service *UserService) ReadAll() ([]domain.User, error) {
+	return service.repo.ReadAll()
 }
