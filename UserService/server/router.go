@@ -13,6 +13,7 @@ func SetupRouter() http.Handler {
 
 	r.HandleFunc("/users", controllers.GetAllUsersHandler).Methods(http.MethodGet)
 	r.HandleFunc("/users/{id}", controllers.GetUser).Methods(http.MethodGet)
+	r.HandleFunc("/users", controllers.CreateUserHandler).Methods(http.MethodPost)
 
 	r.Use(logRoute)
 	r.Use(setupRouteAsJson)
