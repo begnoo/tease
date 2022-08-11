@@ -4,11 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-
-	"github.com/go-playground/validator/v10"
 )
-
-var validate *validator.Validate = nil
 
 func StructToJson(data interface{}) string {
 	result, err := json.Marshal(data)
@@ -18,30 +14,12 @@ func StructToJson(data interface{}) string {
 	return string(result)
 }
 
-func initValidator() *validator.Validate {
-	if validate == nil {
-		validate = validator.New()
-	}
-
-	return validate
-}
-
-func ValidateStruct(data interface{}) (bool, string) {
-	val := initValidator()
-	err := val.Struct(data)
-	if err != nil {
-		return false, StructToJson(parseErrToJson(err.Error()))
-	}
-
-	return true, ""
-}
-
 type ErrorModel struct {
 	Key     string
 	Message string
 }
 
-func parseErrToJson(err_str string) []ErrorModel {
+func ParseValidationErrToJson(err_str string) []ErrorModel {
 	errors := strings.Split(err_str, "\n")
 	arr := []ErrorModel{}
 	for _, err := range errors {

@@ -32,7 +32,7 @@ func ProvideConnection() *gorm.DB {
 }
 
 func migrate(name string, domainStruct interface{}) {
-	if db.AutoMigrate() != nil {
+	if db.AutoMigrate(domainStruct) != nil {
 		log.Printf("Failed to inititialize users table...")
 	} else {
 		log.Printf("Initialized users table...")

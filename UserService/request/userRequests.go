@@ -7,3 +7,7 @@ type CreateUserRequest struct {
 	FirstName string `validate:"required"`
 	LastName  string `validate:"required"`
 }
+
+func NewCreateUserRequest() *CreateUserRequest {
+	return &CreateUserRequest{}
+}
