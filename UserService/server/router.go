@@ -21,6 +21,8 @@ func setupRouteAuthorization() {
 func SetupRouter() http.Handler {
 	r := mux.NewRouter()
 
+	InitMapper()
+
 	r.HandleFunc("/users", controllers.GetAllUsersHandler).Methods(http.MethodGet)
 	r.HandleFunc("/users", controllers.CreateUserHandler).Methods(http.MethodPost)
 	r.HandleFunc("/auth/login", controllers.Login).Methods(http.MethodPost)

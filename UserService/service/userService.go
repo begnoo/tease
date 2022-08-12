@@ -23,7 +23,6 @@ func ProvideUserService(userRepo repo.UserRepo, roleRepo repo.RoleRepo) UserServ
 func (service *UserService) CreateUser(user domain.User, roleName string) (*domain.User, error) {
 
 	role, err := service.roleRepo.ReadByName(roleName)
-
 	if err != nil {
 		return nil, &errors.MissingEntity{
 			Message: fmt.Sprintf("Missing role entity with name '%s'", roleName),
@@ -32,15 +31,19 @@ func (service *UserService) CreateUser(user domain.User, roleName string) (*doma
 
 	user.Roles = append(user.Roles, *role)
 
-	hashPasswrod, err := security.GenerateHashPassword(user.Password)
+	_, err = service.userRepo.ReadByEmail(user.Email)
+	if err == nil {
+		return nil, &errors.SameEmailError{Message: fmt.Sprintf("{'error': 'Email '%s' already taken'}", user.Email)}
+	}
 
+	hashPasswrod, err := security.GenerateHashPassword(user.Password)
 	if err != nil {
 		return &user, err
 	}
 
 	user.Password = hashPasswrod
-	new_user, err := service.userRepo.Create(user)
 
+	new_user, err := service.userRepo.Create(user)
 	if new_user == nil {
 		return nil, err
 	}

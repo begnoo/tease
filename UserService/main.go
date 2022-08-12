@@ -9,7 +9,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// TODO: Dodaj JWT							**
 // TODO: Api Gateway						***
 func main() {
 

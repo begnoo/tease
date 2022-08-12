@@ -29,6 +29,7 @@ func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var requestBody request.CreateUserRequest
 	json.NewDecoder(r.Body).Decode(&requestBody)
+	r.Body.Close()
 
 	err := ValidateStruct(requestBody)
 

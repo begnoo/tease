@@ -39,9 +39,6 @@ func handleJwt(next http.Handler) http.Handler {
 
 		token, err := parseTokenFromRequest(r)
 
-		fmt.Printf("%+v\n", token)
-		fmt.Printf("%t\n", checkRouteAuth(uri, "ALL"))
-
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			reserr := fmt.Errorf("nothing")
@@ -50,7 +47,6 @@ func handleJwt(next http.Handler) http.Handler {
 		}
 
 		tokenRole := token.Claims.(jwt.MapClaims)["role"]
-		fmt.Printf("%s\n", tokenRole)
 
 		if checkRouteAuth(uri, tokenRole) {
 			next.ServeHTTP(w, r)

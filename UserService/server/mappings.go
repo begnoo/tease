@@ -7,7 +7,7 @@ import (
 	"github.com/devfeel/mapper"
 )
 
-func initMapper() {
+func InitMapper() {
 	mapper.Register(&request.CreateUserRequest{})
 	mapper.Register(&domain.User{})
 }

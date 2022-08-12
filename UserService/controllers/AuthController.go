@@ -11,6 +11,7 @@ import (
 func Login(w http.ResponseWriter, r *http.Request) {
 	var creds security.Credidentials
 	json.NewDecoder(r.Body).Decode(&creds)
+	r.Body.Close()
 
 	err := ValidateStruct(creds)
 
