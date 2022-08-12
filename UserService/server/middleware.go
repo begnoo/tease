@@ -1,13 +1,12 @@
 package server
 
 import (
-	"encoding/json"
+	"UserService/security"
 	"fmt"
 	"net/http"
-	"os"
-	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
+	"gorm.io/gorm/utils"
 )
 
 func logRoute(next http.Handler) http.Handler {
@@ -37,16 +36,14 @@ func handleJwt(next http.Handler) http.Handler {
 			return
 		}
 
-		token, err := parseTokenFromRequest(r)
+		token, err := security.ParseTokenFromRequest(r)
 
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
-			reserr := fmt.Errorf("nothing")
-			json.NewEncoder(w).Encode(reserr)
 			return
 		}
 
-		tokenRole := token.Claims.(jwt.MapClaims)["role"]
+		tokenRole := token.Claims.(jwt.MapClaims)["role"].(string)
 
 		if checkRouteAuth(uri, tokenRole) {
 			next.ServeHTTP(w, r)
@@ -54,41 +51,12 @@ func handleJwt(next http.Handler) http.Handler {
 		}
 
 		w.WriteHeader(http.StatusUnauthorized)
-		reserr := fmt.Errorf("not authorized")
-		json.NewEncoder(w).Encode(reserr)
 	})
 }
 
-func parseTokenFromRequest(r *http.Request) (*jwt.Token, error) {
-	if r.Header["Authorization"] == nil {
-		err := fmt.Errorf("no authorization header found")
-		return nil, err
-	}
-
-	authHeader := r.Header["Authorization"][0]
-	bearer := strings.Split(authHeader, " ")
-
-	secretKey := os.Getenv("SECRET_KEY")
-	var mySigningKey = []byte(secretKey)
-
-	token, err := jwt.Parse(bearer[1], func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("there was an error in parsing")
-		}
-		return mySigningKey, nil
-	})
-
-	if err != nil {
-		err := fmt.Errorf("your token has expired")
-		return nil, err
-	}
-
-	return token, err
-}
-
-func checkRouteAuth(url string, role interface{}) bool {
-	if authRole, ok := routeAuthRegistry[url]; ok {
-		if authRole == "ALL" || authRole == role {
+func checkRouteAuth(url string, role string) bool {
+	if authRoles, ok := routeAuthRegistry[url]; ok {
+		if utils.Contains(authRoles, role) {
 			return true
 		} else {
 			return false

@@ -29,3 +29,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(token)
 }
+
+func AccessBackend(w http.ResponseWriter, r *http.Request) {
+
+	token, _ := security.ParseTokenFromRequest(r)
+
+	authService := di.InitializeAuthService()
+	new_token, err := authService.GenerateBackendJwt(token)
+
+	if !errors.HandleHttpError(err, w) {
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(new_token)
+}

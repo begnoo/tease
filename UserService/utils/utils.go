@@ -32,3 +32,12 @@ func ParseValidationErrToJson(err_str string) []ErrorModel {
 
 	return arr
 }
+
+func contains(s []interface{}, e interface{}) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}

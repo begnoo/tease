@@ -1,7 +1,10 @@
 package security
 
 import (
+	"fmt"
+	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -40,4 +43,31 @@ func GenerateJWT(email, role string, gateway bool) (string, error) {
 		return "", err
 	}
 	return tokenString, nil
+}
+
+func ParseTokenFromRequest(r *http.Request) (*jwt.Token, error) {
+	if r.Header["Authorization"] == nil {
+		err := fmt.Errorf("no authorization header found")
+		return nil, err
+	}
+
+	authHeader := r.Header["Authorization"][0]
+	bearer := strings.Split(authHeader, " ")
+
+	secretKey := os.Getenv("SECRET_KEY")
+	var mySigningKey = []byte(secretKey)
+
+	token, err := jwt.Parse(bearer[1], func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("there was an error in parsing")
+		}
+		return mySigningKey, nil
+	})
+
+	if err != nil {
+		err := fmt.Errorf("your token has expired")
+		return nil, err
+	}
+
+	return token, err
 }
