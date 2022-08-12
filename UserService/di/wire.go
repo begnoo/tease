@@ -7,28 +7,24 @@ import (
 	"UserService/repo"
 	"UserService/service"
 	"context"
-	"log"
-	"os"
 
 	"github.com/google/wire"
 )
 
-var repoSet = wire.NewSet(ProvideRepoLogger, repo.ProvideConnection, repo.ProvideUserRepo)
-
-func ProvideServiceLogger() *service.ServiceLogger {
-	return (*service.ServiceLogger)(log.New(os.Stdout, "USER_SERVICE", 1))
-}
-
-func ProvideRepoLogger() *log.Logger {
-	return log.New(os.Stdout, "USER_REPO", 1)
-}
+var userRepoSet = wire.NewSet(repo.ProvideConnection, repo.ProvideUserRepo)
+var roleRepoSet = wire.NewSet(repo.ProvideConnection, repo.ProvideRoleRepo)
 
 func InitializeUserRepo(ctx context.Context) (repo.UserRepo, error) {
-	wire.Build(repoSet)
+	wire.Build(userRepoSet)
 	return repo.UserRepo{}, nil
 }
 
+func InitializeRoleRepo(ctx context.Context) (repo.RoleRepo, error) {
+	wire.Build(roleRepoSet)
+	return repo.RoleRepo{}, nil
+}
+
 func InitializeUserService() service.UserService {
-	wire.Build(ProvideServiceLogger, repoSet, service.ProvideUserService)
+	wire.Build(repo.ProvideConnection, repo.ProvideRoleRepo, repo.ProvideUserRepo, service.ProvideUserService)
 	return service.UserService{}
 }

@@ -4,20 +4,17 @@ import (
 	"UserService/domain"
 	"UserService/errors"
 	"fmt"
-	"log"
 
 	"gorm.io/gorm"
 )
 
 type UserRepo struct {
-	logger *log.Logger
-	db     *gorm.DB
+	db *gorm.DB
 }
 
-func ProvideUserRepo(logger *log.Logger, db *gorm.DB) UserRepo {
+func ProvideUserRepo(db *gorm.DB) UserRepo {
 	return UserRepo{
-		logger: logger,
-		db:     db,
+		db: db,
 	}
 }
 
@@ -25,7 +22,7 @@ func (repo *UserRepo) Create(user domain.User) (*domain.User, error) {
 	// TODO: handle ovde ako ima error posle
 	same_email, _ := repo.ReadByEmail(user.Email)
 
-	if same_email != nil {
+	if same_email.Email != "" {
 		return nil, &errors.SameEmailError{Message: fmt.Sprintf("{'error': 'Email '%s' already taken'}", user.Email)}
 	}
 
@@ -58,7 +55,6 @@ func (repo *UserRepo) ReadByEmail(email string) (*domain.User, error) {
 func (r *UserRepo) HandleError(res *gorm.DB) error {
 	if res.Error != nil && res.Error != gorm.ErrRecordNotFound {
 		err := fmt.Errorf("error: %w", res.Error)
-		r.logger.Fatal(err)
 		return err
 	}
 

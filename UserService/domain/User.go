@@ -9,6 +9,7 @@ type User struct {
 	Password string
 
 	Profile Profile
+	Roles   []Role `gorm:"many2many:users_roles;"`
 }
 
 func (domain *User) TableName() string {

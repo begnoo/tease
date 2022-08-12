@@ -11,36 +11,32 @@ import (
 	"UserService/service"
 	"context"
 	"github.com/google/wire"
-	"log"
-	"os"
 )
 
 // Injectors from wire.go:
 
 func InitializeUserRepo(ctx context.Context) (repo.UserRepo, error) {
-	logger := ProvideRepoLogger()
 	db := repo.ProvideConnection()
-	userRepo := repo.ProvideUserRepo(logger, db)
+	userRepo := repo.ProvideUserRepo(db)
 	return userRepo, nil
 }
 
-func InitializeUserService() service.UserService {
-	logger := ProvideRepoLogger()
+func InitializeRoleRepo(ctx context.Context) (repo.RoleRepo, error) {
 	db := repo.ProvideConnection()
-	userRepo := repo.ProvideUserRepo(logger, db)
-	serviceLogger := ProvideServiceLogger()
-	userService := service.ProvideUserService(userRepo, serviceLogger)
+	roleRepo := repo.ProvideRoleRepo(db)
+	return roleRepo, nil
+}
+
+func InitializeUserService() service.UserService {
+	db := repo.ProvideConnection()
+	userRepo := repo.ProvideUserRepo(db)
+	roleRepo := repo.ProvideRoleRepo(db)
+	userService := service.ProvideUserService(userRepo, roleRepo)
 	return userService
 }
 
 // wire.go:
 
-var repoSet = wire.NewSet(ProvideRepoLogger, repo.ProvideConnection, repo.ProvideUserRepo)
+var userRepoSet = wire.NewSet(repo.ProvideConnection, repo.ProvideUserRepo)
 
-func ProvideServiceLogger() *service.ServiceLogger {
-	return (*service.ServiceLogger)(log.New(os.Stdout, "USER_SERVICE", 1))
-}
-
-func ProvideRepoLogger() *log.Logger {
-	return log.New(os.Stdout, "USER_REPO", 1)
-}
+var roleRepoSet = wire.NewSet(repo.ProvideConnection, repo.ProvideRoleRepo)

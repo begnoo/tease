@@ -11,18 +11,7 @@ import (
 	"net/http"
 
 	"github.com/devfeel/mapper"
-	"github.com/gorilla/mux"
 )
-
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-
-	vars := mux.Vars(r)
-	id := vars["id"]
-
-	result := utils.StructToJson(id)
-	io.WriteString(w, result)
-}
 
 func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	userService := di.InitializeUserService()
@@ -51,7 +40,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	mapper.AutoMapper(&requestBody, &user)
 
 	userService := di.InitializeUserService()
-	res, err := userService.CreateUser(user)
+	res, err := userService.CreateUser(user, "ROLE_USER")
 
 	if !errors.HandleHttpError(err, w) {
 		return

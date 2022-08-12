@@ -30,6 +30,14 @@ func (r *RepoError) Error() string {
 	return r.Err.Error()
 }
 
+type MissingEntity struct {
+	Message string
+}
+
+func (r *MissingEntity) Error() string {
+	return r.Message
+}
+
 func NilOrError(err error, req_err error) error {
 	if err == nil {
 		return nil
@@ -57,12 +65,21 @@ func HandleHttpError(req_err error, w http.ResponseWriter) bool {
 			io.WriteString(w, req_err.Error())
 			return false
 		}
+	case *MissingEntity:
+		{
+			w.WriteHeader(http.StatusOK)
+			io.WriteString(w, req_err.Error())
+			return false
+		}
 	case *RepoError:
 		{
 			w.WriteHeader(http.StatusInternalServerError)
 			io.WriteString(w, req_err.Error())
 			return false
 		}
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+		io.WriteString(w, req_err.Error())
+		return false
 	}
-	return true
 }

@@ -1,9 +1,12 @@
 package domain
 
+import "gorm.io/gorm"
+
 type Role struct {
-	ID        string `gorm:"primaryKey"`
-	Name      string
-	CreatedAt int64
-	UpdatedAt int64
-	DeletedAt int64
+	gorm.Model
+	Name string
+}
+
+func (domain *Role) TableName() string {
+	return "roles"
 }
