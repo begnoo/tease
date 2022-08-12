@@ -20,9 +20,9 @@ func ProvideUserRepo(db *gorm.DB) UserRepo {
 
 func (repo *UserRepo) Create(user domain.User) (*domain.User, error) {
 	// TODO: handle ovde ako ima error posle
-	same_email, _ := repo.ReadByEmail(user.Email)
+	_, err := repo.ReadByEmail(user.Email)
 
-	if same_email.Email != "" {
+	if err == nil {
 		return nil, &errors.SameEmailError{Message: fmt.Sprintf("{'error': 'Email '%s' already taken'}", user.Email)}
 	}
 
@@ -47,9 +47,9 @@ func (repo *UserRepo) ReadById(id int64) (*domain.User, error) {
 
 func (repo *UserRepo) ReadByEmail(email string) (*domain.User, error) {
 	var user domain.User
-	res := repo.db.Where(&domain.User{Email: email}).First(&user)
-
-	return &user, repo.HandleError(res)
+	res := repo.db.Preload("Roles").Where(&domain.User{Email: email}).First(&user)
+	fmt.Printf("%+v", user)
+	return &user, res.Error
 }
 
 func (r *UserRepo) HandleError(res *gorm.DB) error {

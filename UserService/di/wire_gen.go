@@ -35,6 +35,14 @@ func InitializeUserService() service.UserService {
 	return userService
 }
 
+func InitializeAuthService() service.AuthService {
+	db := repo.ProvideConnection()
+	userRepo := repo.ProvideUserRepo(db)
+	roleRepo := repo.ProvideRoleRepo(db)
+	authService := service.ProvideAuthService(userRepo, roleRepo)
+	return authService
+}
+
 // wire.go:
 
 var userRepoSet = wire.NewSet(repo.ProvideConnection, repo.ProvideUserRepo)

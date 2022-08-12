@@ -32,7 +32,7 @@ func (service *UserService) CreateUser(user domain.User, roleName string) (*doma
 
 	user.Roles = append(user.Roles, *role)
 
-	hashPasswrod, err := security.GeneratehashPassword(user.Password)
+	hashPasswrod, err := security.GenerateHashPassword(user.Password)
 
 	if err != nil {
 		return &user, err

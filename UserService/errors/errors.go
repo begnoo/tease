@@ -38,6 +38,14 @@ func (r *MissingEntity) Error() string {
 	return r.Message
 }
 
+type FailedAuthorization struct {
+	Message string
+}
+
+func (r *FailedAuthorization) Error() string {
+	return r.Message
+}
+
 func NilOrError(err error, req_err error) error {
 	if err == nil {
 		return nil

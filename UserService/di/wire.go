@@ -28,3 +28,8 @@ func InitializeUserService() service.UserService {
 	wire.Build(repo.ProvideConnection, repo.ProvideRoleRepo, repo.ProvideUserRepo, service.ProvideUserService)
 	return service.UserService{}
 }
+
+func InitializeAuthService() service.AuthService {
+	wire.Build(repo.ProvideConnection, repo.ProvideRoleRepo, repo.ProvideUserRepo, service.ProvideAuthService)
+	return service.AuthService{}
+}
