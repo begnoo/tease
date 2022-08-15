@@ -45,7 +45,7 @@ func (r *CollabRepo) Update(collabarator domain.Collabarator) error {
 }
 
 func (r *CollabRepo) DeleteExpiered() error {
-	res := r.db.Where(&domain.Collabarator{}).Where("expieres_at < ?", time.Now()).Delete(&domain.Collabarator{})
+	res := r.db.Where(&domain.Collabarator{AcceptedInvite: false}).Where("expiers_at < ?", time.Now()).Delete(&domain.Collabarator{})
 
 	return res.Error
 }

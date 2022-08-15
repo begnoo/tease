@@ -1,6 +1,7 @@
 package main
 
 import (
+	"RepoService/jobs"
 	"RepoService/server"
 	"fmt"
 	"log"
@@ -20,6 +21,7 @@ func main() {
 
 	r := server.SetupRouter()
 
+	go jobs.InitTask()
 	err = http.ListenAndServe(os.Getenv("SERVER_PORT"), r)
 
 	if err != nil {

@@ -4,6 +4,8 @@ import (
 	"RepoService/domain"
 	"RepoService/errors"
 	"RepoService/repo"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -78,12 +80,12 @@ func (service *SourceService) AddColabarator(sourceId int, collab_email, owner s
 		return nil, &errors.OwnerMismatch{Message: "Collabrarator doesn't exist."}
 	}
 
+	expires_mult, err := strconv.Atoi(os.Getenv("COLLAB_EXPIRES_IN"))
 	collab := domain.Collabarator{
 		Name:            collab_email,
 		ReactedToInvite: false,
 		AcceptedInvite:  false,
-		ExpiersAt:       time.Now().Add(time.Hour * 168),
-		// jedna nedelja
+		ExpiersAt:       time.Now().Add(time.Hour * time.Duration(expires_mult)),
 	}
 
 	for _, v := range source.Collabarators {

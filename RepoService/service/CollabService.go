@@ -50,7 +50,7 @@ func (service *CollabService) RejectInvite(id int) (*domain.Collabarator, error)
 	return res, err
 }
 
-func (service *CollabService) DeleteExpieredInvitations(id int) bool {
+func (service *CollabService) DeleteExpieredInvitations() bool {
 	err := service.collabRepo.DeleteExpiered()
 
 	return err == nil
