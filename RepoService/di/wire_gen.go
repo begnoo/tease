@@ -28,6 +28,21 @@ func InitializeSourceService() service.SourceService {
 	return sourceService
 }
 
+func InitializeCollabRepo(ctx context.Context) (repo.CollabRepo, error) {
+	db := repo.ProvideConnection()
+	collabRepo := repo.ProvideCollabRepo(db)
+	return collabRepo, nil
+}
+
+func InitializeCollabService() service.CollabService {
+	db := repo.ProvideConnection()
+	collabRepo := repo.ProvideCollabRepo(db)
+	collabService := service.ProvideCollabService(collabRepo)
+	return collabService
+}
+
 // wire.go:
 
 var userRepoSet = wire.NewSet(repo.ProvideConnection, repo.ProvideSourceRepo)
+
+var collabRepoSet = wire.NewSet(repo.ProvideConnection, repo.ProvideCollabRepo)
