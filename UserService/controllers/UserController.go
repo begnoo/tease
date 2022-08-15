@@ -7,10 +7,12 @@ import (
 	"UserService/request"
 	"UserService/utils"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/devfeel/mapper"
+	"github.com/gorilla/mux"
 )
 
 func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,5 +51,26 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	result := utils.StructToJson(res)
+	io.WriteString(w, result)
+}
+
+func VerifyUserExistsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	email := vars["email"]
+	if email == "" {
+		return
+	}
+
+	fmt.Printf("Ovaj mail: %s\n", email)
+
+	userService := di.InitializeUserService()
+	res := userService.VerifyUserExists(email)
+
+	data := map[string]bool{
+		"result": res,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	result := utils.StructToJson(data)
 	io.WriteString(w, result)
 }

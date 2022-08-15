@@ -56,3 +56,9 @@ func (service *UserService) ReadAll() (*[]domain.User, error) {
 
 	return users, errors.NilOrError(err, &errors.RepoError{Err: err})
 }
+
+func (service *UserService) VerifyUserExists(email string) bool {
+	_, err := service.userRepo.ReadByEmail(email)
+
+	return err == nil
+}
