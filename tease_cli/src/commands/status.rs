@@ -1,3 +1,5 @@
+use std::os::unix::prelude::MetadataExt;
+
 use crate::index_structs::index::Index;
 use crate::index_structs::index::IndexRow;
 use crate::index_structs::index::read_index;
@@ -7,8 +9,6 @@ use crate::utils::blob_writer::read_file_md;
 use crate::utils::glob::get_all_repo_paths;
 
 use colored::Colorize;
-
-use std::os::windows::prelude::MetadataExt;
 
 pub fn status() {
     let entries = get_all_repo_paths();
@@ -41,7 +41,7 @@ pub fn status() {
         if unwraped_row.staging == 1 {
             let current_file_md = read_file_md(entry_data.to_string());
             
-            if unwraped_row.data_change_date != current_file_md.last_write_time() || unwraped_row.meta_change_date != get_metadata_change(&current_file_md) {
+            if unwraped_row.data_change_date != current_file_md.ctime() as u64 || unwraped_row.meta_change_date != get_metadata_change(&current_file_md) {
                 unstaged_vec.push(entry_data);
             }
         }

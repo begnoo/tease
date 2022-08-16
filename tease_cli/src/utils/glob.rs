@@ -8,6 +8,6 @@ pub fn get_all_repo_paths() -> Vec<String> {
                                             .unwrap()
                                             .to_string()
                                             .replace("\\", "/"))
-                            .filter(|entry| !entry.contains(".tease") && !entry.contains("tease_cli.exe"))
+                            .filter(|entry| !entry.contains(".tease") && !entry.contains("tease_cli"))
                             .collect()
 }

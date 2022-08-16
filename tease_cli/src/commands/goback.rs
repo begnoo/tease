@@ -16,7 +16,6 @@ pub fn go_back(commit_sha1: String) -> () {
 pub fn delete_all() {
     let all_entries = get_all_repo_paths();
     for entry in all_entries.iter() {
-        // let path = Path::new(entry);
         let file_md = metadata(entry.to_string());
         match file_md {
             Ok(md) => {

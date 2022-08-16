@@ -19,8 +19,6 @@ use utils::blob_writer::has_added_files;
 // Malo radi web-a pa onda (uradi bar user i repo service)
 // TODO: sredi log da prikazuje commitove po redosledu a ne po roditeljima (mozda bitno samo za front)
 // TODO: dodaj info o razlici kod commitova (+) (-)
-
-// Ako ne stignes do 20-25of -> ubi se
 fn main() {
     let args = Args::parse();
 
