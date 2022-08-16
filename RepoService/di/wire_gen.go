@@ -24,7 +24,8 @@ func InitializeSourceRepo(ctx context.Context) (repo.SourceRepo, error) {
 func InitializeSourceService() service.SourceService {
 	db := repo.ProvideConnection()
 	sourceRepo := repo.ProvideSourceRepo(db)
-	sourceService := service.ProvideSourceService(sourceRepo)
+	collabRepo := repo.ProvideCollabRepo(db)
+	sourceService := service.ProvideSourceService(sourceRepo, collabRepo)
 	return sourceService
 }
 

@@ -50,6 +50,12 @@ func (r *CollabRepo) DeleteExpiered() error {
 	return res.Error
 }
 
+func (r *CollabRepo) DeleteBySource(id int) error {
+	res := r.db.Where(&domain.Collabarator{SourceID: id}).Delete(&domain.Collabarator{})
+
+	return res.Error
+}
+
 func (r *CollabRepo) HandleError(res *gorm.DB) error {
 	if res.Error != nil && res.Error != gorm.ErrRecordNotFound {
 		err := fmt.Errorf("error: %w", res.Error)

@@ -11,11 +11,13 @@ import (
 
 type SourceService struct {
 	sourceRepo *repo.SourceRepo
+	collabRepo *repo.CollabRepo
 }
 
-func ProvideSourceService(sourceRepo repo.SourceRepo) SourceService {
+func ProvideSourceService(sourceRepo repo.SourceRepo, collabRepo repo.CollabRepo) SourceService {
 	return SourceService{
 		sourceRepo: &sourceRepo,
+		collabRepo: &collabRepo,
 	}
 }
 
@@ -43,7 +45,15 @@ func (service *SourceService) Delete(id int, requestedBy string) (*domain.Source
 		return nil, &errors.OwnerMismatch{Message: "Mismatch in requested by and source owner."}
 	}
 
+	err = service.collabRepo.DeleteBySource(id)
+	if err != nil {
+		return nil, err
+	}
+
 	err = service.sourceRepo.Delete(id)
+	if err != nil {
+		return nil, err
+	}
 
 	return repo, err
 }

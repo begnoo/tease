@@ -7,7 +7,6 @@ import (
 	"UserService/request"
 	"UserService/utils"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -60,8 +59,6 @@ func VerifyUserExistsHandler(w http.ResponseWriter, r *http.Request) {
 	if email == "" {
 		return
 	}
-
-	fmt.Printf("Ovaj mail: %s\n", email)
 
 	userService := di.InitializeUserService()
 	res := userService.VerifyUserExists(email)

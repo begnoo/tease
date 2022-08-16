@@ -12,7 +12,7 @@ var authReg = map[string][]string{
 	"/source?owner=":                     {"ALL"},
 	"/source/{id}":                       {"ALL"},
 	"/source,POST":                       {"ROLE_USER"},
-	"/source,DELETE":                     {"ROLE_USER, ROLE_ADMIN"},
+	"/source,DELETE":                     {"ROLE_USER", "ROLE_ADMIN"},
 	"/source/collabs/add,POST":           {"ROLE_USER"},
 	"/source/collabs/{id}/accept,GET":    {"ROLE_USER"},
 	"/source/collabs/{id}/reject,GET":    {"ROLE_USER"},

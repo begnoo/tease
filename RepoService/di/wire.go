@@ -20,7 +20,7 @@ func InitializeSourceRepo(ctx context.Context) (repo.SourceRepo, error) {
 }
 
 func InitializeSourceService() service.SourceService {
-	wire.Build(repo.ProvideConnection, repo.ProvideSourceRepo, service.ProvideSourceService)
+	wire.Build(repo.ProvideConnection, repo.ProvideSourceRepo, repo.ProvideCollabRepo, service.ProvideSourceService)
 	return service.SourceService{}
 }
 
