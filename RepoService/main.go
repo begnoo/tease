@@ -25,6 +25,6 @@ func main() {
 	err = http.ListenAndServe(os.Getenv("SERVER_PORT"), r)
 
 	if err != nil {
-		fmt.Printf("Couldn't start listening on port %s", os.Getenv("SERVER_PORT"))
+		fmt.Printf("Couldn't start listening on port %s\n", os.Getenv("SERVER_PORT"))
 	}
 }

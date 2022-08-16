@@ -26,13 +26,11 @@ func setupRouteAsJson(next http.Handler) http.Handler {
 	})
 }
 
-func handleJwt(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func handleJwt(f func(w http.ResponseWriter, r *http.Request), roles []string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-		uri := fmt.Sprintf("%s,%s", r.RequestURI, r.Method)
-
-		if checkRouteAuth(uri, "ALL") {
-			next.ServeHTTP(w, r)
+		if utils.Contains(roles, "ALL") {
+			f(w, r)
 			return
 		}
 
@@ -45,22 +43,11 @@ func handleJwt(next http.Handler) http.Handler {
 
 		tokenRole := token.Claims.(jwt.MapClaims)["role"].(string)
 
-		if checkRouteAuth(uri, tokenRole) {
-			next.ServeHTTP(w, r)
+		if utils.Contains(roles, tokenRole) {
+			f(w, r)
 			return
 		}
 
 		w.WriteHeader(http.StatusUnauthorized)
-	})
-}
-
-func checkRouteAuth(url string, role string) bool {
-	if authRoles, ok := routeAuthRegistry[url]; ok {
-		if utils.Contains(authRoles, role) {
-			return true
-		} else {
-			return false
-		}
 	}
-	return true
 }

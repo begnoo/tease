@@ -15,6 +15,6 @@ func task() {
 
 func InitTask() {
 	s := gocron.NewScheduler()
-	s.Every(5).Seconds().Do(task)
+	s.Every(7).Days().Do(task)
 	<-s.Start()
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var routeAuthRegistry = map[string][]string{
+var authReg = map[string][]string{
 	"/source,GET":                        {"ALL"},
 	"/source?owner=":                     {"ALL"},
 	"/source/{id}":                       {"ALL"},
@@ -24,21 +24,28 @@ func SetupRouter() http.Handler {
 
 	InitMapper()
 
-	r.HandleFunc("/source", controllers.GetAllSourcesHandler).Methods(http.MethodGet)
-	r.HandleFunc("/source/{id}", controllers.GetSourceByIdHandler).Methods(http.MethodGet)
-	r.HandleFunc("/source", controllers.CreateSourceHandler).Methods(http.MethodPost)
-	r.HandleFunc("/source/{id}", controllers.DeleteSourceByIdHandler).Methods(http.MethodDelete)
-	r.HandleFunc("/source/collabs/add", controllers.AddColabaratorHandler).Methods(http.MethodPost)
-	r.HandleFunc("/source/collabs/{id}/accept", controllers.AcceptInviteHandler).Methods(http.MethodGet)
-	r.HandleFunc("/source/collabs/{id}/reject", controllers.RejectInviteHandler).Methods(http.MethodGet)
-	r.HandleFunc("/source/collabs/{id}/delete", controllers.DeleteCollabaratorHandler).Methods(http.MethodDelete)
+	r.HandleFunc("/source", controllers.GetAllSourcesHandler).
+		Methods(http.MethodGet)
+	r.HandleFunc("/source/{id}", controllers.GetSourceByIdHandler).
+		Methods(http.MethodGet)
+	r.HandleFunc("/source",
+		handleJwt(controllers.CreateSourceHandler, authReg["/source,POST"])).Methods(http.MethodPost)
+	r.HandleFunc("/source/{id}",
+		handleJwt(controllers.DeleteSourceByIdHandler, authReg["/source,DELETE"])).Methods(http.MethodDelete)
+	r.HandleFunc("/source/collabs/add",
+		handleJwt(controllers.AddColabaratorHandler, authReg["/source/collabs/add,POST"])).Methods(http.MethodPost)
+	r.HandleFunc("/source/collabs/{id}/accept",
+		handleJwt(controllers.AcceptInviteHandler, authReg["/source/collabs/{id}/accept,GET"])).Methods(http.MethodGet)
+	r.HandleFunc("/source/collabs/{id}/reject",
+		handleJwt(controllers.RejectInviteHandler, authReg["/source/collabs/{id}/reject,GET"])).Methods(http.MethodGet)
+	r.HandleFunc("/source/collabs/{id}/delete",
+		handleJwt(controllers.DeleteCollabaratorHandler, authReg["/source/collabs/{id}/delete,DELETE"])).Methods(http.MethodDelete)
 	// r.HandleFunc("/pull/{id}", controllers.DeleteRepo).Methods(http.MethodGet)
 	// r.HandleFunc("/push", controllers.DeleteRepo).Methods(http.MethodPost)
 	// r.HandleFunc("/clone/{id}", controllers.DeleteRepo).Methods(http.MethodGet)
 
 	r.Use(logRoute)
 	r.Use(setupRouteAsJson)
-	r.Use(handleJwt)
 
 	return r
 }
