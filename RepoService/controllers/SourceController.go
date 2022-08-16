@@ -157,3 +157,28 @@ func AddColabaratorHandler(w http.ResponseWriter, r *http.Request) {
 	result := utils.StructToJson(data)
 	io.WriteString(w, result)
 }
+
+type Result struct {
+	Result bool `json:"result"`
+}
+
+func HasAccessHandler(w http.ResponseWriter, r *http.Request) {
+	var requestBody request.HasAccessRequest
+	json.NewDecoder(r.Body).Decode(&requestBody)
+	r.Body.Close()
+
+	err := ValidateStruct(requestBody)
+	if !errors.HandleHttpError(err, w) {
+		return
+	}
+
+	sourceService := di.InitializeSourceService()
+	res, err := sourceService.CollabaratorHasAccess(requestBody.User, requestBody.Owner, requestBody.SourceName)
+	if !errors.HandleHttpError(err, w) {
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	result := utils.StructToJson(Result{Result: res})
+	io.WriteString(w, result)
+}

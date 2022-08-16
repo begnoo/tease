@@ -21,7 +21,7 @@ func ValidateStruct(data interface{}) error {
 	val := initValidator()
 	err := val.Struct(data)
 
-	return errors.NilOrError(err, &errors.RepoError{Err: err})
+	return errors.NilOrError(err, &errors.ValidationError{Err: err})
 }
 
 var sourceName validator.Func = func(fl validator.FieldLevel) bool {

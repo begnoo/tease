@@ -63,6 +63,13 @@ func (r *SourceRepo) Update(source domain.Source) error {
 	return res.Error
 }
 
+func (repo *SourceRepo) ReadByOwnerAndName(owner, name string) (*domain.Source, error) {
+	var source domain.Source
+	res := repo.db.Preload("Collabarators").Where(&domain.Source{Owner: owner, Name: name}).First(&source)
+
+	return &source, res.Error
+}
+
 func (r *SourceRepo) HandleError(res *gorm.DB) error {
 	if res.Error != nil && res.Error != gorm.ErrRecordNotFound {
 		err := fmt.Errorf("error: %w", res.Error)

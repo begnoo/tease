@@ -76,6 +76,26 @@ func (service *SourceService) ReadByOwner(owner string) (*[]domain.Source, error
 	return res, err
 }
 
+func (service *SourceService) CollabaratorHasAccess(collab, owner, name string) (bool, error) {
+	res, err := service.sourceRepo.ReadByOwnerAndName(owner, name)
+
+	if err != nil {
+		return false, err
+	}
+
+	if res.Owner == owner {
+		return true, nil
+	}
+
+	for _, collab := range res.Collabarators {
+		if collab.Name == owner {
+			return true, nil
+		}
+	}
+
+	return false, err
+}
+
 func (service *SourceService) AddColabarator(sourceId int, collab_email, owner string) (*domain.Collabarator, error) {
 	source, err := service.sourceRepo.ReadById(sourceId)
 	if err != nil {
