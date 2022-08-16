@@ -57,3 +57,26 @@ pub fn trail_commit_history(commit_sha1: &String, trail: &mut Vec<String>) {
 
     trail_commit_history(&parts[1].to_string(), trail);
 }
+
+pub fn traverse_commit_tree(root_tree: String, prev_path: String) {
+    let tree_content = read_object(&root_tree);
+    let lines: Vec<&str> = tree_content.split("\n").collect();
+
+    for line in lines {
+        let parts: Vec<&str> = line.split(" ").collect();        
+        if parts[0] == "blob" {
+            let blob_object = read_object(&parts[2].to_string());
+            let blob_content = blob_object.split("\0").collect::<Vec<&str>>()[1];
+
+            let new_file = if prev_path.is_empty() { parts[1].to_string() } else { vec![prev_path.to_string(), parts[1].to_string()].join("/") };
+            // create_tease_file(Path::new(&new_file.to_string()), blob_content.to_string());
+            // add_file(new_file.to_string()).expect("Couldn't recreate file.");
+        }
+
+        if parts[0] == "tree" {
+            let new_folder = if prev_path.is_empty() { parts[1].to_string() } else { vec![prev_path.to_string(), parts[1].to_string()].join("/") };
+            // create_tease_folder(Path::new(&new_folder.to_string()));
+            traverse_commit_tree(parts[2].to_string(), new_folder.to_string());
+        }
+    }
+}

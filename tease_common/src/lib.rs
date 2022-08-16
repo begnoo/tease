@@ -1,6 +1,6 @@
 #[cfg(test)]
 
-mod read;
+pub mod read;
 
 mod tests {
     #[test]
