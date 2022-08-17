@@ -72,7 +72,6 @@ pub async fn can_push(
 
     let res = read_branch_head(&root_folder, &src_data.branch);
     if res.is_err() {
-        res.unwrap();
         return Json(resp); 
     }
 

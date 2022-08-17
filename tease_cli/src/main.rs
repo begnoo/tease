@@ -1,22 +1,30 @@
 mod commands;
 mod index_structs;
 mod utils;
+mod remote_req;
 
-use crate::{commands::{create::create_repo, add::{add_from_path, delete_from_path}, read::read_object, reset::reset_index_row, commit::commit}, index_structs::index::is_merging};
-use commands::{status::status, branch::{create_branch, switch_to_branch}, diff::diff_file, merge::{merge_file, merge}, command_enum::{Args, Commands}};
-use clap::{Parser};
+use crate::{commands::{
+    create::create_repo,
+    add::{add_from_path, delete_from_path},
+    read::read_object,
+    reset::reset_index_row,
+    commit::commit},
+    index_structs::index::is_merging
+};
+use commands::{
+    status::status,
+    branch::{create_branch, switch_to_branch},
+    diff::diff_file,
+    merge::{merge_file, merge}, 
+    command_enum::{Args, Commands}, 
+    set_origin::set_origin, set_user::set_user, push::push
+};
+use clap::Parser;
 use utils::blob_writer::has_added_files;
 
-// 08.08 ako stignes (vrv neces)
 // TODO: packfile, author*, commiter*, |.| dodavanje na add*
 // TODO: rekurzivne funkcije -> iterativne
 // TODO: skinuti lock za branch pri create modu i preneti trenutne izmene i dodate fajlove
-
-// Web
-// povezi sa user servisom (email, username, login)
-// povezi sa repo serverom (push, pull, clone)
-
-// Malo radi web-a pa onda (uradi bar user i repo service)
 // TODO: sredi log da prikazuje commitove po redosledu a ne po roditeljima (mozda bitno samo za front)
 // TODO: dodaj info o razlici kod commitova (+) (-)
 fn main() {
@@ -119,6 +127,18 @@ fn main() {
             }
 
             merge(branch.to_string());
+        }
+
+        Some(Commands::SetOrigin {origin}) => {
+            set_origin(origin.to_string());
+        },
+
+        Some(Commands::SetUser {email}) => {
+            set_user(email.to_string());
+        }
+
+        Some(Commands::Push) => {
+            push();   
         }
 
         None => {

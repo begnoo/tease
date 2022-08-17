@@ -1,7 +1,9 @@
-use crate::{utils::{lines::{get_content_from_sha1, Line}, blob_writer::{tease_file_exists, read_tree_from_commit, trail_commit_history, read_head_commit, create_tease_file, create_index_file}}, commands::read::read_object, index_structs::index::{read_index, Index, IndexRow, save_index}};
+use crate::{utils::{lines::{get_content_from_sha1, Line}, blob_writer::{tease_file_exists, read_tree_from_commit, trail_commit_history, read_head_commit, create_index_file}}, commands::read::read_object, index_structs::index::{read_index, Index, IndexRow, save_index}};
 
 use super::{diff::{diff_file, DiffLine}, add::add_file, goback::delete_all};
 use std::{collections::HashMap, fmt::{Display, Formatter, Result}, fs::{read_to_string, create_dir_all}, path::Path};
+
+use tease_common::write::bolb_writer::create_tease_file;
 
 struct MatchIndex {
     a: usize,

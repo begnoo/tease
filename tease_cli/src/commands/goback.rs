@@ -1,8 +1,11 @@
 use std::{path::Path, fs::{metadata, remove_dir_all, remove_file}};
 
-use crate::{utils::{blob_writer::{create_tease_file, create_tease_folder, create_index_file, read_tree_from_commit}, glob::get_all_repo_paths}, index_structs::index::{read_index, save_index}};
+use crate::{utils::{blob_writer::{create_tease_folder, create_index_file, read_tree_from_commit}, glob::get_all_repo_paths}, index_structs::index::{read_index, save_index}};
 
 use super::{read::read_object, add::add_file};
+
+use tease_common::write::bolb_writer::create_tease_file;
+
 
 pub fn go_back(commit_sha1: String) -> () {
     create_index_file(Path::new(".tease").join("index").as_path());

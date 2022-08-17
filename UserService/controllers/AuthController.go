@@ -8,6 +8,10 @@ import (
 	"net/http"
 )
 
+type TokenResult struct {
+	Token string `json:"token"`
+}
+
 func Login(w http.ResponseWriter, r *http.Request) {
 	var creds security.Credidentials
 	json.NewDecoder(r.Body).Decode(&creds)
@@ -27,7 +31,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(token)
+	json.NewEncoder(w).Encode(TokenResult{Token: token})
 }
 
 func AccessBackend(w http.ResponseWriter, r *http.Request) {
