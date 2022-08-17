@@ -1,10 +1,16 @@
-use std::{fs::{read_to_string, metadata, File}, path::Path, io::Read};
+use std::{fs::File, io::Read};
+use std::path::Path;
 
 use flate2::read::ZlibDecoder;
+use glob::Paths;
 
-pub fn read_object(object_name: &String) -> String {
-    let object_file = File::open(&Path::new(".tease").join("objects").join(object_name))
-        .expect(&format!("Coundn't read object {}", object_name));
+pub fn read_object(root_folder: &String, object_name: &String) -> String {
+    let object_file = File::open(
+            &Path::new(root_folder)
+                    .join("objects")
+                    .join(object_name))
+                    .expect(&format!("Coundn't read object {}", object_name)
+            );
     let mut decoder = ZlibDecoder::new(object_file);
     let mut decoded_str = String::new();
     decoder.read_to_string(&mut decoded_str).unwrap().to_string();
@@ -12,36 +18,8 @@ pub fn read_object(object_name: &String) -> String {
     decoded_str
 }
 
-pub fn get_current_branch() -> String {
-    read_to_string(Path::new(".tease").join("HEAD"))
-        .expect("Something went wrong reading the HEAD file")
-}
-
-pub fn read_head_commit() -> String {
-    let current_ref_head = get_current_branch();
-    let head_commit = read_to_string(Path::new(".tease").join(current_ref_head.to_string()))
-        .expect(&format!("Couldn't read {}", current_ref_head));
-    
-    head_commit
-}
-
-pub fn tease_file_exists(path: String) -> bool {
-    let md = metadata(Path::new(".tease").join(path));
-
-    md.is_ok()
-}
-
-pub fn read_tree_from_commit(commit_sha1: &String) -> String {
-    let commit_content = read_object(commit_sha1);
-
-    let mut parts: Vec<&str> = commit_content.split("\n").collect();
-
-    parts = parts[0].split(" ").collect();
-    parts[1].to_string()
-}
-
-pub fn trail_commit_history(commit_sha1: &String, trail: &mut Vec<String>) {
-    let commit_content = read_object(commit_sha1);
+pub fn trail_commit_history(root_folder: &String, commit_sha1: &String, trail: &mut Vec<String>) {
+    let commit_content = read_object(root_folder, commit_sha1);
     let mut parts: Vec<&str> = commit_content.split("\n").collect();
     parts = parts[1].split(" ").collect();
     
@@ -51,32 +29,32 @@ pub fn trail_commit_history(commit_sha1: &String, trail: &mut Vec<String>) {
 
     if parts.len() > 2 {
         trail.push(parts[2].to_string());
+        
+    	trail_commit_history(root_folder, &parts[2].to_string(), trail);
     }
 
     trail.push(parts[1].to_string());
 
-    trail_commit_history(&parts[1].to_string(), trail);
+    trail_commit_history(root_folder, &parts[1].to_string(), trail);
 }
 
-pub fn traverse_commit_tree(root_tree: String, prev_path: String) {
-    let tree_content = read_object(&root_tree);
-    let lines: Vec<&str> = tree_content.split("\n").collect();
+pub fn paths_to_string(paths: Paths) -> Vec<String> {
+    paths.into_iter()
+        .map(|entry| entry.unwrap()
+            .to_str()
+            .unwrap()
+            .to_string()
+            .replace("\\", "/"))
+        .collect()
+}
 
-    for line in lines {
-        let parts: Vec<&str> = line.split(" ").collect();        
-        if parts[0] == "blob" {
-            let blob_object = read_object(&parts[2].to_string());
-            let blob_content = blob_object.split("\0").collect::<Vec<&str>>()[1];
+pub fn contains_commit(root_folder: String, branch_commit: String, new_commit: String) -> bool {
+    let mut history: Vec<String> = vec![];
+    trail_commit_history(&root_folder, &branch_commit, &mut history);
 
-            let new_file = if prev_path.is_empty() { parts[1].to_string() } else { vec![prev_path.to_string(), parts[1].to_string()].join("/") };
-            // create_tease_file(Path::new(&new_file.to_string()), blob_content.to_string());
-            // add_file(new_file.to_string()).expect("Couldn't recreate file.");
-        }
-
-        if parts[0] == "tree" {
-            let new_folder = if prev_path.is_empty() { parts[1].to_string() } else { vec![prev_path.to_string(), parts[1].to_string()].join("/") };
-            // create_tease_folder(Path::new(&new_folder.to_string()));
-            traverse_commit_tree(parts[2].to_string(), new_folder.to_string());
-        }
+    if history.contains(&new_commit) {
+        return true;
     }
+
+    false
 }
