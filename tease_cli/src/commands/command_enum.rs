@@ -79,5 +79,9 @@ pub enum Commands {
         email: String,
     },
 
-    Push
+    Push,
+
+    GoBack {
+        sha: String,
+    }
 }

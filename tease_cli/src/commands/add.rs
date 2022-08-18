@@ -25,13 +25,24 @@ pub struct ObjectInfo {
 }
 
 pub fn add_from_path(path: String) -> String {
-    let file_md = metadata(path.to_string()).expect("Couldn't find specified path.");
+    let file_md = metadata(path.to_string());
     
-    if file_md.is_dir() {
+    if file_md.is_err() {
+        println!("Couldn't find file {:?}", path);
+        return "".to_string();
+    }   
+
+    if file_md.unwrap().is_dir() {
         return handle_dir(path.to_string()); 
     }
 
-    add_file(path.to_string()).unwrap()
+    let res = add_file(path.to_string());
+
+    if res.is_err() {
+        println!("Couldn't add file {:?}", path);
+    }
+
+    res.unwrap()
 }
 
 fn handle_dir(dir_path: String) -> String {

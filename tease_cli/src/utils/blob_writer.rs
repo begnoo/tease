@@ -83,9 +83,30 @@ pub fn read_head_commit() -> String {
     head_commit
 }
 
+
+pub fn read_origin_head_commit() -> String {
+    let current_ref_head = get_current_branch();
+    let head_commit = read_to_string(Path::new(".tease")
+        .join(format!("{}-origin", current_ref_head.to_string())));
+    
+    if head_commit.is_err() {
+        return "".to_string();
+    }
+
+    head_commit.unwrap()
+}
+
 pub fn update_head(commit_sha1: String) -> Result<(), Error>{
     let current_ref_head = get_current_branch();
     let mut file = File::create(Path::new(".tease").join(current_ref_head.to_string()))
+                                .expect(&format!("Couldn't read {}", current_ref_head));
+    write!(file, "{}", commit_sha1)
+}
+
+pub fn update_origin_head(commit_sha1: String) -> Result<(), Error>{
+    let current_ref_head = get_current_branch();
+    let mut file = File::create(Path::new(".tease")
+                                                .join(format!("{}-origin", current_ref_head.to_string())))
                                 .expect(&format!("Couldn't read {}", current_ref_head));
     write!(file, "{}", commit_sha1)
 }
@@ -103,24 +124,6 @@ pub fn read_tree_from_commit(commit_sha1: &String) -> String {
 
     parts = parts[0].split(" ").collect();
     parts[1].to_string()
-}
-
-pub fn trail_commit_history(commit_sha1: &String, trail: &mut Vec<String>) {
-    let commit_content = read_object(commit_sha1);
-    let mut parts: Vec<&str> = commit_content.split("\n").collect();
-    parts = parts[1].split(" ").collect();
-    
-    if parts[1] == "#" {
-        return ;
-    }
-
-    if parts.len() > 2 {
-        trail.push(parts[2].to_string());
-    }
-
-    trail.push(parts[1].to_string());
-
-    trail_commit_history(&parts[1].to_string(), trail);
 }
 
 pub fn has_added_files() -> bool {

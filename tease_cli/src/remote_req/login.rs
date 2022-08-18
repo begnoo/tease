@@ -1,5 +1,6 @@
-use std::{fs::read_to_string, path::Path, io};
+use std::{fs::read_to_string, path::Path, io::{self, Write}};
 
+use rpassword::read_password;
 use serde::{Serialize, Deserialize};
 use tease_common::write::bolb_writer::create_tease_file;
 
@@ -7,20 +8,19 @@ pub fn login() -> bool {
     let email = read_to_string(Path::new(".tease/user")).expect(&format!("Couldn't read user"));
 
     if email.trim() == "" {
-        println!("Please set user before push/pull");
+        println!("Please set user.");
         return false;
     }
 
     print!("Enter password: ");
-
-    let mut buffer = String::new();
-    let pass_res = io::stdin().read_line(&mut buffer);
+    _ = io::stdout().flush();
+    let pass_res = read_password();
     if pass_res.is_err() {
-        println!("Something went wrong while reading the password...");
+        println!("Something went wrong while reading the password.");
         return false;
     }
 
-    return post_login(email, buffer.trim_end().to_string());
+    return post_login(email, pass_res.unwrap().trim_end().to_string());
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -52,9 +52,8 @@ pub async fn post_login(email: String, password: String) -> bool {
         .expect("Couldn't get response")
         .json::<serde_json::Value>()
         .await
-        .expect("Couldn't decode...");
+        .expect("Couldn't decode.");
     
-    println!("{:?}", resp);
     if resp.get("token").is_some() {
         let log_resp = from_value_to_resp(resp);
         create_tease_file(Path::new(".tease/bearer"), log_resp.token);
@@ -67,4 +66,17 @@ pub async fn post_login(email: String, password: String) -> bool {
 
 fn from_value_to_resp(value: serde_json::Value) -> LoginResponse {
     serde_json::from_value(value).unwrap()
+}
+
+pub fn get_token() -> String {
+    let token = read_to_string(Path::new(".tease/bearer")).expect(&format!("Couldn't read token"));
+
+    if token.trim() == "" {
+        if !login() {
+            return "".to_string();
+        }
+        return read_to_string(Path::new(".tease/bearer")).expect(&format!("Couldn't read token"));
+    }
+
+    token
 }

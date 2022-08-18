@@ -1,13 +1,26 @@
-use std::{fs::read_to_string, path::Path};
+use std::{
+    fs::read_to_string,
+    path::Path, vec, fmt::Display
+};
 
-use glob::glob;
 use serde::{Serialize, Deserialize};
 
-use crate::utils::blob_writer::{get_current_branch, read_head_commit};
+use crate::{
+    utils::blob_writer::{
+        get_current_branch,
+        read_head_commit,
+        read_origin_head_commit,
+        read_tree_from_commit},
+        remote_req::login::get_token
+};
 
-use tease_common::read::blob_reader::paths_to_string;
-
-use super::login::login;
+use tease_common::{
+    read::blob_reader::{
+        trail_commit_history,
+        collect_objects_from_tree
+    },
+    write::bolb_writer::create_tease_file
+};
 
 pub fn can_push() -> Result<CanPushResponse, CanPushError> {
     let email = read_to_string(Path::new(".tease/user"))
@@ -27,11 +40,11 @@ pub fn can_push() -> Result<CanPushResponse, CanPushError> {
     let cp = cp_res.unwrap();
     
     if cp.result == false && cp.diff.is_empty() {
-        return Err(CanPushError{message: "You don't have anything to push...".to_string()});
+        return Err(CanPushError{message: "Nothing to push.".to_string()});
     }
 
     if cp.result == false && cp.head_commit != read_head_commit() && !cp.diff.is_empty() {
-        return Err(CanPushError{message: "Please pull, you are behind on commits...".to_string()});
+        return Err(CanPushError{message: "Please pull, you are behind on commits.".to_string()});
     }
 
     Ok(cp)
@@ -44,7 +57,7 @@ pub struct CanPushRequest {
     pub objects: Vec<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct CanPushResponse {
     pub result: bool,
     pub diff: Vec<String>,
@@ -57,14 +70,26 @@ pub struct CanPushError {
     pub message: String
 }
 
+impl Display for CanPushError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct AuthorizationError {
+    pub message: String
+}
+
 #[tokio::main]
 async fn post_can_push(token: String) -> Result<CanPushResponse, CanPushError> {
     let branch = get_current_branch().split("/").last().unwrap().to_string();
     let branch_head = read_head_commit();
-    let object_paths = glob(".tease/objects/*").expect("Failed to read glob pattern");
-    let objects: Vec<String> = paths_to_string(object_paths).iter()
-                                                .map(|obj| obj.split("/").last().unwrap().to_string())
-                                                .collect();
+    let objects: Vec<String> = get_objects_to_send();
+
+    if objects.is_empty() {
+        return Err(CanPushError {message: "Nothing to push.".to_string()});
+    }
 
     let req_body = CanPushRequest {
         branch,
@@ -72,7 +97,7 @@ async fn post_can_push(token: String) -> Result<CanPushResponse, CanPushError> {
         objects
     };
 
-    println!("{:?}", req_body);
+    // println!("{:?}", req_body);
     let client = reqwest::Client::new();
     let url = format!("{}/can-push", get_origin());
     let resp = client.post(url)
@@ -80,15 +105,23 @@ async fn post_can_push(token: String) -> Result<CanPushResponse, CanPushError> {
         .json(&req_body)
         .send()
         .await
-        .expect("Couldn't get response")
+        .expect("Couldn't get response");
+    
+    if resp.status() == 401 {
+        create_tease_file(Path::new(".tease/bearer"), "".to_string());
+        return Err(CanPushError{message: "Authorization failed.".to_string()});
+    }
+
+    let json_resp = resp
         .json::<serde_json::Value>()
         .await
-        .expect("Couldn't decode...");
-
-    if resp.get("present").is_none() {
+        .expect("Couldn't decode.");
+    // println!("{:?}", json_resp);
+    
+    if json_resp.get("present").is_none() {
         return Err(CanPushError {message: "Something went wrong".to_string()});
     }
-    let cp_res = from_value_to_resp(resp);
+    let cp_res = from_value_to_resp(json_resp);
 
     Ok(cp_res)
 }
@@ -97,19 +130,39 @@ fn from_value_to_resp(value: serde_json::Value) -> CanPushResponse {
     serde_json::from_value(value).unwrap()
 }
 
-fn get_token() -> String {
-    let token = read_to_string(Path::new(".tease/bearer")).expect(&format!("Couldn't read token"));
-
-    if token.trim() == "" {
-        if !login() {
-            return "".to_string();
-        }
-        return read_to_string(Path::new(".tease/bearer")).expect(&format!("Couldn't read token"));
-    }
-
-    token
-}
-
 fn get_origin() -> String {
     read_to_string(Path::new(".tease/origin")).expect(&format!("Couldn't read origin"))
+}
+
+fn get_objects_to_send() -> Vec<String> {
+    let mut objects: Vec<String> = vec![]; 
+    let local_head = read_head_commit();
+    let mut origin_head = read_origin_head_commit();
+
+    if origin_head == "" {
+        origin_head = "#".to_string();
+    }
+
+    if local_head == origin_head {
+        return objects;
+    }
+
+    let mut commits: Vec<String> = vec![local_head.to_string()];
+    trail_commit_history(&".tease".to_string(), &local_head, &origin_head, &mut commits);
+    commits.retain(|commit| commit != "");
+
+    if commits.is_empty() {
+        return objects;
+    }
+
+    for commit in commits.iter() {
+        objects.push(commit.to_string());
+        let tree = read_tree_from_commit(commit);
+        objects.push(tree.to_string());
+        collect_objects_from_tree(tree, &mut objects);
+    }
+
+    objects.sort();
+    objects.dedup();
+    objects
 }

@@ -17,7 +17,7 @@ use commands::{
     diff::diff_file,
     merge::{merge_file, merge}, 
     command_enum::{Args, Commands}, 
-    set_origin::set_origin, set_user::set_user, push::push
+    set_origin::set_origin, set_user::set_user, push::push, goback::go_back
 };
 use clap::Parser;
 use utils::blob_writer::has_added_files;
@@ -33,7 +33,7 @@ fn main() {
     match &args.command {
         Some(Commands::Create { repo_name }) => {
             let deref_repo_name = repo_name.as_ref().map_or("tease_repo", |repo_name| repo_name);
-            println!("tease cli trying to create {:?}...", deref_repo_name);            
+            println!("tease cli trying to create {:?}.", deref_repo_name);            
             let _result = create_repo(deref_repo_name.to_string());
         }
         
@@ -47,7 +47,7 @@ fn main() {
                 deref_mode = "".to_string();
             }
 
-            println!("tease cli trying to add {:?}...", deref_file_path);
+            println!("tease cli trying to add {:?}.", deref_file_path);
 
             let _result: String;
             if deref_mode == "delete" {
@@ -58,12 +58,12 @@ fn main() {
         }
         
         Some(Commands::Commit { message }) =>  {
-            println!("tease cli trying to commit {:?}...", message.join(" ").to_string());
+            println!("tease cli trying to commit {:?}.", message.join(" ").to_string());
             commit(message.join(" ").to_string());
         }
 
         Some(Commands::Read { object: object_path }) =>  {
-            println!("tease cli trying to read {:?}...", object_path.to_string());
+            println!("tease cli trying to read {:?}.", object_path.to_string());
             let s = read_object(object_path);
             println!("{}", s);
 
@@ -71,7 +71,7 @@ fn main() {
         
         Some(Commands::Reset { filename }) =>  {
 
-            println!("tease cli trying to delete {:?}...", filename.to_string());
+            println!("tease cli trying to delete {:?}.", filename.to_string());
             reset_index_row(filename.to_string());
         }
 
@@ -139,6 +139,10 @@ fn main() {
 
         Some(Commands::Push) => {
             push();   
+        }
+
+        Some(Commands::GoBack { sha }) => {
+            go_back(sha.to_string());   
         }
 
         None => {

@@ -1606,6 +1606,7 @@ dependencies = [
  "glob",
  "serde",
  "sha1",
+ "zip",
 ]
 
 [[package]]

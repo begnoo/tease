@@ -1,8 +1,8 @@
-use std::fs::{create_dir_all, remove_file};
+use std::{fs::{create_dir_all, remove_file}};
 use glob::{glob};
 use rocket::{Data, data::ToByteUnit, serde::{json::Json, Serialize, Deserialize}};
-use tease_common::read::blob_reader::{contains_commit, paths_to_string};
-use crate::{zip_utils, jwt::JwtToken, file_utils::read_branch_head};
+use tease_common::{read::blob_reader::{contains_commit, paths_to_string}};
+use crate::{jwt::JwtToken, file_utils::read_branch_head};
 
 #[post("/<user>/<source_name>", data = "<src_data>")]
 pub async fn push(user: &str, source_name: &str, src_data: Data<'_>) -> std::io::Result<String> {
@@ -12,7 +12,7 @@ pub async fn push(user: &str, source_name: &str, src_data: Data<'_>) -> std::io:
     create_dir_all(&dir_path.to_string()).unwrap();
 
     src_data.open(128.kibibytes()).into_file(zip_path.to_string()).await?;
-    zip_utils::extraxt(zip_path.to_string(), dir_path);
+    tease_common::zip_utils::extraxt(zip_path.to_string(), dir_path);
     remove_file(zip_path.to_string())?;
     
     Ok(format!("Uploaded files for {}/{}", user, source_name))
@@ -70,15 +70,12 @@ pub async fn can_push(
 
     let root_folder = format!("source/{}/{}", user.to_string(), source_name.to_string());
 
-    let res = read_branch_head(&root_folder, &src_data.branch);
-    if res.is_err() {
-        return Json(resp); 
-    }
+    let branch_head = read_branch_head(&root_folder, &src_data.branch);
 
     resp.present = true;
 
-    let branch_commit = res.unwrap();
-    if contains_commit(root_folder.to_string(), branch_commit.to_string(), src_data.sha1.to_string()) {
+    let branch_commit = if branch_head.is_ok() { branch_head.unwrap() } else { "".to_string() }; 
+    if branch_commit != "" && contains_commit(root_folder.to_string(), branch_commit.to_string(), src_data.sha1.to_string()) {
         return Json(resp); 
     }
 
@@ -114,7 +111,7 @@ fn get_missing_objects(root_folder: String, incoming_objects: &Vec<String>) -> V
     let objects: Vec<String> = paths_to_string(paths).into_iter()
                                                      .map(|path| path.split("/").last().unwrap().to_string())
                                                      .collect();
-    
+
     incoming_objects.iter()
                     .filter(|&obj| !objects.contains(obj))
                     .map(|obj| obj.to_string())
