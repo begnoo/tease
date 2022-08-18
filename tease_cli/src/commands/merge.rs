@@ -1,7 +1,25 @@
-use crate::{utils::{lines::{get_content_from_sha1, Line}, blob_writer::{tease_file_exists, read_tree_from_commit, trail_commit_history, read_head_commit, create_tease_file, create_index_file}}, commands::read::read_object, index_structs::index::{read_index, Index, IndexRow, save_index}};
+use crate::{
+    utils::{
+        lines::{get_content_from_sha1, Line},
+        blob_writer::{
+            tease_file_exists,
+            read_tree_from_commit,
+            read_head_commit,
+            create_index_file}
+    },
+    commands::read::read_object,
+    index_structs::index::{
+        read_index,
+        Index,
+        IndexRow,
+        save_index
+    }
+};
 
 use super::{diff::{diff_file, DiffLine}, add::add_file, goback::delete_all};
 use std::{collections::HashMap, fmt::{Display, Formatter, Result}, fs::{read_to_string, create_dir_all}, path::Path};
+
+use tease_common::{write::bolb_writer::create_tease_file, read::blob_reader::trail_commit_history};
 
 struct MatchIndex {
     a: usize,
@@ -26,8 +44,8 @@ pub struct Chunk {
 impl Display for Chunk {
     fn fmt(&self, f: &mut Formatter) -> Result {
         match self.resolve_type {
-            ResolveType::Same => write!(f, "{}\n", self.o_lines.join("\n")),
-            ResolveType::NewA => write!(f, "{}\n", self.a_lines.join("\n")),
+            ResolveType::Same => write!(f, "{}", self.o_lines.join("\n")),
+            ResolveType::NewA => write!(f, "{}", self.a_lines.join("\n")),
             ResolveType::NewB => write!(f, "{}", self.b_lines.join("\n")),
             ResolveType::Conflict => write!(f, "\n>>>>>>>>(incoming)>>>>>>>>\n{} \
                                                 \n===========================\n{} \
@@ -110,7 +128,7 @@ fn handle_index_diff(old_index: &mut Index, common_index: &mut Vec<IndexObject>,
             }
             
             let content: Vec<String> = chunks.iter().map(|chunk| chunk.to_string()).collect();
-            create_missing_folders_and_file(old_row.file_name.to_string(), content.join(""));
+            create_missing_folders_and_file(old_row.file_name.to_string(), content.join("\n"));
             add_file(old_row.file_name.to_string())
                 .expect(&format!("Couldn't merge file {}", old_row.file_name.to_string()));
             branch_index.remove(branch_position.unwrap());
@@ -131,7 +149,6 @@ fn handle_residual_current_rows(old_index: & Index, common_index: & Vec<IndexObj
     let mut added: Vec<String> = vec![];
 
     for old_row in old_index.rows.iter() {
-        println!("{:?}", old_row);
         if common_index.iter().find(|row| row.path == old_row.blob_hash).is_some() {
             continue;
         } 
@@ -212,14 +229,14 @@ fn is_already_merged(history: &Vec<String>, branch_head: String) -> bool {
 
 fn find_common_commit(current: String, incoming: String) -> String {
     let mut current_history: Vec<String> = vec![current.to_string()];
-    trail_commit_history(&current, &mut current_history);
+    trail_commit_history(&".tease".to_string(), &current, &"#".to_string(), &mut current_history);
 
     if is_already_merged(&current_history, incoming.to_string()) {
         return "merged".to_string();
     }
 
     let mut incoming_history: Vec<String> = vec![incoming.to_string()];
-    trail_commit_history(&incoming, &mut incoming_history);
+    trail_commit_history(&".tease".to_string(), &incoming, &"#".to_string(), &mut incoming_history);
 
     for current_sha1 in current_history.iter() {
        for incoming_sha1 in incoming_history.iter() {

@@ -16,3 +16,10 @@ serde_json = "1.0.82"
 serde = { version = "1.0.139", features = ["derive"] }
 glob = "0.3.0"
 colored = "2.0.0"
+reqwest = {version = "0.11.11", features = ["json", "stream"] }
+tokio = { version = "1", features = ["full"] }
+tease_common = { path = "../tease_common" }
+zip = "0.6.2"
+tokio-util = {version = "0.7.3", features = ["codec"] }
+futures = "0.3.23"
+rpassword = "7.0.0"

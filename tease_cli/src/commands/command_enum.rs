@@ -69,5 +69,19 @@ pub enum Commands {
 
     Merge {
         branch: String,
+    },
+
+    SetOrigin {
+        origin: String,
+    },
+
+    SetUser {
+        email: String,
+    },
+
+    Push,
+
+    GoBack {
+        sha: String,
     }
 }

@@ -17,6 +17,7 @@ var authReg = map[string][]string{
 	"/source/collabs/{id}/accept,GET":    {"ROLE_USER"},
 	"/source/collabs/{id}/reject,GET":    {"ROLE_USER"},
 	"/source/collabs/{id}/delete,DELETE": {"ROLE_USER"},
+	"/source/access,POST":                {"ROLE_USER"},
 }
 
 func SetupRouter() http.Handler {
@@ -40,6 +41,8 @@ func SetupRouter() http.Handler {
 		handleJwt(controllers.RejectInviteHandler, authReg["/source/collabs/{id}/reject,GET"])).Methods(http.MethodGet)
 	r.HandleFunc("/source/collabs/{id}/delete",
 		handleJwt(controllers.DeleteCollabaratorHandler, authReg["/source/collabs/{id}/delete,DELETE"])).Methods(http.MethodDelete)
+	r.HandleFunc("/source/access",
+		handleJwt(controllers.HasAccessHandler, authReg["/source/access,POST"])).Methods(http.MethodPost)
 	// r.HandleFunc("/pull/{id}", controllers.DeleteRepo).Methods(http.MethodGet)
 	// r.HandleFunc("/push", controllers.DeleteRepo).Methods(http.MethodPost)
 	// r.HandleFunc("/clone/{id}", controllers.DeleteRepo).Methods(http.MethodGet)

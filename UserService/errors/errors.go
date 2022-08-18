@@ -2,7 +2,7 @@ package errors
 
 import (
 	"UserService/utils"
-	"io"
+	"encoding/json"
 	"net/http"
 )
 
@@ -54,6 +54,10 @@ func NilOrError(err error, req_err error) error {
 	return req_err
 }
 
+type ErrorResp struct {
+	Error string `json:"error"`
+}
+
 func HandleHttpError(req_err error, w http.ResponseWriter) bool {
 
 	if req_err == nil {
@@ -64,30 +68,31 @@ func HandleHttpError(req_err error, w http.ResponseWriter) bool {
 	case *ValidationError:
 		{
 			w.WriteHeader(http.StatusBadRequest)
-			io.WriteString(w, utils.StructToJson(utils.ParseValidationErrToJson(req_err.Error())))
+			json.NewEncoder(w).Encode(utils.ParseValidationErrToJson(req_err.Error()))
 			return false
 		}
 	case *SameEmailError:
 		{
 			w.WriteHeader(http.StatusOK)
-			io.WriteString(w, req_err.Error())
+			json.NewEncoder(w).Encode(ErrorResp{Error: req_err.Error()})
 			return false
 		}
 	case *MissingEntity:
 		{
 			w.WriteHeader(http.StatusOK)
-			io.WriteString(w, req_err.Error())
+			json.NewEncoder(w).Encode(ErrorResp{Error: req_err.Error()})
 			return false
 		}
 	case *RepoError:
 		{
 			w.WriteHeader(http.StatusInternalServerError)
-			io.WriteString(w, req_err.Error())
+			json.NewEncoder(w).Encode(ErrorResp{Error: req_err.Error()})
 			return false
 		}
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
-		io.WriteString(w, req_err.Error())
+		json.NewEncoder(w).Encode(ErrorResp{Error: req_err.Error()})
+
 		return false
 	}
 }
