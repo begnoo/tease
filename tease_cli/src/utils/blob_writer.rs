@@ -14,7 +14,6 @@ use flate2::write::ZlibEncoder;
 
 use std::time::{UNIX_EPOCH};
 
-use crate::commands::read::read_object;
 use crate::index_structs::index::Index;
 use crate::index_structs::index::read_index;
 
@@ -115,15 +114,6 @@ pub fn tease_file_exists(path: String) -> bool {
     let md = metadata(Path::new(".tease").join(path));
 
     md.is_ok()
-}
-
-pub fn read_tree_from_commit(commit_sha1: &String) -> String {
-    let commit_content = read_object(commit_sha1);
-
-    let mut parts: Vec<&str> = commit_content.split("\n").collect();
-
-    parts = parts[0].split(" ").collect();
-    parts[1].to_string()
 }
 
 pub fn has_added_files() -> bool {

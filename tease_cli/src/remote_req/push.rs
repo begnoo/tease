@@ -48,7 +48,7 @@ pub async fn post_push () -> Result<(), PushError> {
 
     let token = get_token();
     let client = Client::new();
-    let resp = client.post(get_origin())
+    let resp = client.post(format!("{}/push", get_origin()))
         .header("Authorization", format!("Bearer {}", token))
         .body(file_to_body(file.unwrap()))
         .send()

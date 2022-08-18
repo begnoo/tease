@@ -3,7 +3,6 @@ use crate::{
         lines::{get_content_from_sha1, Line},
         blob_writer::{
             tease_file_exists,
-            read_tree_from_commit,
             read_head_commit,
             create_index_file}
     },
@@ -13,13 +12,17 @@ use crate::{
         Index,
         IndexRow,
         save_index
-    }
+    },
 };
 
 use super::{diff::{diff_file, DiffLine}, add::add_file, goback::delete_all};
 use std::{collections::HashMap, fmt::{Display, Formatter, Result}, fs::{read_to_string, create_dir_all}, path::Path};
 
-use tease_common::{write::bolb_writer::create_tease_file, read::blob_reader::trail_commit_history};
+use tease_common::{
+    write::bolb_writer::create_tease_file,
+    read::blob_reader::trail_commit_history,
+    read::blob_reader::read_tree_from_commit,
+};
 
 struct MatchIndex {
     a: usize,
@@ -216,7 +219,7 @@ fn create_missing_folders_and_file(filepath: String, content: String) {
 }
 
 fn extract_index_from_commit(commit: String) -> Vec<IndexObject> {
-    let root_tree = read_tree_from_commit(&commit);
+    let root_tree = read_tree_from_commit(&".tease".to_string(), &commit);
     let mut temp_index: Vec<IndexObject> = vec![];
     collect_from_branch(root_tree, "".to_string(), &mut temp_index);
 

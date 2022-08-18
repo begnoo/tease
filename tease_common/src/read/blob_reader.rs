@@ -2,7 +2,7 @@ use std::{fs::File, io::Read};
 use std::path::Path;
 
 use flate2::read::ZlibDecoder;
-use glob::Paths;
+use glob::{Paths, glob};
 
 pub fn read_object(root_folder: &String, object_name: &String) -> String {
     let object_file = File::open(
@@ -59,9 +59,8 @@ pub fn contains_commit(root_folder: String, branch_commit: String, new_commit: S
     false
 }
 
-
-pub fn collect_objects_from_tree(root_tree: String, objects: &mut Vec<String>) {
-    let tree_content = read_object(&".tease".to_string(), &root_tree);
+pub fn collect_objects_from_tree(root_folder: String, root_tree: String, objects: &mut Vec<String>) {
+    let tree_content = read_object(&root_folder, &root_tree);
     let lines: Vec<&str> = tree_content.split("\n").collect();
 
     for line in lines {
@@ -72,7 +71,30 @@ pub fn collect_objects_from_tree(root_tree: String, objects: &mut Vec<String>) {
 
         if parts[0] == "tree" {
             objects.push(parts[2].to_string());
-            collect_objects_from_tree(parts[2].to_string(), objects);
+            collect_objects_from_tree(root_folder.to_string(), parts[2].to_string(), objects);
         }
     }
+}
+
+pub fn get_missing_objects(root_folder: String, incoming_objects: &Vec<String>) -> Vec<String> {
+    let paths = glob(format!("{}/objects/*", root_folder).as_str())
+        .expect("Failed to read glob pattern");
+    
+    let objects: Vec<String> = paths_to_string(paths).into_iter()
+                                                     .map(|path| path.split("/").last().unwrap().to_string())
+                                                     .collect();
+
+    incoming_objects.iter()
+                    .filter(|&obj| !objects.contains(obj))
+                    .map(|obj| obj.to_string())
+                    .collect()
+}
+
+pub fn read_tree_from_commit(root_folder: &String, commit_sha1: &String) -> String {
+    let commit_content = read_object(root_folder, commit_sha1);
+
+    let mut parts: Vec<&str> = commit_content.split("\n").collect();
+
+    parts = parts[0].split(" ").collect();
+    parts[1].to_string()
 }

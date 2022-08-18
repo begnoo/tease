@@ -12,3 +12,4 @@ pub mod command_enum;
 pub mod set_origin;
 pub mod set_user;
 pub mod push;
+pub mod pull;

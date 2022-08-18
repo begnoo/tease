@@ -10,14 +10,15 @@ use crate::{
         get_current_branch,
         read_head_commit,
         read_origin_head_commit,
-        read_tree_from_commit},
-        remote_req::login::get_token
+    },
+    remote_req::login::get_token
 };
 
 use tease_common::{
     read::blob_reader::{
         trail_commit_history,
-        collect_objects_from_tree
+        collect_objects_from_tree,
+        read_tree_from_commit,
     },
     write::bolb_writer::create_tease_file
 };
@@ -157,9 +158,9 @@ fn get_objects_to_send() -> Vec<String> {
 
     for commit in commits.iter() {
         objects.push(commit.to_string());
-        let tree = read_tree_from_commit(commit);
+        let tree = read_tree_from_commit(&".tease".to_string(), commit);
         objects.push(tree.to_string());
-        collect_objects_from_tree(tree, &mut objects);
+        collect_objects_from_tree(".tease".to_string(), tree, &mut objects);
     }
 
     objects.sort();
