@@ -5,10 +5,8 @@ use std::fs::File;
 
 use std::io::Error;
 
-use std::os::windows::prelude::MetadataExt;
+use std::os::unix::prelude::MetadataExt;
 use std::path::Path;
-
-use std::time::{UNIX_EPOCH};
 
 use crate::index_structs::index::IndexRow;
 use crate::index_structs::index::add_index_row;
@@ -27,13 +25,24 @@ pub struct ObjectInfo {
 }
 
 pub fn add_from_path(path: String) -> String {
-    let file_md = metadata(path.to_string()).expect("Couldn't find specified path.");
+    let file_md = metadata(path.to_string());
     
-    if file_md.is_dir() {
+    if file_md.is_err() {
+        println!("Couldn't find file {:?}", path);
+        return "".to_string();
+    }   
+
+    if file_md.unwrap().is_dir() {
         return handle_dir(path.to_string()); 
     }
 
-    add_file(path.to_string()).unwrap()
+    let res = add_file(path.to_string());
+
+    if res.is_err() {
+        println!("Couldn't add file {:?}", path);
+    }
+
+    res.unwrap()
 }
 
 fn handle_dir(dir_path: String) -> String {
@@ -85,16 +94,10 @@ fn add_to_index(sha1_hash: &String, filename: &String, file_size: u32) {
         .expect("Couldn't read added file");
 
     let metadata = file.metadata().unwrap();
-    let meta_change_date = metadata.modified()
-                                        .unwrap()
-                                        .duration_since(UNIX_EPOCH)
-                                        .unwrap()
-                                        .as_secs();
-
     let index_row = IndexRow {
         // TODO: dodati i linux i windows metode
-        data_change_date: metadata.last_write_time(),
-        meta_change_date,
+        data_change_date: metadata.ctime() as u64,
+        meta_change_date: metadata.mtime() as u64,
         file_size: file_size as u64,
         file_name: filename.to_string(),
         blob_hash: sha1_hash.to_string(),
