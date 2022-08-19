@@ -20,10 +20,10 @@ pub async fn pull(
     let root_folder = format!("source/{}/{}", user, source_name);
     let temp_zip_path = format!("{}/temp_zip", root_folder);
     let objects: Vec<String> = src_data.objects.iter()
-                        .map( |obj| format!("{}/objects/{}", root_folder, obj))
+                        .map( |obj| format!("{}/objects/{}", root_folder.to_string(), obj))
                         .collect();
     let temp_zip = File::create(temp_zip_path.to_string()).unwrap();
-    let res = tease_common::zip_utils::zip_files(objects, temp_zip, zip::CompressionMethod::Stored);
+    let res = tease_common::zip_utils::zip_files(objects, root_folder, temp_zip, zip::CompressionMethod::Stored);
     if res.is_err() {
         return None{};
     }

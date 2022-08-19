@@ -52,21 +52,21 @@ pub async fn what_to_pull(
     let head_commit = branch_head.unwrap();
     let objects = get_objects_to_send(root_folder, src_data.past_origin_head.to_string(), head_commit.to_string());
     resp.origin_head = head_commit;
-    resp.merge_needed = objects.contains(&resp.origin_head);
+    resp.merge_needed = !objects.contains(&src_data.current_head);
     resp.objects = objects;
     
     Json(resp)
 }
 
-fn get_objects_to_send(root_folder: String, local_head: String, origin_head: String) -> Vec<String> {
+fn get_objects_to_send(root_folder: String, past_origin_head: String, origin_head: String) -> Vec<String> {
     let mut objects: Vec<String> = vec![]; 
 
-    if local_head == origin_head {
+    if past_origin_head == origin_head {
         return objects;
     }
 
-    let mut commits: Vec<String> = vec![local_head.to_string()];
-    trail_commit_history(&root_folder, &origin_head, &local_head, &mut commits);
+    let mut commits: Vec<String> = vec![past_origin_head.to_string(), origin_head.to_string()];
+    trail_commit_history(&root_folder, &origin_head, &past_origin_head, &mut commits);
     commits.retain(|commit| commit != "");
 
     if commits.is_empty() {

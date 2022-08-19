@@ -18,14 +18,13 @@ pub fn setup_post (cp: CanPushResponse) -> bool {
     objects.push(format!(".tease/{}", get_current_branch()));
 
     let temp_zip = File::create(".tease/temp_zip").unwrap();
-    let res = tease_common::zip_utils::zip_files(objects, temp_zip, zip::CompressionMethod::Stored);
+    let res = tease_common::zip_utils::zip_files(objects, ".tease".to_string(), temp_zip, zip::CompressionMethod::Stored);
     if res.is_err() {
         println!("Couldn't archive objects to send.");
         return false;
     }
     
     println!("Archived files for push.");
-    
     true
 }
 

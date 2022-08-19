@@ -17,6 +17,8 @@ use std::time::{UNIX_EPOCH};
 use crate::index_structs::index::Index;
 use crate::index_structs::index::read_index;
 
+use super::glob::get_all_repo_paths;
+
 
 pub fn compress_and_write_object(object_data: &[u8], name: String) -> Result<(), Error> {
     let mut e = ZlibEncoder::new(Vec::new(), Compression::default());
@@ -120,6 +122,22 @@ pub fn has_added_files() -> bool {
     let index = read_index();
 
     index.rows.iter().any(|row| row.staging == 0 || row.staging == 2)
+}
+
+pub fn has_untracked_files() -> bool {
+    let index = read_index();
+    let entries = get_all_repo_paths();
+
+    for entry_data in entries {
+
+        let row = index.rows.iter().find(|row| row.file_name == entry_data);
+
+        if row.is_none() {
+            return true;
+        }
+    }
+
+    false
 }
 
 pub fn get_origin() -> String {
