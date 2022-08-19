@@ -2,3 +2,4 @@
 echo "Setting master branch to latest commit [$2]";
 cd $1;
 tease_cli go-back $2;
+tease_cli set-user $3;

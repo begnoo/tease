@@ -14,7 +14,7 @@ use crate::{commands::{
 };
 use commands::{
     status::status,
-    branch::{create_branch, switch_to_branch},
+    branch::{create_branch, switch_to_branch, create_from_remote},
     diff::diff_file,
     merge::merge_branch, 
     command_enum::{Args, Commands}, 
@@ -93,16 +93,13 @@ fn main() {
                 return ;
             }
             
-            let deref_mode: String;
-
-            if !mode.is_none() {
-                deref_mode = mode.as_ref().unwrap().to_string()
-            } else {
-                deref_mode = "".to_string();
-            }
-
-            if deref_mode == "create" {
-                create_branch(name.to_string());
+            if mode.is_some() {
+                let m = mode.to_owned().unwrap();
+                match m.as_str() {
+                    "c" => create_branch(name.to_string()),
+                    "rc" => create_from_remote(name.to_string()),
+                    _ => println!("Unsuported mode.") 
+                }
             } else {
                 switch_to_branch(name.to_string());
             }

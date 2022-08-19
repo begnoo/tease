@@ -1,7 +1,5 @@
 use std::{fmt::Display, io::Cursor, fs::read_to_string, path::Path};
 
-use crate::commands::create;
-
 use super::login::{login_with_prompt};
 
 pub struct CloneError {
@@ -15,16 +13,7 @@ impl Display for CloneError {
 }
 
 #[tokio::main]
-pub async fn get_clone(origin: String) -> Result<String, CloneError> {
-
-    let repo_name = origin.split("/").last().unwrap().to_string();
-    create::create_repo(repo_name.to_string());
-
-    let login_success = login_with_prompt(repo_name.to_string()).await;
-    if !login_success {
-        return Err(CloneError{message: "Unauthorized.".to_string()});
-    }
-
+pub async fn get_clone(origin: String, repo_name: String) -> Result<String, CloneError> {
     let client = reqwest::Client::new();
     let url = origin;
     let token = get_token(repo_name.to_string());

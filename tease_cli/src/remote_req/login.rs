@@ -12,7 +12,7 @@ pub fn login() -> bool {
         return false;
     }
     let password = get_password();
-    return blocking_login(email, password.to_string())
+    return post_login(email, password.to_string(), None)
 }
 
 pub fn get_password() -> String {
@@ -26,22 +26,22 @@ pub fn get_password() -> String {
     return pass_res.unwrap();
 }
 
-pub async fn login_with_prompt(root_folder: String) -> bool {
+pub fn login_with_prompt(root_folder: String) -> (String, bool) {
     print!("Enter email: ");
     _ = io::stdout().flush();
     let mut email = "".to_string();
     let email_res = io::stdin().read_line(&mut email);
     if email_res.is_err() {
         println!("Something went wrong while reading the email.");
-        return false;
+        return (email, false);
     }
 
     let password = get_password();
     if password == "" {
-        return false;
+        return (email, false);
     }
 
-    post_login(email.trim().to_string(), password.to_string(), Some(root_folder)).await
+    (email.to_string(), post_login(email.trim().to_string(), password.to_string(), Some(root_folder)))
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -56,11 +56,12 @@ struct LoginResponse {
     token: String,
 }
 
-#[tokio::main]
-pub async fn blocking_login(email: String, password: String) -> bool {
-    post_login(email, password, None).await
-}
+// #[tokio::main]
+// pub async fn blocking_login(email: String, password: String) -> bool {
+//     post_login(email, password, None).await
+// }
 
+#[tokio::main]
 pub async fn post_login(email: String, password: String, root_folder: Option<String>) -> bool {
 
     let req_body = LoginRequest {

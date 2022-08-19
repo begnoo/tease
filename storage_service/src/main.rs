@@ -21,5 +21,5 @@ fn rocket() -> _ {
         .mount("/source", routes![what_to_pull::what_to_pull])
         .mount("/source", routes![pull::pull])
         .mount("/source", routes![clone::clone])
-
+        .mount("/source", routes![clone::clone_branch])
 }

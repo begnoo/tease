@@ -13,9 +13,9 @@ pub async fn clone(
     ) -> Option<NamedFile> {
     let root_folder = format!("source/{}/{}", user, source_name);
     let temp_zip_path = format!("{}/temp_zip", root_folder);
-    let mut objects: Vec<String> = get_objects(root_folder.to_string()).iter()
-                                                                   .map(|obj| format!("{}/objects/{}", root_folder.to_string(), obj.to_string()))
-                                                                   .collect();
+    let mut objects: Vec<String> = get_objects(root_folder.to_string(), "master".to_string()).iter()
+                        .map(|obj| format!("{}/objects/{}", root_folder.to_string(), obj.to_string()))
+                        .collect();
     objects.push(format!("{}/refs/heads/master", root_folder));
     
     let temp_zip = File::create(temp_zip_path.to_string()).unwrap();
@@ -27,10 +27,34 @@ pub async fn clone(
     NamedFile::open(temp_zip_path.to_string()).await.ok()
 }
 
-fn get_objects(root_folder: String) -> Vec<String> {
+#[get("/<user>/<source_name>/clone/<branch_name>")]
+pub async fn clone_branch(
+        _jwt_token: JwtToken,
+        user: &str,
+        source_name: &str,
+        branch_name: &str,
+    ) -> Option<NamedFile> {
+    let root_folder = format!("source/{}/{}", user, source_name);
+    let temp_zip_path = format!("{}/temp_zip", root_folder);
+    let mut objects: Vec<String> = get_objects(root_folder.to_string(), branch_name.to_string()).iter()
+                        .map(|obj| format!("{}/objects/{}", root_folder.to_string(), obj.to_string()))
+                        .collect();
+    objects.push(format!("{}/refs/heads/{}", root_folder, branch_name.to_string()));
+
+    let temp_zip = File::create(temp_zip_path.to_string()).unwrap();
+    let res = tease_common::zip_utils::zip_files(objects, root_folder, temp_zip, zip::CompressionMethod::Stored);
+    if res.is_err() {
+        return None{};
+    }
+
+    NamedFile::open(temp_zip_path.to_string()).await.ok()
+}
+
+
+fn get_objects(root_folder: String, branch: String) -> Vec<String> {
     let mut objects: Vec<String> = vec![];
 
-    let head_commit_res = read_branch_head(&root_folder, &"master".to_string());
+    let head_commit_res = read_branch_head(&root_folder, &branch.to_string());
     if head_commit_res.is_err() {
         return objects;
     }
