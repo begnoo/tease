@@ -2,6 +2,7 @@ mod commands;
 mod index_structs;
 mod utils;
 mod remote_req;
+mod merge_utils;
 
 use crate::{commands::{
     create::create_repo,
@@ -15,11 +16,12 @@ use commands::{
     status::status,
     branch::{create_branch, switch_to_branch},
     diff::diff_file,
-    merge::{merge_file, merge}, 
+    merge::merge_branch, 
     command_enum::{Args, Commands}, 
-    set_origin::set_origin, set_user::set_user, push::push, goback::go_back
+    set_origin::set_origin, set_user::set_user, push::push, goback::go_back, pull::pull
 };
 use clap::Parser;
+use merge_utils::merge_file::merge_file;
 use utils::blob_writer::has_added_files;
 
 // TODO: packfile, author*, commiter*, |.| dodavanje na add*
@@ -126,7 +128,7 @@ fn main() {
                 return ;
             }
 
-            merge(branch.to_string());
+            merge_branch(branch.to_string());
         }
 
         Some(Commands::SetOrigin {origin}) => {
@@ -139,6 +141,10 @@ fn main() {
 
         Some(Commands::Push) => {
             push();   
+        }
+
+        Some(Commands::Pull) => {
+            pull();   
         }
 
         Some(Commands::GoBack { sha }) => {

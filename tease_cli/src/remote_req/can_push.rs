@@ -9,7 +9,7 @@ use crate::{
     utils::blob_writer::{
         get_current_branch,
         read_head_commit,
-        read_origin_head_commit,
+        read_origin_head_commit, get_origin,
     },
     remote_req::login::get_token
 };
@@ -129,10 +129,6 @@ async fn post_can_push(token: String) -> Result<CanPushResponse, CanPushError> {
 
 fn from_value_to_resp(value: serde_json::Value) -> CanPushResponse {
     serde_json::from_value(value).unwrap()
-}
-
-fn get_origin() -> String {
-    read_to_string(Path::new(".tease/origin")).expect(&format!("Couldn't read origin"))
 }
 
 fn get_objects_to_send() -> Vec<String> {

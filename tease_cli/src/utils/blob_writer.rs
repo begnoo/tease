@@ -121,3 +121,7 @@ pub fn has_added_files() -> bool {
 
     index.rows.iter().any(|row| row.staging == 0 || row.staging == 2)
 }
+
+pub fn get_origin() -> String {
+    read_to_string(Path::new(".tease/origin")).expect(&format!("Couldn't read origin"))
+}

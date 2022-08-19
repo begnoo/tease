@@ -81,6 +81,8 @@ pub enum Commands {
 
     Push,
 
+    Pull,
+
     GoBack {
         sha: String,
     }

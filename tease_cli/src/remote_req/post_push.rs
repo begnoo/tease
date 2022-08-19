@@ -1,10 +1,10 @@
-use std::{path::Path, fs::{File, read_to_string}, fmt::Display};
+use std::{path::Path, fs::File, fmt::Display};
 
 use reqwest::{Client, Body};
 use tease_common::write::bolb_writer::create_tease_file;
 use tokio_util::codec::{FramedRead, BytesCodec};
 
-use crate::utils::blob_writer::{get_current_branch, update_origin_head, read_head_commit};
+use crate::utils::blob_writer::{get_current_branch, update_origin_head, read_head_commit, get_origin};
 
 use super::can_push::CanPushResponse;
 use super::login::get_token;
@@ -75,8 +75,4 @@ fn file_to_body(file: TokioFile) -> Body {
     let stream = FramedRead::new(file, BytesCodec::new());
     let body = Body::wrap_stream(stream);
     body
-}
-
-fn get_origin() -> String {
-    read_to_string(Path::new(".tease/origin")).expect(&format!("Couldn't read origin"))
 }
