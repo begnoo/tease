@@ -18,7 +18,7 @@ use commands::{
     diff::diff_file,
     merge::merge_branch, 
     command_enum::{Args, Commands}, 
-    set_origin::set_origin, set_user::set_user, push::push, goback::go_back, pull::pull
+    set_origin::set_origin, set_user::set_user, push::push, goback::go_back, pull::pull, clone::clone
 };
 use clap::Parser;
 use merge_utils::merge_file::merge_file;
@@ -145,6 +145,10 @@ fn main() {
 
         Some(Commands::Pull) => {
             pull();   
+        }
+
+        Some(Commands::Clone { origin }) => {
+            clone(origin.to_string());   
         }
 
         Some(Commands::GoBack { sha }) => {

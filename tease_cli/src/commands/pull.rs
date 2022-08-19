@@ -37,8 +37,6 @@ pub fn pull() {
 
     let temp_path= temp_path_res.ok().unwrap();
     tease_common::zip_utils::extraxt(temp_path, ".tease".to_string());
-    
-    // pull provera da li ima untracked fajlova
 
     if count_response.merge_needed {
        merge_commits(read_head_commit(), count_response.origin_head.to_string());

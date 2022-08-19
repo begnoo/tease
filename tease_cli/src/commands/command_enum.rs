@@ -83,6 +83,10 @@ pub enum Commands {
 
     Pull,
 
+    Clone {
+        origin: String,
+    },
+
     GoBack {
         sha: String,
     }

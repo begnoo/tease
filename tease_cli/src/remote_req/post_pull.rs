@@ -23,7 +23,7 @@ impl Display for PullError {
 }
 
 #[tokio::main]
-pub async fn post_pull(objects: Vec<String>) -> Result<String, PullError>{
+pub async fn post_pull(objects: Vec<String>) -> Result<String, PullError> {
     let client = reqwest::Client::new();
     let token = get_token();
 
