@@ -2,7 +2,7 @@ use std::{fs::File, io::Read};
 use std::path::Path;
 
 use flate2::read::ZlibDecoder;
-use glob::{Paths, glob};
+use glob::Paths;
 
 pub fn read_object(root_folder: &String, object_name: &String) -> String {
     let object_file = File::open(
@@ -76,13 +76,18 @@ pub fn collect_objects_from_tree(root_folder: String, root_tree: String, objects
     }
 }
 
-pub fn get_missing_objects(root_folder: String, incoming_objects: &Vec<String>) -> Vec<String> {
-    let paths = glob(format!("{}/objects/*", root_folder).as_str())
-        .expect("Failed to read glob pattern");
-    
-    let objects: Vec<String> = paths_to_string(paths).into_iter()
-                                                     .map(|path| path.split("/").last().unwrap().to_string())
-                                                     .collect();
+pub fn get_missing_objects(root_folder: String, incoming_objects: &Vec<String>, trail: &Vec<String>) -> Vec<String> {
+    let mut objects: Vec<String> = vec![];
+
+    for commit in trail.iter() {
+        objects.push(commit.to_string());
+        let tree = read_tree_from_commit(&root_folder.to_string(), &commit.to_string());
+        objects.push(tree.to_string());
+        collect_objects_from_tree(root_folder.to_string(), tree, &mut objects)
+    }
+
+    objects.sort();
+    objects.dedup();
 
     incoming_objects.iter()
                     .filter(|&obj| !objects.contains(obj))

@@ -51,7 +51,7 @@ pub async fn clone_branch(
 }
 
 
-fn get_objects(root_folder: String, branch: String) -> Vec<String> {
+pub fn get_objects(root_folder: String, branch: String) -> Vec<String> {
     let mut objects: Vec<String> = vec![];
 
     let head_commit_res = read_branch_head(&root_folder, &branch.to_string());

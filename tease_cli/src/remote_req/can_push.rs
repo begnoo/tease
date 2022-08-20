@@ -18,7 +18,7 @@ use tease_common::{
     read::blob_reader::{
         trail_commit_history,
         collect_objects_from_tree,
-        read_tree_from_commit,
+        read_tree_from_commit, contains_commit,
     },
     write::bolb_writer::create_tease_file
 };
@@ -39,6 +39,7 @@ pub fn can_push() -> Result<CanPushResponse, CanPushError> {
     }
 
     let cp = cp_res.unwrap();
+    println!("{:?}", cp);
 
     if !cp.present {
         return Err(CanPushError{message: "No source initialized on given origin.".to_string()});
@@ -48,7 +49,8 @@ pub fn can_push() -> Result<CanPushResponse, CanPushError> {
         return Err(CanPushError{message: "Nothing to push.".to_string()});
     }
 
-    if !cp.result && cp.head_commit != read_head_commit() && !cp.diff.is_empty() {
+    let origin_is_contained = contains_commit(".tease".to_string(), read_head_commit(), cp.head_commit.to_string());
+    if !origin_is_contained && !cp.diff.is_empty() {
         return Err(CanPushError{message: "Please pull, you are behind on commits.".to_string()});
     }
 
@@ -125,7 +127,7 @@ async fn post_can_push(token: String) -> Result<CanPushResponse, CanPushError> {
         .json::<serde_json::Value>()
         .await
         .expect("Couldn't decode.");
-    // println!("{:?}", json_resp);
+    println!("{:?}", json_resp);
     
     if json_resp.get("present").is_none() {
         return Err(CanPushError {message: "Something went wrong".to_string()});
