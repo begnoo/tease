@@ -39,12 +39,16 @@ pub fn can_push() -> Result<CanPushResponse, CanPushError> {
     }
 
     let cp = cp_res.unwrap();
+
+    if !cp.present {
+        return Err(CanPushError{message: "No source initialized on given origin.".to_string()});
+    }
     
-    if cp.result == false && cp.diff.is_empty() {
+    if !cp.result && cp.diff.is_empty() {
         return Err(CanPushError{message: "Nothing to push.".to_string()});
     }
 
-    if cp.result == false && cp.head_commit != read_head_commit() && !cp.diff.is_empty() {
+    if !cp.result && cp.head_commit != read_head_commit() && !cp.diff.is_empty() {
         return Err(CanPushError{message: "Please pull, you are behind on commits.".to_string()});
     }
 
@@ -92,15 +96,19 @@ async fn post_can_push(token: String) -> Result<CanPushResponse, CanPushError> {
         return Err(CanPushError {message: "Nothing to push.".to_string()});
     }
 
+    let origin = get_origin(); 
+    if origin == "" {
+        return Err(CanPushError {message: "Set origin before pushing.".to_string()});
+    }
+
     let req_body = CanPushRequest {
         branch,
         sha1: branch_head,
         objects
     };
 
-    // println!("{:?}", req_body);
     let client = reqwest::Client::new();
-    let url = format!("{}/can-push", get_origin());
+    let url = format!("{}/can-push", origin);
     let resp = client.post(url)
         .header("Authorization", format!("Bearer {}", token))
         .json(&req_body)
@@ -135,6 +143,10 @@ fn get_objects_to_send() -> Vec<String> {
     let mut objects: Vec<String> = vec![]; 
     let local_head = read_head_commit();
     let mut origin_head = read_origin_head_commit();
+
+    if local_head == "# Starting commit" {
+        return objects;
+    }
 
     if origin_head == "" {
         origin_head = "#".to_string();

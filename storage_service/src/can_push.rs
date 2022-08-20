@@ -2,6 +2,8 @@ use rocket::serde::{Serialize, Deserialize, json::Json};
 use tease_common::read::blob_reader::{contains_commit,  get_missing_objects};
 
 use crate::{jwt::JwtToken, file_utils::read_branch_head, has_access::{HasAccessRequest, has_access}};
+use std::fs::metadata;
+
 
 #[derive(Deserialize, Debug)]
 #[serde(crate = "rocket::serde")]
@@ -47,6 +49,12 @@ pub async fn can_push(
     }
 
     let root_folder = format!("source/{}/{}", user.to_string(), source_name.to_string());
+    let md = metadata(root_folder.to_string());
+    if md.is_err() {
+        resp.present = false;
+        return Json(resp);
+    } 
+
     let branch_head = read_branch_head(&root_folder, &src_data.branch);
 
     resp.present = true;

@@ -1,7 +1,5 @@
 use std::{fmt::Display, io::Cursor, fs::read_to_string, path::Path};
 
-use super::login::{login_with_prompt};
-
 pub struct CloneError {
     message: String
 } 

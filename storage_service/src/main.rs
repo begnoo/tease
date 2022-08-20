@@ -10,6 +10,8 @@ mod pull;
 
 mod clone;
 
+mod init;
+
 mod file_utils;
 mod jwt;
 
@@ -22,4 +24,5 @@ fn rocket() -> _ {
         .mount("/source", routes![pull::pull])
         .mount("/source", routes![clone::clone])
         .mount("/source", routes![clone::clone_branch])
+        .mount("/source", routes![init::init])
 }
