@@ -27,6 +27,7 @@ pub fn compress_and_write_object(object_data: &[u8], name: String) -> Result<(),
 
     let mut file = File::create(Path::new(".tease").join("objects").join(name))?;
     file.write_all(&compressed_bytes)?;
+    println!("{:?}", compressed_bytes);
 
     Ok(())
 }

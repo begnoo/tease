@@ -2,6 +2,7 @@ use std::{collections::HashMap, fmt::{Display, Formatter, Result}};
 
 use crate::{commands::diff::{DiffLine, diff_file}, utils::lines::{Line, get_content_from_sha1}};
 
+#[derive(Debug)]
 struct MatchIndex {
     a: usize,
     b: usize,
@@ -14,7 +15,7 @@ struct MatchIndex {
     o_lines: Vec<Line>,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Chunk {
     pub o_lines: Vec<String>,
     pub a_lines: Vec<String>,
@@ -24,17 +25,26 @@ pub struct Chunk {
 
 impl Display for Chunk {
     fn fmt(&self, f: &mut Formatter) -> Result {
+
+        if self.o_lines.is_empty() && self.a_lines.is_empty() && self.b_lines.is_empty() {
+            return write!(f, "");
+        }
+
         match self.resolve_type {
             ResolveType::Same => write!(f, "{}", self.o_lines.join("\n")),
             ResolveType::NewA => write!(f, "{}", self.a_lines.join("\n")),
             ResolveType::NewB => write!(f, "{}", self.b_lines.join("\n")),
-            ResolveType::Conflict => write!(f, "\n>>>>>>>>(incoming)>>>>>>>>\n{} \
-                                                \n===========================\n{} \
-                                                \n<<<<<<<<<(current)<<<<<<<<", self.a_lines.join("\n"), self.b_lines.join("\n"))
-        }
+            ResolveType::Conflict => write!(f,
+                               "\n>>>>>>>>(incoming)>>>>>>>>\n\
+                                {} \
+                                \n==========================\n\
+                                {} \
+                                \n<<<<<<<<<(current)<<<<<<<<\n", self.a_lines.join("\n"), self.b_lines.join("\n"))
+}
     }
 }
 
+#[derive(Debug)]
 pub enum ResolveType {
     Same,
     NewA,
@@ -58,22 +68,28 @@ pub fn merge_file(a_sha1: String, b_sha1: String, o_sha1: String) -> Vec<Chunk> 
     let b_lines = get_content_from_sha1(b_sha1);
     let o_lines = get_content_from_sha1(o_sha1);
 
+    // println!("len [] a: {} b: {} o: {}", a_lines.len(), b_lines.len(), o_lines.len());
+
     let mut match_index = MatchIndex {
         a: 0, a_len: a_lines.len(), a_lines,
         b: 0, b_len: b_lines.len(), b_lines,
         o: 0, o_len: o_lines.len(), o_lines
     };
-    generate_chunks(&a_matches, &b_matches, & mut match_index)
+    let mut chunks = generate_chunks(&a_matches, &b_matches, & mut match_index);
+    chunks.retain(|chunk| !(chunk.a_lines.is_empty() && chunk.b_lines.is_empty() && chunk.o_lines.is_empty()));
+    chunks
 }
 
 fn generate_chunks(a_matches: &HashMap<usize, usize>, b_matches: &HashMap<usize, usize>, match_index: & mut MatchIndex) -> Vec<Chunk> {
     let mut chunks: Vec<Chunk> = vec![];
     loop {
         let i = find_next_mismatch(&a_matches, &b_matches, &match_index);
+        // println!("i: {}", i);
 
         if i == 1 {
             // postavlja o, a i b
             let new_values = find_next_match(a_matches, b_matches, match_index);
+            // println!("{:?}", new_values);   
             if new_values[1] != match_index.a && new_values[2] != match_index.b {
                 chunks.push(emit(match_index, new_values));
             } 
@@ -87,8 +103,9 @@ fn generate_chunks(a_matches: &HashMap<usize, usize>, b_matches: &HashMap<usize,
             chunks.push(emit_final(match_index));
             break; 
         }
+        // println!("o: {} a: {} b: {}", match_index.o, match_index.a, match_index.b);
     }
-
+    // println!("{}", chunks.len());
     chunks
 }
 

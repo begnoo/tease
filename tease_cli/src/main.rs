@@ -115,7 +115,7 @@ fn main() {
         Some(Commands::MergeFile {blob_a, blob_b, blob_o}) => {
             let chunks = merge_file(blob_a.to_string(), blob_b.to_string(), blob_o.to_string());
             for chunk in chunks.iter() {
-                println!("{}", chunk);
+                print!("{}", chunk);
             }
         }
 

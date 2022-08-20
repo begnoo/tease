@@ -82,6 +82,7 @@ fn handle_index_diff(current_index: &mut Index, common_index: &mut Vec<IndexObje
             let incoming_row = incoming_head.get_mut(incoming_position.unwrap()).unwrap();
 
             let chunks = merge_file(current_row.blob_hash.to_string(), incoming_row.sha1.to_string(), common.sha1.to_string());
+            
             if chunks.iter().find(|chunk| matches!(chunk.resolve_type, ResolveType::Conflict)).is_some() {
                 current_row.staging = 1;
             } else {
