@@ -20,7 +20,7 @@ pub fn _print_tree(root_node: &IndexTreeNode) -> Result<()> {
     Ok(())
 }
 
-pub fn extract_trees(tree: &IndexTreeNode) {
+pub fn write_trees(tree: &IndexTreeNode) {
     let mut queue = VecDeque::new();
     
     queue.push_back(tree);

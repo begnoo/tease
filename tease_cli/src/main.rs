@@ -8,8 +8,7 @@ use crate::{commands::{
     create::create_repo,
     add::{add_from_path, delete_from_path},
     read::read_object,
-    reset::reset_index_row,
-    commit::commit},
+    commit::commit, reset::reset},
     index_structs::index::is_merging
 };
 use commands::{
@@ -24,8 +23,8 @@ use clap::Parser;
 use merge_utils::merge_file::merge_file;
 use utils::blob_writer::has_added_files;
 
-// TODO: packfile, author*, commiter*, |.| dodavanje na add*
-// TODO: rekurzivne funkcije -> iterativne
+// TODO: packfile
+// TODO: rekurzivne funkcije -> iterativne (collect_objects_from_tree -> collect_from_tree)
 // TODO: skinuti lock za branch pri create modu i preneti trenutne izmene i dodate fajlove
 // TODO: sredi log da prikazuje commitove po redosledu a ne po roditeljima (mozda bitno samo za front)
 // TODO: dodaj info o razlici kod commitova (+) (-)
@@ -39,24 +38,23 @@ fn main() {
             let _result = create_repo(deref_repo_name.to_string());
         }
         
-        Some(Commands::Add { file_path, mode }) => {
-            let deref_file_path = file_path.as_ref().unwrap().to_string();
-            let deref_mode: String;
+        Some(Commands::Add { file_path }) => {
 
-            if !mode.is_none() {
-                deref_mode = mode.as_ref().unwrap().to_string()
-            } else {
-                deref_mode = "".to_string();
-            }
 
-            println!("tease cli trying to add {:?}.", deref_file_path);
+            println!("tease cli trying to add {:?}.", file_path.to_string());
 
-            let _result: String;
-            if deref_mode == "delete" {
-                _result = delete_from_path(deref_file_path.to_string());
-            } else {
-                _result = add_from_path(deref_file_path.to_string());
-            }            
+            // let _result: String;
+            // if deref_mode == "delete" {
+            //     _result = delete_from_path(deref_file_path.to_string());
+            // } else {
+            let res = add_from_path(file_path.to_string());
+            println!("{}", res);  
+        }
+
+        Some(Commands::Rm { file_path }) =>  {
+            println!("tease cli trying to delete {:?}.", file_path.to_string());
+            let res = delete_from_path(file_path.to_string());
+            println!("{}", res);
         }
         
         Some(Commands::Commit { message }) =>  {
@@ -72,9 +70,8 @@ fn main() {
         }
         
         Some(Commands::Reset { filename }) =>  {
-
-            println!("tease cli trying to delete {:?}.", filename.to_string());
-            reset_index_row(filename.to_string());
+            println!("tease cli reset index row {:?}.", filename.to_string());
+            reset(filename.to_string());
         }
 
         Some(Commands::Status) => {

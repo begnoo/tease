@@ -27,7 +27,6 @@ pub fn compress_and_write_object(object_data: &[u8], name: String) -> Result<(),
 
     let mut file = File::create(Path::new(".tease").join("objects").join(name))?;
     file.write_all(&compressed_bytes)?;
-    println!("{:?}", compressed_bytes);
 
     Ok(())
 }
@@ -69,6 +68,7 @@ pub fn create_tease_folder(path: &Path) -> () {
 pub fn update_current_branch(branch_head: String) -> Result<(), Error> {
     let mut file = File::create(Path::new(".tease").join("HEAD"))
                                 .expect(&format!("Couldn't read HEAD file"));
+
     write!(file, "{}", branch_head)
 }
 
