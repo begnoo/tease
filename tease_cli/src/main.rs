@@ -2,6 +2,7 @@ mod commands;
 mod index_structs;
 mod utils;
 mod remote_req;
+mod merge_utils;
 
 use crate::{commands::{
     create::create_repo,
@@ -13,13 +14,14 @@ use crate::{commands::{
 };
 use commands::{
     status::status,
-    branch::{create_branch, switch_to_branch},
+    branch::{create_branch, switch_to_branch, create_from_remote},
     diff::diff_file,
-    merge::{merge_file, merge}, 
+    merge::merge_branch, 
     command_enum::{Args, Commands}, 
-    set_origin::set_origin, set_user::set_user, push::push, goback::go_back
+    set_origin::set_origin, set_user::set_user, push::push, goback::go_back, pull::pull, clone::clone
 };
 use clap::Parser;
+use merge_utils::merge_file::merge_file;
 use utils::blob_writer::has_added_files;
 
 // TODO: packfile, author*, commiter*, |.| dodavanje na add*
@@ -91,16 +93,13 @@ fn main() {
                 return ;
             }
             
-            let deref_mode: String;
-
-            if !mode.is_none() {
-                deref_mode = mode.as_ref().unwrap().to_string()
-            } else {
-                deref_mode = "".to_string();
-            }
-
-            if deref_mode == "create" {
-                create_branch(name.to_string());
+            if mode.is_some() {
+                let m = mode.to_owned().unwrap();
+                match m.as_str() {
+                    "c" => create_branch(name.to_string()),
+                    "rc" => create_from_remote(name.to_string()),
+                    _ => println!("Unsuported mode.") 
+                }
             } else {
                 switch_to_branch(name.to_string());
             }
@@ -116,7 +115,7 @@ fn main() {
         Some(Commands::MergeFile {blob_a, blob_b, blob_o}) => {
             let chunks = merge_file(blob_a.to_string(), blob_b.to_string(), blob_o.to_string());
             for chunk in chunks.iter() {
-                println!("{}", chunk);
+                print!("{}", chunk);
             }
         }
 
@@ -126,7 +125,7 @@ fn main() {
                 return ;
             }
 
-            merge(branch.to_string());
+            merge_branch(branch.to_string());
         }
 
         Some(Commands::SetOrigin {origin}) => {
@@ -139,6 +138,14 @@ fn main() {
 
         Some(Commands::Push) => {
             push();   
+        }
+
+        Some(Commands::Pull) => {
+            pull();   
+        }
+
+        Some(Commands::Clone { origin }) => {
+            clone(origin.to_string());   
         }
 
         Some(Commands::GoBack { sha }) => {

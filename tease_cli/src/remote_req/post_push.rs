@@ -1,10 +1,10 @@
-use std::{path::Path, fs::{File, read_to_string}, fmt::Display};
+use std::{path::Path, fs::File, fmt::Display};
 
 use reqwest::{Client, Body};
 use tease_common::write::bolb_writer::create_tease_file;
 use tokio_util::codec::{FramedRead, BytesCodec};
 
-use crate::utils::blob_writer::{get_current_branch, update_origin_head, read_head_commit};
+use crate::utils::blob_writer::{get_current_branch, update_origin_head, read_head_commit, get_origin};
 
 use super::can_push::CanPushResponse;
 use super::login::get_token;
@@ -18,14 +18,13 @@ pub fn setup_post (cp: CanPushResponse) -> bool {
     objects.push(format!(".tease/{}", get_current_branch()));
 
     let temp_zip = File::create(".tease/temp_zip").unwrap();
-    let res = tease_common::zip_utils::zip_files(objects, temp_zip, zip::CompressionMethod::Stored);
+    let res = tease_common::zip_utils::zip_files(objects, ".tease".to_string(), temp_zip, zip::CompressionMethod::Stored);
     if res.is_err() {
         println!("Couldn't archive objects to send.");
         return false;
     }
     
     println!("Archived files for push.");
-    
     true
 }
 
@@ -75,8 +74,4 @@ fn file_to_body(file: TokioFile) -> Body {
     let stream = FramedRead::new(file, BytesCodec::new());
     let body = Body::wrap_stream(stream);
     body
-}
-
-fn get_origin() -> String {
-    read_to_string(Path::new(".tease/origin")).expect(&format!("Couldn't read origin"))
 }

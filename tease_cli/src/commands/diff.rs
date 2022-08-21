@@ -28,9 +28,9 @@ pub struct DiffLine {
 impl Display for DiffLine {
     fn fmt(&self, f: &mut Formatter) -> Result {
         match self.state.as_str() {
-            "add" => writeln!(f, "{}", format!("+ {} {} {}", self.line.number, self.new_number, self.line.content).green()),
-            "del" => writeln!(f, "{}", format!("- {} {} {}", self.line.number, self.new_number, self.line.content).red()),
-            _ => writeln!(f, "{}", format!("= {} {} {}", self.line.number, self.new_number, self.line.content)),
+            "add" => write!(f, "{}", format!("+ {} {} {}", self.line.number, self.new_number, self.line.content).green()),
+            "del" => write!(f, "{}", format!("- {} {} {}", self.line.number, self.new_number, self.line.content).red()),
+            _ => write!(f, "{}", format!("= {} {} {}", self.line.number, self.new_number, self.line.content)),
         }
     }
 }

@@ -42,7 +42,6 @@ func ProvideConnection() *gorm.DB {
 
 func initTables() {
 	migrate("collabarators", &domain.Collabarator{})
-	migrate("branch_heads", &domain.BranchHead{})
 	migrate("sources", &domain.Source{})
 }
 
