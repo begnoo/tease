@@ -1,6 +1,17 @@
 #[macro_use] extern crate rocket;
 
+mod has_access;
+
+mod can_push;
 mod push;
+
+mod what_to_pull;
+mod pull;
+
+mod clone;
+
+mod init;
+
 mod file_utils;
 mod jwt;
 
@@ -8,5 +19,10 @@ mod jwt;
 fn rocket() -> _ {
     rocket::build()
         .mount("/source", routes![push::push])
-        .mount("/source", routes![push::can_push])
+        .mount("/source", routes![can_push::can_push])
+        .mount("/source", routes![what_to_pull::what_to_pull])
+        .mount("/source", routes![pull::pull])
+        .mount("/source", routes![clone::clone])
+        .mount("/source", routes![clone::clone_branch])
+        .mount("/source", routes![init::init])
 }

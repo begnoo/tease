@@ -1,3 +1,5 @@
+use std::fs::metadata;
+use std::fs::read_to_string;
 use std::os::unix::prelude::MetadataExt;
 
 use crate::index_structs::index::Index;
@@ -6,12 +8,29 @@ use crate::index_structs::index::read_index;
 use crate::utils::blob_writer::get_current_branch;
 use crate::utils::blob_writer::get_metadata_change;
 use crate::utils::blob_writer::read_file_md;
+use crate::utils::blob_writer::read_head_commit;
 use crate::utils::glob::get_all_repo_paths;
 
 use colored::Colorize;
 
+use super::read::read_object;
+
 pub fn status() {
-    let entries = get_all_repo_paths();
+    let all_entries = get_all_repo_paths();
+    let entries: Vec<String> = all_entries.iter().filter(|entry| {
+        let file_md = metadata(entry.to_string());
+        if file_md.is_err() {
+            return false;
+        }
+
+        if file_md.unwrap().is_dir() {
+            return false;
+        }
+
+        return true;
+    })
+    .map(|entry| entry.to_string())
+    .collect();
 
     let index = read_index();
     
@@ -24,25 +43,29 @@ pub fn status() {
 
     for entry_data in entries {
 
-        let row = index.rows.iter().find(|row| row.file_name == entry_data);
+        let row_opt = index.rows.iter().find(|row| row.file_name == entry_data);
 
-        if row.is_none() {
+        if row_opt.is_none() {
             untracked_vec.push(entry_data);
             continue;
         }
 
-        let unwraped_row = row.unwrap();
+        let row = row_opt.unwrap();
 
-        if unwraped_row.staging == 0 {
+        if row.staging == 0 {
             staged_vec.push(entry_data);
             continue;
         }
 
-        if unwraped_row.staging == 1 {
+        if row.staging == 1 {
             let current_file_md = read_file_md(entry_data.to_string());
             
-            if unwraped_row.data_change_date != current_file_md.ctime() as u64 || unwraped_row.meta_change_date != get_metadata_change(&current_file_md) {
-                unstaged_vec.push(entry_data);
+            if row.data_change_date == current_file_md.ctime() as u64 && row.meta_change_date == get_metadata_change(&current_file_md) {
+                continue;
+            }
+
+            if !content_is_same(row.blob_hash.to_string(), row.file_name.to_string()) {
+                unstaged_vec.push(entry_data);        
             }
         }
     }
@@ -50,6 +73,20 @@ pub fn status() {
     format_data(&staged_vec, &unstaged_vec, &untracked_vec, &to_be_deleted_vec, &deleted_vec);
 }
 
+fn content_is_same(sha: String, path: String) -> bool {
+    let blob = read_object(&sha);
+    let parts: Vec<&str> = blob.split("\0").collect();
+    let blob_content = parts[1];
+
+    let file_content_res = read_to_string(path.to_string());
+    if file_content_res.is_err() {
+        println!("Something went while comparing {:?} wrong.", path)
+    }
+
+    let file_content = file_content_res.unwrap();
+
+    blob_content == file_content
+}
 fn detect_deleted(index: &Index, entries: &Vec<String>) -> Vec<String> {
     index.rows.iter()
                 .filter(|row| !entries.contains(&row.file_name))
@@ -78,6 +115,8 @@ fn format_data(
 
     let current_branch_ref = get_current_branch();
     println!("You are on the branch: {:?}", current_branch_ref);
+    let head_commit = read_head_commit();
+    println!("HEAD [{}]", head_commit);
 
     let staged = staged_vec.join("\n\t");
     let unstaged = unstaged_vec.join("\n\t");

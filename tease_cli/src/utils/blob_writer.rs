@@ -14,9 +14,10 @@ use flate2::write::ZlibEncoder;
 
 use std::time::{UNIX_EPOCH};
 
-use crate::commands::read::read_object;
 use crate::index_structs::index::Index;
 use crate::index_structs::index::read_index;
+
+use super::glob::get_all_repo_paths;
 
 
 pub fn compress_and_write_object(object_data: &[u8], name: String) -> Result<(), Error> {
@@ -67,6 +68,7 @@ pub fn create_tease_folder(path: &Path) -> () {
 pub fn update_current_branch(branch_head: String) -> Result<(), Error> {
     let mut file = File::create(Path::new(".tease").join("HEAD"))
                                 .expect(&format!("Couldn't read HEAD file"));
+
     write!(file, "{}", branch_head)
 }
 
@@ -117,17 +119,41 @@ pub fn tease_file_exists(path: String) -> bool {
     md.is_ok()
 }
 
-pub fn read_tree_from_commit(commit_sha1: &String) -> String {
-    let commit_content = read_object(commit_sha1);
-
-    let mut parts: Vec<&str> = commit_content.split("\n").collect();
-
-    parts = parts[0].split(" ").collect();
-    parts[1].to_string()
-}
-
 pub fn has_added_files() -> bool {
     let index = read_index();
 
     index.rows.iter().any(|row| row.staging == 0 || row.staging == 2)
+}
+
+pub fn has_untracked_files() -> bool {
+    let index = read_index();
+    let entries: Vec<String> = get_all_repo_paths().iter().filter(|entry| {
+        let file_md = metadata(entry.to_string());
+        if file_md.is_err() {
+            return false;
+        }
+
+        if file_md.unwrap().is_dir() {
+            return false;
+        }
+
+        return true;
+    })
+    .map(|entry| entry.to_string())
+    .collect();
+
+    for entry_data in entries {
+
+        let row = index.rows.iter().find(|row| row.file_name == entry_data);
+
+        if row.is_none() {
+            return true;
+        }
+    }
+
+    false
+}
+
+pub fn get_origin() -> String {
+    read_to_string(Path::new(".tease/origin")).expect(&format!("Couldn't read origin"))
 }

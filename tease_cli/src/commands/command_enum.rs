@@ -20,10 +20,11 @@ pub enum Commands {
     /// Add file changes to commit 
     Add {
         /// Path to file or folder which you want to add to the commit, if left empty all changes will be added.
-        file_path: Option<String>,
+        file_path: String,
+    },
 
-        #[clap(short, long, value_parser)]
-        mode: Option<String>,
+    Rm {
+        file_path: String,
     },
     
     /// Commit added file changes to repo
@@ -81,7 +82,17 @@ pub enum Commands {
 
     Push,
 
+    Pull,
+
+    Clone {
+        origin: String,
+    },
+
     GoBack {
         sha: String,
+    },
+
+    Init {
+        name: String,
     }
 }

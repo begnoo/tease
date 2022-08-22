@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
+use tease_common::read::blob_reader::{read_tree_from_commit, collect_from_tree};
 use std::fs;
 use std::path::Path;
-use std::io::{Write, Error};
+use std::io::{Write, Error, ErrorKind};
+
+use crate::utils::blob_writer::read_head_commit;
 
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Default, Clone)]
@@ -61,9 +64,55 @@ pub fn add_index_row(index_row: IndexRow) -> Result<(), Error> {
 
 pub fn remove_index_row(filename: String) -> Result<(), Error> {
     let mut index = read_index();
-    let same_name_row = index.rows.iter().position(|row| row.file_name == filename);
-    index.rows.remove(same_name_row.expect("No such file in index."));
+    let same_name_row = index.rows.iter().position(|row| row.file_name == filename).unwrap();
+    index.rows.remove(same_name_row);
     save_index(index)?;
+
+    Ok(())
+}
+
+
+pub fn reset_index_row(filename: String) -> Result<(), Error> {
+    let mut index = read_index();
+    let mut found = false;
+
+    let head_commit = read_head_commit();
+    let root_tree = read_tree_from_commit(&".tease".to_string(), &head_commit);
+    let objects = collect_from_tree(".tease".to_string(), root_tree.to_string());
+    // println!("{:?}", index.rows);
+
+    for row in index.rows.iter_mut() {
+        if row.staging == 1 {
+            return Ok(());
+        }
+
+        if row.file_name == filename {
+            let index_obj = objects.iter().find(|obj| obj.path == filename);
+            let is_in_head = index_obj.is_some();
+            if row.staging == 0 && !is_in_head {
+                let rm_res = remove_index_row(filename.to_string());
+                if rm_res.is_err() {
+                    println!("Couldn't delete row from index.");
+                    return Err(Error::new(ErrorKind::NotFound, "Couldn't find row with given path!"))
+                }
+                return Ok(());
+            }
+            if row.staging == 0 && is_in_head {
+                row.data_change_date = 0;
+                row.blob_hash = index_obj.unwrap().sha1.to_string();
+            }
+            
+            row.staging = 1;
+            found = true;
+            break;
+        }
+    }
+    if !found {
+        return Err(Error::new(ErrorKind::NotFound, "Couldn't find row with given path!"));
+    }
+    // let rows = index.rows.to_vec();
+    save_index(index)?;
+    // println!("{:?}", rows);
 
     Ok(())
 }
