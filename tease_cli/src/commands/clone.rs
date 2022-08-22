@@ -33,11 +33,11 @@ pub fn clone(origin: String) {
     let origin_path = format!("{}/.tease/origin", repo_name);
     create_tease_file(Path::new(&origin_path.to_string()), origin.to_string());
 
-    let maser_path = format!("{}/.tease/refs/heads/master", repo_name);
-    let head_commit = read_to_string(Path::new(&maser_path.to_string()))
-        .expect(&format!("Couldn't read {}", maser_path.to_string()));
+    let master_path = format!("{}/.tease/refs/heads/master", repo_name);
+    let head_commit = read_to_string(Path::new(&master_path.to_string()))
+        .expect(&format!("Couldn't read {}", master_path.to_string()));
     
-    let maser_origin_path = format!("{}-origin", maser_path.to_string());
+    let maser_origin_path = format!("{}-origin", master_path.to_string());
     create_tease_file(Path::new(&maser_origin_path.to_string()), head_commit.to_string());
 
     execute_go_back_shell(repo_name.to_string(), head_commit.to_string(), login_success.0);

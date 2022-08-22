@@ -21,15 +21,9 @@ use std::{fs::{read_to_string, create_dir_all}, path::Path};
 use tease_common::{
     write::bolb_writer::create_tease_file,
     read::blob_reader::trail_commit_history,
+    read::blob_reader::IndexObject,
     read::blob_reader::read_tree_from_commit,
 };
-
-
-#[derive(Default, Debug)]
-struct IndexObject {
-    sha1: String,
-    path: String,
-}
 
 pub fn merge_branch(branch_name: String) {
     let branch_head = format!("refs/heads/{}", branch_name.to_string());
@@ -159,7 +153,12 @@ fn handle_rows_to_remove(to_remove: & Vec<IndexObject>) {
     for row_to_remove in to_remove.iter() {
         let new_row = new_index.rows.iter().find(|new_row| new_row.file_name == row_to_remove.path);
         if new_row.is_none() {
-            new_index.rows.push( IndexRow { file_name: row_to_remove.path.to_string(), blob_hash: row_to_remove.sha1.to_string(), staging: 2, ..Default::default()} );
+            new_index.rows.push( IndexRow {
+                file_name: row_to_remove.path.to_string(),
+                blob_hash: row_to_remove.sha1.to_string(),
+                staging: 2,
+                ..Default::default()} 
+            );
         }
     }
 
