@@ -127,7 +127,20 @@ pub fn has_added_files() -> bool {
 
 pub fn has_untracked_files() -> bool {
     let index = read_index();
-    let entries = get_all_repo_paths();
+    let entries: Vec<String> = get_all_repo_paths().iter().filter(|entry| {
+        let file_md = metadata(entry.to_string());
+        if file_md.is_err() {
+            return false;
+        }
+
+        if file_md.unwrap().is_dir() {
+            return false;
+        }
+
+        return true;
+    })
+    .map(|entry| entry.to_string())
+    .collect();
 
     for entry_data in entries {
 

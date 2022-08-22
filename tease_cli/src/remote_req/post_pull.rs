@@ -25,7 +25,12 @@ impl Display for PullError {
 #[tokio::main]
 pub async fn post_pull(objects: Vec<String>) -> Result<String, PullError> {
     let client = reqwest::Client::new();
-    let token = get_token();
+    let token = get_token().await;
+
+    if token == "" {
+        create_tease_file(Path::new(".tease/bearer"), "".to_string());
+        return Err(PullError{message: "Authorization failed.".to_string()});
+    }
 
     let req_body = PullRequest {
         objects

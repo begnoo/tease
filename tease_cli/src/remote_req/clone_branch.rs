@@ -20,7 +20,12 @@ impl Display for CloneBranchError {
 #[tokio::main]
 pub async fn clone_branch(branch: String) -> Result<String, CloneBranchError> {
     let client = reqwest::Client::new();
-    let token = get_token();
+    let token = get_token().await;
+
+    if token == "" {
+        create_tease_file(Path::new(".tease/bearer"), "".to_string());
+        return Err(CloneBranchError{message: "Authorization failed.".to_string()});
+    }
 
     let url = format!("{}/clone/{}", get_origin(), branch.to_string());
     let resp = client.get(url)

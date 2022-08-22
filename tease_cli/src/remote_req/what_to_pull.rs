@@ -35,7 +35,12 @@ impl Display for WhatToPullError {
 #[tokio::main]
 pub async fn what_to_pull() -> Result<ObjectCountResponse, WhatToPullError> {
     let client = reqwest::Client::new();
-    let token = get_token();
+    let token = get_token().await;
+
+    if token == "" {
+        create_tease_file(Path::new(".tease/bearer"), "".to_string());
+        return Err(WhatToPullError{message: "Authorization failed.".to_string()});
+    }
 
     let req_body = ObjectCountRequest {
         branch: get_current_branch().split("/").last().unwrap().to_string(),

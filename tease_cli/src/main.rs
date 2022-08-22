@@ -203,12 +203,7 @@ fn main() {
             pull();   
         }
 
-        Some(Commands::Clone { origin }) => {
-            if !in_working_tree() {
-                println!("Not in working tree.");
-                return ;
-            }
-            
+        Some(Commands::Clone { origin }) => {           
             clone(origin.to_string());   
         }
 

@@ -4,7 +4,7 @@ use rpassword::read_password;
 use serde::{Serialize, Deserialize};
 use tease_common::write::bolb_writer::create_tease_file;
 
-pub fn login() -> bool {
+pub async fn login() -> bool {
     let email = read_to_string(Path::new(".tease/user")).expect(&format!("Couldn't read user"));
 
     if email.trim() == "" {
@@ -12,7 +12,7 @@ pub fn login() -> bool {
         return false;
     }
     let password = get_password();
-    return post_login(email, password.to_string(), None)
+    return post_login(email, password.to_string(), None).await
 }
 
 pub fn get_password() -> String {
@@ -41,7 +41,7 @@ pub fn login_with_prompt(root_folder: String) -> (String, bool) {
         return (email, false);
     }
 
-    (email.trim().to_string(), post_login(email.trim().to_string(), password.to_string(), Some(root_folder)))
+    (email.trim().to_string(), blocking_login(email.trim().to_string(), password.to_string(), Some(root_folder)))
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -56,12 +56,12 @@ struct LoginResponse {
     token: String,
 }
 
-// #[tokio::main]
-// pub async fn blocking_login(email: String, password: String) -> bool {
-//     post_login(email, password, None).await
-// }
-
 #[tokio::main]
+pub async fn blocking_login(email: String, password: String, root_folder: Option<String>) -> bool {
+    post_login(email, password, root_folder).await
+}
+
+// #[tokio::main]
 pub async fn post_login(email: String, password: String, root_folder: Option<String>) -> bool {
 
     let req_body = LoginRequest {
@@ -95,15 +95,16 @@ pub async fn post_login(email: String, password: String, root_folder: Option<Str
     false
 }
 
+
 fn from_value_to_resp(value: serde_json::Value) -> LoginResponse {
     serde_json::from_value(value).unwrap()
 }
 
-pub fn get_token() -> String {
+pub async fn get_token() -> String {
     let token = read_to_string(Path::new(".tease/bearer")).expect(&format!("Couldn't read token"));
 
     if token.trim() == "" {
-        if !login() {
+        if !login().await {
             return "".to_string();
         }
         return read_to_string(Path::new(".tease/bearer")).expect(&format!("Couldn't read token"));

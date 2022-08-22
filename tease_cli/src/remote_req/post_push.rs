@@ -45,7 +45,13 @@ pub async fn post_push () -> Result<(), PushError> {
         return Err(PushError{message: "Couldn't access temp zip file.".to_string()});
     }
 
-    let token = get_token();
+    let token = get_token().await;
+
+    if token == "" {
+        create_tease_file(Path::new(".tease/bearer"), "".to_string());
+        return Err(PushError{message: "Authorization failed.".to_string()});
+    }
+
     let client = Client::new();
     let resp = client.post(format!("{}/push", get_origin()))
         .header("Authorization", format!("Bearer {}", token))

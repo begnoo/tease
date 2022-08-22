@@ -79,7 +79,7 @@ pub fn reset_index_row(filename: String) -> Result<(), Error> {
     let head_commit = read_head_commit();
     let root_tree = read_tree_from_commit(&".tease".to_string(), &head_commit);
     let objects = collect_from_tree(".tease".to_string(), root_tree.to_string());
-    println!("{:?}", index.rows);
+    // println!("{:?}", index.rows);
 
     for row in index.rows.iter_mut() {
         if row.staging == 1 {
@@ -110,9 +110,9 @@ pub fn reset_index_row(filename: String) -> Result<(), Error> {
     if !found {
         return Err(Error::new(ErrorKind::NotFound, "Couldn't find row with given path!"));
     }
-    let rows = index.rows.to_vec();
+    // let rows = index.rows.to_vec();
     save_index(index)?;
-    println!("{:?}", rows);
+    // println!("{:?}", rows);
 
     Ok(())
 }

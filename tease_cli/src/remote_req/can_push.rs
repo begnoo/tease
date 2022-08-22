@@ -11,7 +11,6 @@ use crate::{
         read_head_commit,
         read_origin_head_commit, get_origin,
     },
-    remote_req::login::get_token
 };
 
 use tease_common::{
@@ -23,6 +22,8 @@ use tease_common::{
     write::bolb_writer::create_tease_file
 };
 
+use super::login::get_token;
+
 pub fn can_push() -> Result<CanPushResponse, CanPushError> {
     let email = read_to_string(Path::new(".tease/user"))
         .expect(&format!("Couldn't read user"));
@@ -30,10 +31,8 @@ pub fn can_push() -> Result<CanPushResponse, CanPushError> {
     if email.trim() == "" {
         return Err(CanPushError{message: "Please set user before push/pull".to_string()});
     }
-
-    let token = get_token();
     
-    let cp_res = post_can_push(token);
+    let cp_res = post_can_push();
     if cp_res.is_err() {
         return Err(cp_res.err().unwrap());
     }
@@ -84,16 +83,19 @@ impl Display for CanPushError {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct AuthorizationError {
-    pub message: String
-}
 
 #[tokio::main]
-async fn post_can_push(token: String) -> Result<CanPushResponse, CanPushError> {
+async fn post_can_push() -> Result<CanPushResponse, CanPushError> {
     let branch = get_current_branch().split("/").last().unwrap().to_string();
     let branch_head = read_head_commit();
     let objects: Vec<String> = get_objects_to_send();
+
+    let token = get_token().await;
+
+    if token == "" {
+        create_tease_file(Path::new(".tease/bearer"), "".to_string());
+        return Err(CanPushError{message: "Authorization failed.".to_string()});
+    }
 
     if objects.is_empty() {
         return Err(CanPushError {message: "Nothing to push.".to_string()});

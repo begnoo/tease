@@ -24,7 +24,7 @@ pub fn trail_commit_history(root_folder: &String, commit_sha1: &String, end_comm
     let mut parts: Vec<&str> = commit_content.split("\n").collect();
     parts = parts[1].split(" ").collect();
     
-    println!("{}", parts.len());
+    // println!("{}", parts.len());
     
     if parts[1] == "#" {
         return ;
