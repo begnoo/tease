@@ -24,19 +24,25 @@ pub fn trail_commit_history(root_folder: &String, commit_sha1: &String, end_comm
     let mut parts: Vec<&str> = commit_content.split("\n").collect();
     parts = parts[1].split(" ").collect();
     
-    if parts[1] == end_commit || parts[1] == "#" {
+    println!("{}", parts.len());
+    
+    if parts[1] == "#" {
         return ;
     }
 
     if parts.len() > 2 {
-        trail.push(parts[2].to_string());
-        
-    	trail_commit_history(root_folder, &parts[2].to_string(), end_commit, trail);
+        if parts[1] != end_commit {
+            trail.push(parts[1].to_string());
+            trail_commit_history(root_folder, &parts[1].to_string(), end_commit, trail);            
+        }
+        if parts[2] != end_commit {
+            trail.push(parts[2].to_string());
+            trail_commit_history(root_folder, &parts[2].to_string(), end_commit, trail);
+        }
+    } else if parts[1] != end_commit {
+        trail.push(parts[1].to_string());
+        trail_commit_history(root_folder, &parts[1].to_string(), end_commit, trail);
     }
-
-    trail.push(parts[1].to_string());
-
-    trail_commit_history(root_folder, &parts[1].to_string(), end_commit, trail);
 }
 
 pub fn paths_to_string(paths: Paths) -> Vec<String> {

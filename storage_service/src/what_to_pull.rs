@@ -68,6 +68,7 @@ fn get_objects_to_send(root_folder: String, past_origin_head: String, origin_hea
     let mut commits: Vec<String> = vec![past_origin_head.to_string(), origin_head.to_string()];
     trail_commit_history(&root_folder, &origin_head, &past_origin_head, &mut commits);
     commits.retain(|commit| commit != "");
+    println!("{:?}", commits);
 
     if commits.is_empty() {
         return objects;
