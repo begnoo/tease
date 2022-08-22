@@ -9,7 +9,7 @@ use crate::{
     utils::blob_writer::{
         get_current_branch,
         read_head_commit,
-        read_origin_head_commit,
+        read_origin_head_commit, get_origin,
     },
     remote_req::login::get_token
 };
@@ -18,7 +18,7 @@ use tease_common::{
     read::blob_reader::{
         trail_commit_history,
         collect_objects_from_tree,
-        read_tree_from_commit,
+        read_tree_from_commit, contains_commit,
     },
     write::bolb_writer::create_tease_file
 };
@@ -39,12 +39,18 @@ pub fn can_push() -> Result<CanPushResponse, CanPushError> {
     }
 
     let cp = cp_res.unwrap();
+    // println!("{:?}", cp);
+
+    if !cp.present {
+        return Err(CanPushError{message: "No source initialized on given origin.".to_string()});
+    }
     
-    if cp.result == false && cp.diff.is_empty() {
+    if !cp.result && cp.diff.is_empty() {
         return Err(CanPushError{message: "Nothing to push.".to_string()});
     }
 
-    if cp.result == false && cp.head_commit != read_head_commit() && !cp.diff.is_empty() {
+    let origin_is_contained = cp.head_commit.to_string() == "" || contains_commit(".tease".to_string(), read_head_commit(), cp.head_commit.to_string());
+    if !origin_is_contained && !cp.diff.is_empty() {
         return Err(CanPushError{message: "Please pull, you are behind on commits.".to_string()});
     }
 
@@ -63,7 +69,8 @@ pub struct CanPushResponse {
     pub result: bool,
     pub diff: Vec<String>,
     pub head_commit: String,
-    pub present: bool
+    pub present: bool,
+    // pub empty: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -92,15 +99,19 @@ async fn post_can_push(token: String) -> Result<CanPushResponse, CanPushError> {
         return Err(CanPushError {message: "Nothing to push.".to_string()});
     }
 
+    let origin = get_origin(); 
+    if origin == "" {
+        return Err(CanPushError {message: "Set origin before pushing.".to_string()});
+    }
+
     let req_body = CanPushRequest {
         branch,
         sha1: branch_head,
         objects
     };
 
-    // println!("{:?}", req_body);
     let client = reqwest::Client::new();
-    let url = format!("{}/can-push", get_origin());
+    let url = format!("{}/can-push", origin);
     let resp = client.post(url)
         .header("Authorization", format!("Bearer {}", token))
         .json(&req_body)
@@ -123,7 +134,7 @@ async fn post_can_push(token: String) -> Result<CanPushResponse, CanPushError> {
         return Err(CanPushError {message: "Something went wrong".to_string()});
     }
     let cp_res = from_value_to_resp(json_resp);
-
+    // println!("{:?}", cp_res);
     Ok(cp_res)
 }
 
@@ -131,14 +142,14 @@ fn from_value_to_resp(value: serde_json::Value) -> CanPushResponse {
     serde_json::from_value(value).unwrap()
 }
 
-fn get_origin() -> String {
-    read_to_string(Path::new(".tease/origin")).expect(&format!("Couldn't read origin"))
-}
-
 fn get_objects_to_send() -> Vec<String> {
     let mut objects: Vec<String> = vec![]; 
     let local_head = read_head_commit();
     let mut origin_head = read_origin_head_commit();
+
+    if local_head == "# Starting commit" {
+        return objects;
+    }
 
     if origin_head == "" {
         origin_head = "#".to_string();

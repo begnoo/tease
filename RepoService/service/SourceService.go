@@ -4,9 +4,12 @@ import (
 	"RepoService/domain"
 	"RepoService/errors"
 	"RepoService/repo"
+	"fmt"
 	"os"
 	"strconv"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type SourceService struct {
@@ -22,6 +25,10 @@ func ProvideSourceService(sourceRepo repo.SourceRepo, collabRepo repo.CollabRepo
 }
 
 func (service *SourceService) Create(source domain.Source, requestedBy string) (*domain.Source, error) {
+	println(source.Owner)
+	println(requestedBy)
+	println(source.Owner == requestedBy)
+
 	if requestedBy != source.Owner {
 		return nil, &errors.OwnerMismatch{Message: "Mismatch in requested by and source owner."}
 	}
@@ -30,7 +37,23 @@ func (service *SourceService) Create(source domain.Source, requestedBy string) (
 		return nil, &errors.OwnerMismatch{Message: "User doesn't exist."}
 	}
 
+	same_name, err := service.sourceRepo.ReadByOwnerAndName(source.Owner, source.Name)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+
+	if same_name.Name == source.Name {
+		return nil, &errors.AlreadyThere{Message: fmt.Sprintf("Source with name %s already initialized", source.Name)}
+	}
+
 	res, err := service.sourceRepo.Create(source)
+	if err != nil {
+		return nil, err
+	}
+
+	if !CreateSourceInStorage(requestedBy, source.Name) {
+		service.Delete(int(res.ID), requestedBy)
+	}
 
 	return res, err
 }

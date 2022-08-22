@@ -1,6 +1,6 @@
 use crate::{
     utils::{
-        lines::{get_content_from_sha1, Line},
+        lines::get_content_from_sha1,
         blob_writer::{
             tease_file_exists,
             read_head_commit,
@@ -12,70 +12,20 @@ use crate::{
         Index,
         IndexRow,
         save_index
-    },
+    }, merge_utils::merge_file::{merge_file, ResolveType},
 };
 
-use super::{diff::{diff_file, DiffLine}, add::add_file, goback::delete_all};
-use std::{collections::HashMap, fmt::{Display, Formatter, Result}, fs::{read_to_string, create_dir_all}, path::Path};
+use super::{add::add_file, goback::delete_all};
+use std::{fs::{read_to_string, create_dir_all}, path::Path};
 
 use tease_common::{
     write::bolb_writer::create_tease_file,
     read::blob_reader::trail_commit_history,
+    read::blob_reader::IndexObject,
     read::blob_reader::read_tree_from_commit,
 };
 
-struct MatchIndex {
-    a: usize,
-    b: usize,
-    o: usize,
-    a_len: usize,
-    b_len: usize,
-    o_len: usize,
-    a_lines: Vec<Line>,
-    b_lines: Vec<Line>,
-    o_lines: Vec<Line>,
-}
-
-#[derive(Default)]
-pub struct Chunk {
-    o_lines: Vec<String>,
-    a_lines: Vec<String>,
-    b_lines: Vec<String>,
-    resolve_type: ResolveType
-}
-
-impl Display for Chunk {
-    fn fmt(&self, f: &mut Formatter) -> Result {
-        match self.resolve_type {
-            ResolveType::Same => write!(f, "{}", self.o_lines.join("\n")),
-            ResolveType::NewA => write!(f, "{}", self.a_lines.join("\n")),
-            ResolveType::NewB => write!(f, "{}", self.b_lines.join("\n")),
-            ResolveType::Conflict => write!(f, "\n>>>>>>>>(incoming)>>>>>>>>\n{} \
-                                                \n===========================\n{} \
-                                                \n<<<<<<<<<(current)<<<<<<<<", self.a_lines.join("\n"), self.b_lines.join("\n"))
-        }
-    }
-}
-
-enum ResolveType {
-    Same,
-    NewA,
-    NewB,
-    Conflict
-}
-
-impl Default for ResolveType {
-    fn default() -> Self { ResolveType::Same }
-}
-
-#[derive(Default, Debug)]
-struct IndexObject {
-    sha1: String,
-    path: String,
-}
-
-
-pub fn merge(branch_name: String) {
+pub fn merge_branch(branch_name: String) {
     let branch_head = format!("refs/heads/{}", branch_name.to_string());
 
     if !tease_file_exists(branch_head.to_string()) {
@@ -83,25 +33,27 @@ pub fn merge(branch_name: String) {
         return ;
     }
 
-    let branch_head_commit = read_to_string(Path::new(".tease").join(branch_head.to_string()))
-        .expect(&format!("Couldn't read {}", branch_head));
-    let mut branch_index = extract_index_from_commit(branch_head_commit.to_string());
-
+    let incoming_head_commit = read_to_string(Path::new(".tease").join(branch_head.to_string())).expect(&format!("Couldn't read {}", branch_head));
     let current_head_commit = read_head_commit();
-    let common_commit = find_common_commit(current_head_commit, branch_head_commit.to_string());
+    merge_commits(current_head_commit, incoming_head_commit);
+}
+
+pub fn merge_commits(current_commit: String, incoming_commit: String) {
+    let common_commit = find_common_commit(current_commit, incoming_commit.to_string());
 
     if common_commit == "merged" {
         println!("Branch is already merged");
         return ;
     }
 
+    let mut incoming_index = extract_index_from_commit(incoming_commit.to_string());
     let mut common_index = extract_index_from_commit(common_commit.to_string());
-    let mut index = read_index();
+    let mut current_index = read_index();
 
     delete_all();
     create_index_file(Path::new(".tease").join("index").as_path());
-    handle_index_diff(&mut index, &mut common_index, &mut branch_index);
-    update_index_for_merge(branch_head_commit);
+    handle_index_diff(&mut current_index, &mut common_index, &mut incoming_index);
+    update_index_for_merge(incoming_commit);
 }
 
 fn update_index_for_merge(incoming_head: String) {
@@ -111,39 +63,41 @@ fn update_index_for_merge(incoming_head: String) {
     save_index(index).expect("Couldn't update index for merge");
 }
 
-fn handle_index_diff(old_index: &mut Index, common_index: &mut Vec<IndexObject>, branch_index: &mut Vec<IndexObject>) {
+fn handle_index_diff(current_index: &mut Index, common_index: &mut Vec<IndexObject>, incoming_head: &mut Vec<IndexObject>) {
     let mut to_delete: Vec<IndexObject> = vec![];
 
     for common in common_index.iter() {
 
-        let old_position = old_index.rows.iter().position(|current| current.file_name == common.path);
-        let branch_position = branch_index.iter().position(|branch| branch.path == common.path);
+        let current_position = current_index.rows.iter().position(|current| current.file_name == common.path);
+        let incoming_position = incoming_head.iter().position(|branch| branch.path == common.path);
 
-        if old_position.is_some() && branch_position.is_some() {
-            let mut old_row = old_index.rows.get_mut(old_position.unwrap()).unwrap();
-            let branch_row = branch_index.get_mut(branch_position.unwrap()).unwrap();
+        if current_position.is_some() && incoming_position.is_some() {
+            let mut current_row = current_index.rows.get_mut(current_position.unwrap()).unwrap();
+            let incoming_row = incoming_head.get_mut(incoming_position.unwrap()).unwrap();
 
-            let chunks = merge_file(old_row.blob_hash.to_string(), branch_row.sha1.to_string(), common.sha1.to_string());
+            let chunks = merge_file(current_row.blob_hash.to_string(), incoming_row.sha1.to_string(), common.sha1.to_string());
+            
             if chunks.iter().find(|chunk| matches!(chunk.resolve_type, ResolveType::Conflict)).is_some() {
-                old_row.staging = 1;
+                current_row.staging = 1;
             } else {
-                old_row.staging = 0;
+                current_row.staging = 0;
             }
             
             let content: Vec<String> = chunks.iter().map(|chunk| chunk.to_string()).collect();
-            create_missing_folders_and_file(old_row.file_name.to_string(), content.join("\n"));
-            add_file(old_row.file_name.to_string())
-                .expect(&format!("Couldn't merge file {}", old_row.file_name.to_string()));
-            branch_index.remove(branch_position.unwrap());
-            old_index.rows.remove(old_position.unwrap());
-        } else if old_position.is_some() && branch_position.is_none() {
+            create_missing_folders_and_file(current_row.file_name.to_string(), content.join("\n"));
+            add_file(current_row.file_name.to_string()).expect(&format!("Couldn't merge file {}", current_row.file_name.to_string()));
+            
+            incoming_head.remove(incoming_position.unwrap());
+            current_index.rows.remove(current_position.unwrap());
+        
+        } else if current_position.is_some() && incoming_position.is_none() {
             to_delete.push(IndexObject { sha1: common.sha1.to_string(), path: common.path.to_string() });
-            old_index.rows.remove(old_position.unwrap());
+            current_index.rows.remove(current_position.unwrap());
         }
     }
 
-    handle_residual_branch_rows(branch_index);
-    handle_residual_current_rows(old_index, &common_index);
+    handle_residual_incoming_rows(incoming_head);
+    handle_residual_current_rows(current_index, &common_index);
     handle_rows_to_remove(&to_delete);
 }
 
@@ -174,11 +128,11 @@ fn handle_residual_current_rows(old_index: & Index, common_index: & Vec<IndexObj
     }
 }
 
-fn handle_residual_branch_rows(branch_index: & Vec<IndexObject>) {
+fn handle_residual_incoming_rows(branch_index: & Vec<IndexObject>) {
     for branch_row in branch_index.iter() {
         let lines = get_content_from_sha1(branch_row.sha1.to_string());
         let content: Vec<String> = lines.iter().map(|line| line.to_string()).collect();
-        create_missing_folders_and_file(branch_row.path.to_string(), content.join(""));
+        create_missing_folders_and_file(branch_row.path.to_string(), content.join("\n"));
         add_file(branch_row.path.to_string()).expect(&format!("Couldn't merge file {}", branch_row.path.to_string()));
     }
     
@@ -199,7 +153,12 @@ fn handle_rows_to_remove(to_remove: & Vec<IndexObject>) {
     for row_to_remove in to_remove.iter() {
         let new_row = new_index.rows.iter().find(|new_row| new_row.file_name == row_to_remove.path);
         if new_row.is_none() {
-            new_index.rows.push( IndexRow { file_name: row_to_remove.path.to_string(), blob_hash: row_to_remove.sha1.to_string(), staging: 2, ..Default::default()} );
+            new_index.rows.push( IndexRow {
+                file_name: row_to_remove.path.to_string(),
+                blob_hash: row_to_remove.sha1.to_string(),
+                staging: 2,
+                ..Default::default()} 
+            );
         }
     }
 
@@ -271,146 +230,3 @@ fn collect_from_branch(root_tree: String, prev_path: String, temp_index: & mut V
     }
 }
 
-pub fn merge_file(a_sha1: String, b_sha1: String, o_sha1: String) -> Vec<Chunk> {
-    let a_diff = diff_file(o_sha1.to_string(), a_sha1.to_string());
-    let b_diff = diff_file(o_sha1.to_string(), b_sha1.to_string());
-
-    let a_matches = find_matches(a_diff);
-    let b_matches = find_matches(b_diff);
-
-    let a_lines = get_content_from_sha1(a_sha1);
-    let b_lines = get_content_from_sha1(b_sha1);
-    let o_lines = get_content_from_sha1(o_sha1);
-
-    let mut match_index = MatchIndex {
-        a: 0, a_len: a_lines.len(), a_lines,
-        b: 0, b_len: b_lines.len(), b_lines,
-        o: 0, o_len: o_lines.len(), o_lines
-    };
-    generate_chunks(&a_matches, &b_matches, & mut match_index)
-}
-
-fn generate_chunks(a_matches: &HashMap<usize, usize>, b_matches: &HashMap<usize, usize>, match_index: & mut MatchIndex) -> Vec<Chunk> {
-    let mut chunks: Vec<Chunk> = vec![];
-    loop {
-        let i = find_next_mismatch(&a_matches, &b_matches, &match_index);
-
-        if i == 1 {
-            // postavlja o, a i b
-            let new_values = find_next_match(a_matches, b_matches, match_index);
-            if new_values[1] != match_index.a && new_values[2] != match_index.b {
-                chunks.push(emit(match_index, new_values));
-            } 
-            else { 
-                chunks.push(emit_final(match_index));
-                break;
-            }
-        } else if i != 0 {
-            chunks.push(emit(match_index, vec![i]));
-        } else {
-            chunks.push(emit_final(match_index));
-            break; 
-        }
-    }
-
-    chunks
-}
-
-fn find_next_mismatch(a_matches: &HashMap<usize, usize>, b_matches: &HashMap<usize, usize>, match_index: &MatchIndex) -> usize {
-    
-    let mut i = 1;
-    
-    while inbounds(i, match_index) 
-            && match_line(a_matches, match_index.o, match_index.a, i)
-            && match_line(b_matches, match_index.o, match_index.b, i) 
-    {
-        i = i + 1;
-    }   
-
-    if inbounds(i, match_index) {
-        return i;
-    }
-
-    0
-}
-
-fn find_next_match(a_matches: &HashMap<usize, usize>, b_matches: &HashMap<usize, usize>, match_index: & mut MatchIndex) -> Vec<usize> {
-    let mut o = match_index.o + 1;
-    
-    while o < match_index.o_len 
-        && !(a_matches.contains_key(&o) && b_matches.contains_key(&o)) 
-    {
-        o = o + 1;
-    }
-
-    vec![o, a_matches.get(&o).unwrap_or(&match_index.a).to_owned(), b_matches.get(&o).unwrap_or(&match_index.b).to_owned()]
-}
-
-fn inbounds(i: usize, match_index: &MatchIndex) -> bool {
-    if i < match_index.a_len || i < match_index.b_len || i < match_index.o_len {
-        return true;
-    }
-
-    false
-}
-
-fn match_line(matches: &HashMap<usize, usize>, original: usize, offset: usize, i: usize) -> bool {
-    matches.contains_key(&(original + i)) && matches.get(&(original + i)).unwrap().to_owned() == offset + i
-}
-
-fn find_matches(diff_lines: Vec<DiffLine>) -> HashMap<usize, usize> {
-    let mut matches_map: HashMap<usize, usize> = HashMap::new();
-    for diff_line in diff_lines.iter() {
-        if diff_line.state == "equ" {
-            matches_map.insert(diff_line.line.number, diff_line.new_number);
-        }
-    }
-
-    matches_map
-}
-
-fn emit(match_index: & mut MatchIndex, offsets: Vec<usize>) -> Chunk {
-
-    let o_offset = if offsets.len() != 1 { offsets.get(0).unwrap().to_owned() - match_index.o } else { offsets[0] };
-    let a_offset = if offsets.len() != 1 { offsets.get(1).unwrap().to_owned() - match_index.a } else { offsets[0] };
-    let b_offset = if offsets.len() != 1 { offsets.get(2).unwrap().to_owned() - match_index.b } else { offsets[0] };
-
-    let o_chunk = map_chunk(&match_index.o_lines, match_index.o, o_offset);
-    let a_chunk = map_chunk(&match_index.a_lines, match_index.a, a_offset);
-    let b_chunk = map_chunk(&match_index.b_lines, match_index.b, b_offset);
-
-    let chunk = handle_chunk(o_chunk, a_chunk, b_chunk);
-
-    match_index.o = match_index.o + o_offset - 1;
-    match_index.a = match_index.a + a_offset - 1;
-    match_index.b = match_index.b + b_offset - 1;
-
-    chunk
-}
-
-fn emit_final(match_index: & mut MatchIndex) -> Chunk {
-
-    let o_chunk = map_chunk(&match_index.o_lines, match_index.o, match_index.o_len - match_index.o + 1);
-    let a_chunk = map_chunk(&match_index.a_lines, match_index.a, match_index.a_len - match_index.a + 1);
-    let b_chunk = map_chunk(&match_index.b_lines, match_index.b, match_index.b_len - match_index.b + 1);
-
-    handle_chunk(o_chunk, a_chunk, b_chunk)
-}
-
-fn handle_chunk(o_chunk: Vec<String>, a_chunk: Vec<String>, b_chunk: Vec<String>) -> Chunk {
-    if o_chunk == a_chunk && o_chunk == b_chunk {
-        return Chunk {o_lines: o_chunk, resolve_type: ResolveType::Same, ..Default::default()}
-    } else if o_chunk == a_chunk {
-        return Chunk {b_lines: b_chunk, resolve_type: ResolveType::NewB, ..Default::default()}
-    } else if o_chunk == b_chunk {
-        return Chunk {a_lines: a_chunk, resolve_type: ResolveType::NewA, ..Default::default()}
-    } else {
-        return Chunk {a_lines: a_chunk, b_lines: b_chunk, resolve_type: ResolveType::Conflict, ..Default::default()}
-    }
-}
-
-fn map_chunk(lines: &Vec<Line>, start: usize, offset: usize) -> Vec<String> {
-    (start..start + offset - 1)
-        .map(|index| (&lines[index].content).to_string())
-        .collect()
-}

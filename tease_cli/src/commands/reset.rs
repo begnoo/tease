@@ -1,5 +1,12 @@
-use crate::index_structs::index::remove_index_row;
+use crate::index_structs::index::reset_index_row;
 
-pub fn reset_index_row(filename: String) {
-    remove_index_row(filename).expect("{:?} isn't added yet.");
+
+pub fn reset(file_path: String) -> () {
+    let reset_res = reset_index_row(file_path.to_string());
+    if reset_res.is_err() {
+        println!("File {:?} is not present in the index.", file_path);
+        return ;
+    }
+
+    println!("Index row successfuly reset.");
 }

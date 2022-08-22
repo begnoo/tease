@@ -6,19 +6,11 @@ import (
 	"gorm.io/gorm"
 )
 
-type BranchHead struct {
-	gorm.Model
-	Name     string
-	Sha1     string
-	SourceID int
-}
-
 type Source struct {
 	gorm.Model
 	Name          string
 	Owner         string
 	Collabarators []Collabarator
-	Heads         []BranchHead
 	Visability    bool
 	Initialized   bool
 }

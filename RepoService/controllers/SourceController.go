@@ -65,6 +65,9 @@ func CreateSourceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// var sourceResp responses.Source
+	// mapper.AutoMapper(data, &sourceResp)
+
 	w.WriteHeader(http.StatusOK)
 	result := utils.StructToJson(data)
 	io.WriteString(w, result)

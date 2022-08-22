@@ -1,8 +1,9 @@
+use std::fmt::Display;
 use std::{fs::File, io::Read};
 use std::path::Path;
 
 use flate2::read::ZlibDecoder;
-use glob::{Paths, glob};
+use glob::Paths;
 
 pub fn read_object(root_folder: &String, object_name: &String) -> String {
     let object_file = File::open(
@@ -23,7 +24,7 @@ pub fn trail_commit_history(root_folder: &String, commit_sha1: &String, end_comm
     let mut parts: Vec<&str> = commit_content.split("\n").collect();
     parts = parts[1].split(" ").collect();
     
-    if parts[1] == end_commit {
+    if parts[1] == end_commit || parts[1] == "#" {
         return ;
     }
 
@@ -76,13 +77,90 @@ pub fn collect_objects_from_tree(root_folder: String, root_tree: String, objects
     }
 }
 
-pub fn get_missing_objects(root_folder: String, incoming_objects: &Vec<String>) -> Vec<String> {
-    let paths = glob(format!("{}/objects/*", root_folder).as_str())
-        .expect("Failed to read glob pattern");
+#[derive(Default, Debug)]
+pub struct IndexObject {
+    pub sha1: String,
+    pub path: String,
+}
+
+impl Display for IndexObject {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {}", self.path, self.sha1)
+    }
+}
+
+fn format_path(curr_path: &Vec<String>, name: String) -> String {
+    if curr_path.is_empty() {
+        return name.to_string();
+    }
+
+    format!("{}/{}", curr_path.join("/"), name.to_string())
+}
+
+pub fn collect_from_tree(root_folder: String, root_tree: String) -> Vec<IndexObject> {
+    let mut objects: Vec<IndexObject> = vec![];
+    let mut trees: Vec<String> = vec![root_tree.to_string()];
+    let mut visited: Vec<String> = vec![root_tree.to_string()];
     
-    let objects: Vec<String> = paths_to_string(paths).into_iter()
-                                                     .map(|path| path.split("/").last().unwrap().to_string())
-                                                     .collect();
+    let mut curr_path: Vec<String> = vec![];
+
+    while !trees.is_empty() {
+        let tree = trees.last().unwrap().to_string();
+        let tree_content = read_object(&root_folder, &tree.to_string());
+        let lines: Vec<&str> = tree_content.split("\n").collect();
+        let mut has_visited_tree = false;
+
+        for line in lines {
+            has_visited_tree = false;
+            
+            let parts: Vec<&str> = line.split(" ").collect();
+            let path = format_path(&curr_path, parts[1].to_string());
+            
+            if parts[0] == "blob" && !visited.contains(&path.to_string()) {
+                let blob = IndexObject {
+                    sha1: parts[2].to_string(),
+                    path: path.to_string()
+                };
+                objects.push(blob);
+                visited.push(path.to_string());
+            }
+
+            if parts[0] == "tree" && !visited.contains(&path.to_string()){
+                let tree = IndexObject {
+                    sha1: parts[2].to_string(),
+                    path: path.to_string() 
+                };
+                objects.push(tree);
+                trees.push(parts[2].to_string());
+                
+                visited.push(path.to_string());
+                curr_path.push(parts[1].to_string());
+                has_visited_tree = true;
+                break;
+            }
+        }
+        if !has_visited_tree {
+            curr_path.pop();
+            trees.pop();
+        }
+    }
+
+    objects
+
+}
+
+pub fn get_missing_objects(root_folder: String, incoming_objects: &Vec<String>, trail: &Vec<String>) -> Vec<String> {
+    let mut objects: Vec<String> = vec![];
+
+    for commit in trail.iter() {
+        objects.push(commit.to_string());
+        let tree = read_tree_from_commit(&root_folder.to_string(), &commit.to_string());
+        objects.push(tree.to_string());
+        collect_objects_from_tree(root_folder.to_string(), tree, &mut objects)
+    }
+
+    objects.sort();
+    objects.dedup();
 
     incoming_objects.iter()
                     .filter(|&obj| !objects.contains(obj))

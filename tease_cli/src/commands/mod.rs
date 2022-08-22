@@ -13,3 +13,5 @@ pub mod set_origin;
 pub mod set_user;
 pub mod push;
 pub mod pull;
+pub mod clone;
+pub mod init;
