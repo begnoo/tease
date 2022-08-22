@@ -4,6 +4,8 @@ mod utils;
 mod remote_req;
 mod merge_utils;
 
+use std::path::Path;
+
 use crate::{commands::{
     create::create_repo,
     add::{add_from_path, delete_from_path},
@@ -39,38 +41,72 @@ fn main() {
         }
         
         Some(Commands::Add { file_path }) => {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+
             println!("tease cli trying to add {:?}.", file_path.to_string());
             let res = add_from_path(file_path.to_string());
             println!("{}", res);  
         }
 
         Some(Commands::Rm { file_path }) =>  {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+
             println!("tease cli trying to delete {:?}.", file_path.to_string());
             let res = delete_from_path(file_path.to_string());
             println!("{}", res);
         }
         
         Some(Commands::Commit { message }) =>  {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+
             println!("tease cli trying to commit {:?}.", message.join(" ").to_string());
             commit(message.join(" ").to_string());
         }
 
         Some(Commands::Read { object: object_path }) =>  {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+            
             println!("tease cli trying to read {:?}.", object_path.to_string());
             let s = read_object(object_path);
             println!("{}", s);
         }
         
         Some(Commands::Reset { filename }) =>  {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+            
             println!("tease cli reset index row {:?}.", filename.to_string());
             reset(filename.to_string());
         }
 
         Some(Commands::Status) => {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+
             status();
         }
 
         Some(Commands::Branch { name, mode }) => {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
 
             if is_merging() {
                 println!("Please confirm merge before branching.");
@@ -95,6 +131,11 @@ fn main() {
         }
 
         Some(Commands::Diff {blob_a, blob_b}) => {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+
             let diff_lines = diff_file(blob_a.to_string(), blob_b.to_string());
             for diff_line in diff_lines.iter() {
                 println!("{}", diff_line);
@@ -102,6 +143,11 @@ fn main() {
         }
 
         Some(Commands::MergeFile {blob_a, blob_b, blob_o}) => {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+            
             let chunks = merge_file(blob_a.to_string(), blob_b.to_string(), blob_o.to_string());
             for chunk in chunks.iter() {
                 print!("{}", chunk);
@@ -109,6 +155,11 @@ fn main() {
         }
 
         Some(Commands::Merge {branch}) => {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+            
             if is_merging() {
                 println!("Please confirm merge before branching.");
                 return ;
@@ -117,26 +168,56 @@ fn main() {
         }
 
         Some(Commands::SetOrigin {origin}) => {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+            
             set_origin(origin.to_string());
         },
 
         Some(Commands::SetUser {email}) => {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+            
             set_user(email.to_string());
         }
 
         Some(Commands::Push) => {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+
             push();   
         }
 
         Some(Commands::Pull) => {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+            
             pull();   
         }
 
         Some(Commands::Clone { origin }) => {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+            
             clone(origin.to_string());   
         }
 
         Some(Commands::GoBack { sha }) => {
+            if !in_working_tree() {
+                println!("Not in working tree.");
+                return ;
+            }
+
             go_back(sha.to_string());   
         }
 
@@ -149,4 +230,14 @@ fn main() {
         }
     }
 
+}
+
+
+fn in_working_tree() -> bool {
+    let path = Path::new(".tease");
+    if path.exists() && path.is_dir() {
+        return true;
+    }
+    
+    false
 }
