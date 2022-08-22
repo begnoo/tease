@@ -1,4 +1,4 @@
-use std::fmt::{Display, format};
+use std::fmt::Display;
 use std::{fs::File, io::Read};
 use std::path::Path;
 

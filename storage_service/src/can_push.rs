@@ -53,7 +53,7 @@ pub async fn can_push(
     if md.is_err() {
         resp.present = false;
         return Json(resp);
-    } 
+    }
 
     resp.present = true;
 

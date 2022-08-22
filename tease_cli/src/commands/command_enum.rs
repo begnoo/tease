@@ -90,5 +90,9 @@ pub enum Commands {
 
     GoBack {
         sha: String,
+    },
+
+    Init {
+        name: String,
     }
 }

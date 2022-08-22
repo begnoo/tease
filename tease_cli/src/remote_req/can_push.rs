@@ -39,7 +39,7 @@ pub fn can_push() -> Result<CanPushResponse, CanPushError> {
     }
 
     let cp = cp_res.unwrap();
-    println!("{:?}", cp);
+    // println!("{:?}", cp);
 
     if !cp.present {
         return Err(CanPushError{message: "No source initialized on given origin.".to_string()});
@@ -49,7 +49,7 @@ pub fn can_push() -> Result<CanPushResponse, CanPushError> {
         return Err(CanPushError{message: "Nothing to push.".to_string()});
     }
 
-    let origin_is_contained = contains_commit(".tease".to_string(), read_head_commit(), cp.head_commit.to_string());
+    let origin_is_contained = cp.head_commit.to_string() == "" || contains_commit(".tease".to_string(), read_head_commit(), cp.head_commit.to_string());
     if !origin_is_contained && !cp.diff.is_empty() {
         return Err(CanPushError{message: "Please pull, you are behind on commits.".to_string()});
     }
@@ -69,7 +69,8 @@ pub struct CanPushResponse {
     pub result: bool,
     pub diff: Vec<String>,
     pub head_commit: String,
-    pub present: bool
+    pub present: bool,
+    // pub empty: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -127,13 +128,13 @@ async fn post_can_push(token: String) -> Result<CanPushResponse, CanPushError> {
         .json::<serde_json::Value>()
         .await
         .expect("Couldn't decode.");
-    println!("{:?}", json_resp);
+    // println!("{:?}", json_resp);
     
     if json_resp.get("present").is_none() {
         return Err(CanPushError {message: "Something went wrong".to_string()});
     }
     let cp_res = from_value_to_resp(json_resp);
-
+    // println!("{:?}", cp_res);
     Ok(cp_res)
 }
 

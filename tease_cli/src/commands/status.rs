@@ -1,3 +1,4 @@
+use std::fs::metadata;
 use std::fs::read_to_string;
 use std::os::unix::prelude::MetadataExt;
 
@@ -15,7 +16,21 @@ use colored::Colorize;
 use super::read::read_object;
 
 pub fn status() {
-    let entries = get_all_repo_paths();
+    let all_entries = get_all_repo_paths();
+    let entries: Vec<String> = all_entries.iter().filter(|entry| {
+        let file_md = metadata(entry.to_string());
+        if file_md.is_err() {
+            return false;
+        }
+
+        if file_md.unwrap().is_dir() {
+            return false;
+        }
+
+        return true;
+    })
+    .map(|entry| entry.to_string())
+    .collect();
 
     let index = read_index();
     

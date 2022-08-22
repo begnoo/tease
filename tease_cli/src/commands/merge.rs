@@ -96,7 +96,7 @@ fn handle_index_diff(current_index: &mut Index, common_index: &mut Vec<IndexObje
         }
     }
 
-    handle_residual_branch_rows(incoming_head);
+    handle_residual_incoming_rows(incoming_head);
     handle_residual_current_rows(current_index, &common_index);
     handle_rows_to_remove(&to_delete);
 }
@@ -128,11 +128,11 @@ fn handle_residual_current_rows(old_index: & Index, common_index: & Vec<IndexObj
     }
 }
 
-fn handle_residual_branch_rows(branch_index: & Vec<IndexObject>) {
+fn handle_residual_incoming_rows(branch_index: & Vec<IndexObject>) {
     for branch_row in branch_index.iter() {
         let lines = get_content_from_sha1(branch_row.sha1.to_string());
         let content: Vec<String> = lines.iter().map(|line| line.to_string()).collect();
-        create_missing_folders_and_file(branch_row.path.to_string(), content.join(""));
+        create_missing_folders_and_file(branch_row.path.to_string(), content.join("\n"));
         add_file(branch_row.path.to_string()).expect(&format!("Couldn't merge file {}", branch_row.path.to_string()));
     }
     

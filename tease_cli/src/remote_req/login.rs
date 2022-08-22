@@ -41,7 +41,7 @@ pub fn login_with_prompt(root_folder: String) -> (String, bool) {
         return (email, false);
     }
 
-    (email.to_string(), post_login(email.trim().to_string(), password.to_string(), Some(root_folder)))
+    (email.trim().to_string(), post_login(email.trim().to_string(), password.to_string(), Some(root_folder)))
 }
 
 #[derive(Serialize, Deserialize, Debug)]

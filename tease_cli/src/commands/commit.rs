@@ -60,7 +60,7 @@ pub fn commit(message: String) -> () {
     update_head(commit_sha1.to_string()).unwrap();
     flush_index();
 
-    println!("Commited {}", commit_sha1);
+    println!("Commited [{}]", commit_sha1);
 }
 
 pub fn create_tree() -> IndexTreeNode {

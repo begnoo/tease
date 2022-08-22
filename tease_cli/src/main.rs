@@ -17,7 +17,7 @@ use commands::{
     diff::diff_file,
     merge::merge_branch, 
     command_enum::{Args, Commands}, 
-    set_origin::set_origin, set_user::set_user, push::push, goback::go_back, pull::pull, clone::clone
+    set_origin::set_origin, set_user::set_user, push::push, goback::go_back, pull::pull, clone::clone, init::init
 };
 use clap::Parser;
 use merge_utils::merge_file::merge_file;
@@ -39,14 +39,7 @@ fn main() {
         }
         
         Some(Commands::Add { file_path }) => {
-
-
             println!("tease cli trying to add {:?}.", file_path.to_string());
-
-            // let _result: String;
-            // if deref_mode == "delete" {
-            //     _result = delete_from_path(deref_file_path.to_string());
-            // } else {
             let res = add_from_path(file_path.to_string());
             println!("{}", res);  
         }
@@ -66,7 +59,6 @@ fn main() {
             println!("tease cli trying to read {:?}.", object_path.to_string());
             let s = read_object(object_path);
             println!("{}", s);
-
         }
         
         Some(Commands::Reset { filename }) =>  {
@@ -121,7 +113,6 @@ fn main() {
                 println!("Please confirm merge before branching.");
                 return ;
             }
-
             merge_branch(branch.to_string());
         }
 
@@ -147,6 +138,10 @@ fn main() {
 
         Some(Commands::GoBack { sha }) => {
             go_back(sha.to_string());   
+        }
+
+        Some(Commands::Init { name }) => {
+            init(name.to_string());   
         }
 
         None => {

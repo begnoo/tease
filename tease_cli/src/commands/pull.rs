@@ -25,7 +25,7 @@ pub fn pull() {
     trail_commit_history(&".tease".to_string(), &head_commit.to_string(), &"#".to_string(), &mut trail);
     let missing_objects = get_missing_objects(".tease".to_string(), &count_response.objects, &trail);
     let missing_count = missing_objects.len();
-    println!("missing_objects {:?}", missing_objects);
+    // println!("missing_objects {:?}", missing_objects);
     
     if missing_count == 0 {
         println!("{} is already up-to-date.", get_current_branch());
