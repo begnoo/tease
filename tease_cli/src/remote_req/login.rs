@@ -3,7 +3,7 @@ use std::{fs::read_to_string, path::Path, io::{self, Write}};
 use rpassword::read_password;
 use tease_common::write::bolb_writer::create_tease_file;
 
-use crate::remote_req::requests::login::LoginRequest;
+use crate::remote_req::{requests::login::LoginRequest, AUTH_SERVICE};
 
 use super::responses::login::LoginResponse;
 
@@ -62,7 +62,8 @@ pub async fn post_login(email: String, password: String, root_folder: Option<Str
     };
 
     let client = reqwest::Client::new();
-    let resp = client.post("http://localhost:8080/auth/login")
+    let url = format!("{}/login", AUTH_SERVICE);
+    let resp = client.post(url)
         // .header("Authorization", format!("Bearer {}", token))
         .json(&req_body)
         .send()

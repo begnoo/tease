@@ -5,7 +5,7 @@ use serde::{Deserialize};
 use super::{
     get_clone::get_token, 
     responses::init::InitResponse, 
-    requests::init::InitRequest
+    requests::init::InitRequest, REPO_SERVICE
 };
 
 #[derive(Debug)]
@@ -43,8 +43,7 @@ pub async fn post_init(email: String, name: String) -> Result<InitResponse, Init
 
     // println!("{:?}", req_body);
 
-    let url = format!("http://localhost:8081/source");
-    let resp = client.post(url)
+    let resp = client.post(REPO_SERVICE)
         .header("Authorization", format!("Bearer {}", token))
         .json(&req_body)
         .send()
