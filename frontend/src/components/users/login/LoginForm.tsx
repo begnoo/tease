@@ -47,7 +47,7 @@ export default function LoginForm() {
                     title: 'Failure.',
                     description: `Couldn't login: ${err.message}`,
                     status: 'error',
-                    duration: 3000,
+                    duration: 1000,
                     position: "top",
                     isClosable: true,
                 });
