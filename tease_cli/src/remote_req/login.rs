@@ -1,8 +1,11 @@
 use std::{fs::read_to_string, path::Path, io::{self, Write}};
 
 use rpassword::read_password;
-use serde::{Serialize, Deserialize};
 use tease_common::write::bolb_writer::create_tease_file;
+
+use crate::remote_req::requests::login::LoginRequest;
+
+use super::responses::login::LoginResponse;
 
 pub async fn login() -> bool {
     let email = read_to_string(Path::new(".tease/user")).expect(&format!("Couldn't read user"));
@@ -44,17 +47,6 @@ pub fn login_with_prompt(root_folder: String) -> (String, bool) {
     (email.trim().to_string(), blocking_login(email.trim().to_string(), password.to_string(), Some(root_folder)))
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct LoginRequest {
-    email: String,
-    password: String
-}
-
-
-#[derive(Serialize, Deserialize, Debug)]
-struct LoginResponse {
-    token: String,
-}
 
 #[tokio::main]
 pub async fn blocking_login(email: String, password: String, root_folder: Option<String>) -> bool {

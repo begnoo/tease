@@ -3,8 +3,6 @@ use std::{
     path::Path, vec, fmt::Display
 };
 
-use serde::{Serialize, Deserialize};
-
 use crate::{
     utils::blob_writer::{
         get_current_branch,
@@ -21,7 +19,7 @@ use tease_common::{
     write::bolb_writer::create_tease_file
 };
 
-use super::login::get_token;
+use super::{login::get_token, responses::can_push::CanPushResponse, requests::can_push::CanPushRequest};
 
 pub fn can_push() -> Result<CanPushResponse, CanPushError> {
     let email = read_to_string(Path::new(".tease/user"))
@@ -53,22 +51,6 @@ pub fn can_push() -> Result<CanPushResponse, CanPushError> {
     }
 
     Ok(cp)
-}
-
-#[derive(Serialize, Debug)]
-pub struct CanPushRequest {
-    pub branch: String,
-    pub sha1: String,
-    pub objects: Vec<String>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct CanPushResponse {
-    pub result: bool,
-    pub diff: Vec<String>,
-    pub head_commit: String,
-    pub present: bool,
-    // pub empty: bool,
 }
 
 #[derive(Debug, Clone)]

@@ -1,25 +1,12 @@
 use std::fmt::Display;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize};
 
-use super::get_clone::get_token;
-
-#[derive(Debug, Serialize)]
-struct InitRequest {
-    name: String,
-    owner: String,
-    visability: bool,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct InitResponse {
-    #[serde(alias = "ID")] 
-    pub id: u64,
-    #[serde(alias = "Name")] 
-    pub name: String,
-    #[serde(alias = "Owner")] 
-    pub owner: String,
-}
+use super::{
+    get_clone::get_token, 
+    responses::init::InitResponse, 
+    requests::init::InitRequest
+};
 
 #[derive(Debug)]
 pub struct InitError {

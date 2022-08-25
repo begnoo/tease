@@ -27,9 +27,7 @@ use tease_common::read::blob_reader::trail_commits_all;
 use utils::blob_writer::{has_added_files, read_head_commit};
 
 // TODO: packfile
-// TODO: rekurzivne funkcije -> iterativne (collect_objects_from_tree -> collect_from_tree)
 // TODO: skinuti lock za branch pri create modu i preneti trenutne izmene i dodate fajlove
-// TODO: sredi log da prikazuje commitove po redosledu a ne po roditeljima (mozda bitno samo za front)
 // TODO: dodaj info o razlici kod commitova (+) (-)
 fn main() {
     let args = Args::parse();
@@ -223,11 +221,11 @@ fn main() {
 
         Some(Commands::Log {}) => {
             let head = read_head_commit();
-            let mut other_trail = trail_commits_all(".tease".to_string(), head);
-            other_trail.sort_by(|a, b| b.date.cmp(&a.date));
-            other_trail.dedup_by(|a, b| a.sha1 == b.sha1);
+            let mut log_trail = trail_commits_all(".tease".to_string(), head);
+            log_trail.sort_by(|a, b| b.date.cmp(&a.date));
+            log_trail.dedup_by(|a, b| a.sha1 == b.sha1);
 
-            for commit in other_trail.iter() {
+            for commit in log_trail.iter() {
                 println!("{}\n", commit);
             }
         }
