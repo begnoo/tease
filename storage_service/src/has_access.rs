@@ -5,7 +5,8 @@ use serde::Serialize;
 pub struct HasAccessRequest {
     pub user: String,
     pub owner: String,
-    pub sourceName: String,
+    #[serde(alias = "sourceName")] 
+    pub source_name: String,
 }
 
 pub async fn has_access(req_body: HasAccessRequest, token: String) -> Result<bool, Box<dyn std::error::Error>> {

@@ -15,9 +15,8 @@ use crate::{
 
 use tease_common::{
     read::blob_reader::{
-        trail_commit_history,
         collect_objects_from_tree,
-        read_tree_from_commit, contains_commit,
+        read_tree_from_commit, contains_commit, trail_commits_to,
     },
     write::bolb_writer::create_tease_file
 };
@@ -148,6 +147,7 @@ fn get_objects_to_send() -> Vec<String> {
     let mut objects: Vec<String> = vec![]; 
     let local_head = read_head_commit();
     let mut origin_head = read_origin_head_commit();
+    let root_folder = ".tease".to_string();
 
     if local_head == "# Starting commit" {
         return objects;
@@ -161,8 +161,10 @@ fn get_objects_to_send() -> Vec<String> {
         return objects;
     }
 
-    let mut commits: Vec<String> = vec![local_head.to_string()];
-    trail_commit_history(&".tease".to_string(), &local_head, &origin_head, &mut commits);
+    let mut commits: Vec<String> = trail_commits_to(root_folder.to_string(), local_head, origin_head)
+                                    .iter()
+                                    .map(|obj| obj.sha1.to_string())
+                                    .collect();
     commits.retain(|commit| commit != "");
 
     if commits.is_empty() {
@@ -171,9 +173,11 @@ fn get_objects_to_send() -> Vec<String> {
 
     for commit in commits.iter() {
         objects.push(commit.to_string());
-        let tree = read_tree_from_commit(&".tease".to_string(), commit);
+        let tree = read_tree_from_commit(&root_folder, commit);
         objects.push(tree.to_string());
-        collect_objects_from_tree(".tease".to_string(), tree, &mut objects);
+
+        let mut collected_objects = collect_objects_from_tree(root_folder.to_string(), tree);
+        objects.append(&mut collected_objects);
     }
 
     objects.sort();

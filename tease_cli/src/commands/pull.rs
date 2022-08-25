@@ -1,8 +1,25 @@
 use std::fs::remove_file;
 
-use tease_common::read::blob_reader::{get_missing_objects, trail_commit_history};
+use tease_common::read::blob_reader::{
+    get_missing_objects,
+    trail_commits_all
+};
 
-use crate::{remote_req::{what_to_pull::what_to_pull, post_pull::post_pull}, utils::blob_writer::{get_current_branch, update_head, update_origin_head, read_head_commit, has_untracked_files}, commands::{merge::merge_commits, goback::go_back}};
+use crate::{
+    remote_req::{
+        what_to_pull::what_to_pull,
+        post_pull::post_pull},
+        utils::blob_writer::{
+            get_current_branch, 
+            update_head, 
+            update_origin_head, 
+            read_head_commit, 
+            has_untracked_files},
+        commands::{
+            merge::merge_commits, 
+            goback::go_back
+        }
+};
 
 pub fn pull() {
 
@@ -21,8 +38,10 @@ pub fn pull() {
 
     let head_commit = read_head_commit();
     
-    let mut trail: Vec<String> = vec![];
-    trail_commit_history(&".tease".to_string(), &head_commit.to_string(), &"#".to_string(), &mut trail);
+    let trail = trail_commits_all(".tease".to_string(), head_commit.to_string())
+                                    .iter()
+                                    .map(|obj| obj.sha1.to_string())
+                                    .collect();
     let missing_objects = get_missing_objects(".tease".to_string(), &count_response.objects, &trail);
     let missing_count = missing_objects.len();
     // println!("missing_objects {:?}", missing_objects);

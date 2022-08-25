@@ -94,5 +94,7 @@ pub enum Commands {
 
     Init {
         name: String,
-    }
+    },
+
+    Log
 }

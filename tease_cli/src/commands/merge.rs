@@ -20,7 +20,7 @@ use std::{fs::{read_to_string, create_dir_all}, path::Path};
 
 use tease_common::{
     write::bolb_writer::create_tease_file,
-    read::blob_reader::trail_commit_history,
+    read::blob_reader::trail_commits_all,
     read::blob_reader::IndexObject,
     read::blob_reader::read_tree_from_commit,
 };
@@ -190,15 +190,19 @@ fn is_already_merged(history: &Vec<String>, branch_head: String) -> bool {
 }
 
 fn find_common_commit(current: String, incoming: String) -> String {
-    let mut current_history: Vec<String> = vec![current.to_string()];
-    trail_commit_history(&".tease".to_string(), &current, &"#".to_string(), &mut current_history);
+    let current_history: Vec<String> = trail_commits_all(".tease".to_string(), current)
+                                        .iter()
+                                        .map(|obj| obj.sha1.to_string())
+                                        .collect();
 
     if is_already_merged(&current_history, incoming.to_string()) {
         return "merged".to_string();
     }
 
-    let mut incoming_history: Vec<String> = vec![incoming.to_string()];
-    trail_commit_history(&".tease".to_string(), &incoming, &"#".to_string(), &mut incoming_history);
+    let incoming_history: Vec<String> = trail_commits_all(".tease".to_string(), incoming)
+                                        .iter()
+                                        .map(|obj| obj.sha1.to_string())
+                                        .collect();
 
     for current_sha1 in current_history.iter() {
        for incoming_sha1 in incoming_history.iter() {

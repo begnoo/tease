@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::vec;
 use std::{fs::File, io::Read};
 use std::path::Path;
 
@@ -19,30 +20,78 @@ pub fn read_object(root_folder: &String, object_name: &String) -> String {
     decoded_str
 }
 
-pub fn trail_commit_history(root_folder: &String, commit_sha1: &String, end_commit: &String, trail: &mut Vec<String>) {
-    let commit_content = read_object(root_folder, commit_sha1);
-    let mut parts: Vec<&str> = commit_content.split("\n").collect();
-    parts = parts[1].split(" ").collect();
+pub struct CommitObject {
+    pub sha1: String,
+    pub date: u64,
+    pub author: String,
+    pub message: String 
+}
+
+impl Display for CommitObject {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Commit: {}\nAuthor: {}\nDate: {}\n\t{}", self.sha1, self.author, self.date, self.message)
+    }
+}
+
+
+pub fn trail_commits_all(root_folder: String, starting_commit: String) -> Vec<CommitObject> {
+    trail_commits_incl(root_folder, starting_commit, "#".to_string())
+}
+
+pub fn trail_commits_to(root_folder: String, starting_commit: String, end_commit: String) -> Vec<CommitObject> {
+    let mut objects = trail_commits_incl(root_folder, starting_commit, end_commit.to_string());
+    println!("{}", objects.len());
     
-    // println!("{}", parts.len());
+    let end_commit_pos = objects.iter().position(|obj| obj.sha1 == end_commit);
+    if end_commit_pos.is_none() {
+        return vec![];
+    }
+    objects.remove(end_commit_pos.unwrap());
+
+    println!("{}", objects.len());
     
-    if parts[1] == "#" {
-        return ;
+    objects
+}
+
+pub fn trail_commits_incl(root_folder: String, starting_commit: String, end_commit: String) -> Vec<CommitObject> {
+    let mut trail: Vec<CommitObject> = vec![];
+    let mut to_visit: Vec<String> = vec![starting_commit.to_string()];
+    
+    let mut current_commit: String;
+    
+    while !to_visit.is_empty() {
+        current_commit = to_visit.pop().unwrap();
+
+        if ((end_commit != "#" && current_commit == end_commit) || current_commit == "#") && to_visit.is_empty() {
+            break;
+        }
+
+        if current_commit == "#" && !to_visit.is_empty() {
+            continue;
+        }
+
+        let commit_content = read_object(&root_folder, &current_commit);
+        let commit_lines: Vec<&str> = commit_content.split("\n").collect();
+        let parents: Vec<&str> = commit_lines[1].split(" ").collect();
+        let author: Vec<&str> = commit_lines[2].split(" ").collect();
+        let date = author[2].parse::<u64>().unwrap();
+
+        let commit_obj = CommitObject {
+            sha1: current_commit.to_string(),
+            author: author[1].to_string(),
+            date,
+            message: commit_lines[5].to_string(),
+        };
+
+        trail.push(commit_obj);
+        to_visit.push(parents[1].to_string());
+
+        if parents.len() > 2 && parents[2] != "Starting" {
+            to_visit.push(parents[2].to_string())
+        }
     }
 
-    if parts.len() > 2 {
-        if parts[1] != end_commit {
-            trail.push(parts[1].to_string());
-            trail_commit_history(root_folder, &parts[1].to_string(), end_commit, trail);            
-        }
-        if parts[2] != end_commit {
-            trail.push(parts[2].to_string());
-            trail_commit_history(root_folder, &parts[2].to_string(), end_commit, trail);
-        }
-    } else if parts[1] != end_commit {
-        trail.push(parts[1].to_string());
-        trail_commit_history(root_folder, &parts[1].to_string(), end_commit, trail);
-    }
+    trail
 }
 
 pub fn paths_to_string(paths: Paths) -> Vec<String> {
@@ -56,8 +105,9 @@ pub fn paths_to_string(paths: Paths) -> Vec<String> {
 }
 
 pub fn contains_commit(root_folder: String, branch_commit: String, new_commit: String) -> bool {
-    let mut history: Vec<String> = vec![branch_commit.to_string()];
-    trail_commit_history(&root_folder, &branch_commit, &"#".to_string(), &mut history);
+    let history: Vec<String> = trail_commits_all(root_folder, branch_commit)
+                                    .iter().map(|obj| obj.sha1.to_string())
+                                    .collect();
 
     if history.contains(&new_commit) {
         return true;
@@ -66,21 +116,10 @@ pub fn contains_commit(root_folder: String, branch_commit: String, new_commit: S
     false
 }
 
-pub fn collect_objects_from_tree(root_folder: String, root_tree: String, objects: &mut Vec<String>) {
-    let tree_content = read_object(&root_folder, &root_tree);
-    let lines: Vec<&str> = tree_content.split("\n").collect();
-
-    for line in lines {
-        let parts: Vec<&str> = line.split(" ").collect();        
-        if parts[0] == "blob" {
-            objects.push(parts[2].to_string())
-        }
-
-        if parts[0] == "tree" {
-            objects.push(parts[2].to_string());
-            collect_objects_from_tree(root_folder.to_string(), parts[2].to_string(), objects);
-        }
-    }
+pub fn collect_objects_from_tree(root_folder: String, root_tree: String) -> Vec<String> {
+    collect_from_tree(root_folder, root_tree).iter()
+                                             .map(|index_obj| index_obj.sha1.to_string())
+                                             .collect()
 }
 
 #[derive(Default, Debug)]
@@ -162,7 +201,9 @@ pub fn get_missing_objects(root_folder: String, incoming_objects: &Vec<String>, 
         objects.push(commit.to_string());
         let tree = read_tree_from_commit(&root_folder.to_string(), &commit.to_string());
         objects.push(tree.to_string());
-        collect_objects_from_tree(root_folder.to_string(), tree, &mut objects)
+    
+        let mut collected_objects = collect_objects_from_tree(root_folder.to_string(), tree);
+        objects.append(&mut collected_objects);
     }
 
     objects.sort();

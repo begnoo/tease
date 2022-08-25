@@ -35,7 +35,7 @@ pub async fn what_to_pull(
     let has_access_req = HasAccessRequest {
         user: jwt_token.email,
         owner: user.to_string(),
-        sourceName: source_name.to_string()
+        source_name: source_name.to_string()
     };
 
     let res = has_access(has_access_req, jwt_token.token).await;
@@ -78,7 +78,9 @@ fn get_objects_to_send(root_folder: String, past_origin_head: String, origin_hea
         objects.push(commit.to_string());
         let tree = read_tree_from_commit(&root_folder, commit);
         objects.push(tree.to_string());
-        collect_objects_from_tree(root_folder.to_string(), tree, &mut objects);
+
+        let mut collected_objects = collect_objects_from_tree(root_folder.to_string(), tree);
+        objects.append(&mut collected_objects);
     }
 
     objects.sort();

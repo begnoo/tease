@@ -40,7 +40,7 @@ pub async fn can_push(
     let has_access_req = HasAccessRequest {
         user: jwt_token.email,
         owner: user.to_string(),
-        sourceName: source_name.to_string()
+        source_name: source_name.to_string()
     };
 
     let res = has_access(has_access_req, jwt_token.token).await;

@@ -1,7 +1,11 @@
 use std::{fs::File};
 
 use rocket::fs::NamedFile;
-use tease_common::read::blob_reader::{read_tree_from_commit, collect_objects_from_tree, trail_commit_history};
+use tease_common::read::blob_reader::{
+    read_tree_from_commit,
+    collect_objects_from_tree,
+    trail_commit_history
+};
 
 use crate::{jwt::JwtToken, file_utils::read_branch_head};
 
@@ -74,7 +78,9 @@ pub fn get_objects(root_folder: String, branch: String) -> Vec<String> {
         objects.push(commit.to_string());
         let tree = read_tree_from_commit(&root_folder, commit);
         objects.push(tree.to_string());
-        collect_objects_from_tree(root_folder.to_string(), tree, &mut objects);
+
+        let mut collected_objects = collect_objects_from_tree(root_folder.to_string(), tree);
+        objects.append(&mut collected_objects);
     }
 
     objects.sort();
