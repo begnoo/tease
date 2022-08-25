@@ -19,8 +19,8 @@ func main() {
 	}
 
 	r := server.SetupRouter()
-
-	err = http.ListenAndServe(":8080", r)
+	handler := server.SetupCors(&r)
+	err = http.ListenAndServe(":8080", handler)
 
 	if err == nil {
 		fmt.Printf("Started listening on port 8080")
