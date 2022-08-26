@@ -11,6 +11,7 @@ type Source struct {
 	ID            int       `mapper:"ID"`
 	CreatedAt     time.Time `mapper:"CreatedAt"`
 	Name          string    `mapper:"Name"`
+	Description   string    `mapper:"Description"`
 	Owner         string    `mapper:"Owner"`
 	Collabarators []Collabarator
 	Visability    bool `mapper:"Visability"`

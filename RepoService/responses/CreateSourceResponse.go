@@ -6,6 +6,7 @@ type Source struct {
 	ID          int       `json:"id" mapper:"ID"`
 	Name        string    `json:"name" mapper:"Name"`
 	Owner       string    `json:"owner" mapper:"Owner"`
+	Description string    `json:"description" mapper:"Description"`
 	Visability  bool      `json:"visability" mapper:"Visability"`
 	Initialized bool      `json:"initialized" mapper:"Initialized"`
 	CreatedAt   time.Time `json:"createdAt" mapper:"CreatedAt"`

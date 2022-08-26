@@ -9,8 +9,8 @@ interface SourceListProps {
 export default function SourceList({ sources }: SourceListProps): JSX.Element {
 
     return (
-      <Flex flexDirection="column" width={"100%"} gap={"20px"}>
-          {sources.map((source, index) => (
+      <Flex flexDirection="column" width={"100%"} gap={"20px"} mb={"50px"}>
+          {sources.map((source) => (
               <SourceBlock key={source.id} source={source} />
           ))}
       </Flex>

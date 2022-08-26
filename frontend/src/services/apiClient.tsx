@@ -13,7 +13,7 @@ client.interceptors.request.use(function (config) {
   let token = "";
  
   if (user !== null) {
-    token = user.jwt;
+    token = user.token;
   }
   
   config.headers = {
@@ -23,6 +23,10 @@ client.interceptors.request.use(function (config) {
 
   return config;
 });
+
+export interface BackendError {
+  error: string | []
+}
 
 
 export { client };

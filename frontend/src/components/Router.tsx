@@ -1,10 +1,11 @@
 import { Route, Routes } from "react-router-dom";
 import {
-  HOME_PAGE, LOGIN_PAGE, REGISTER_PAGE, SOURCE_OVERVIEW_PAGE, SOURCE_USERVIEW_PAGE,
+  HOME_PAGE, INIT_SOURCE_PAGE, LOGIN_PAGE, REGISTER_PAGE, SOURCE_OVERVIEW_PAGE, SOURCE_USERVIEW_PAGE,
 } from "../constatns";
 import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
+import InitPage from "../pages/source/InitPage";
 import OverviewPage from "../pages/source/OverviewPage";
 import UserViewPage from "../pages/source/UserViewPage";
 
@@ -27,9 +28,13 @@ export default function Router(): JSX.Element {
         path={SOURCE_OVERVIEW_PAGE}
         element={<OverviewPage/>}
       />
-    <Route
+      <Route
         path={SOURCE_USERVIEW_PAGE}
         element={<UserViewPage/>}
+      />
+      <Route
+        path={INIT_SOURCE_PAGE}
+        element={<InitPage/>}
       />
     </Routes>
   );

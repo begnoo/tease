@@ -1,9 +1,8 @@
-import { useToast } from "@chakra-ui/toast";
 import { useContext } from "react";
 import { useNavigate } from "react-router";
 import { AuthContext } from "../../../providers/AuthProvider";
 import { useForm } from "react-hook-form";
-import { FormControl, FormErrorMessage, FormLabel } from "@chakra-ui/form-control";
+import { FormControl, FormLabel } from "@chakra-ui/form-control";
 import { Input } from "@chakra-ui/input";
 import { Flex } from "@chakra-ui/layout";
 import { Button } from "@chakra-ui/button";
@@ -12,6 +11,7 @@ import { addUserIntoLocalStorage } from "../../../utils/jwtUtils";
 import { EMAIL_PATTERN } from "../../../utils/validation";
 import { loginUser } from "../../../services/AuthService";
 import { AxiosError } from "axios";
+import { useRequestToast } from "../../../hooks/useRequestToast";
 
 export default function LoginForm() {
 
@@ -22,7 +22,7 @@ export default function LoginForm() {
     } = useForm();
 
     const navigate = useNavigate();
-    const toast = useToast();
+    const { toastSuccess, toastFailure } = useRequestToast("You've successfully logged in.", "Couldn't login");
     const { login } = useContext(AuthContext);
 
     const { mutate: postLoginInfo } = useMutation(
@@ -30,27 +30,13 @@ export default function LoginForm() {
         {
             onSuccess: (res) => {
                 console.log(res);
-                toast({
-                    title: 'Success.',
-                    description: `You've successfully logged in.`,
-                    status: 'success',
-                    duration: 1000,
-                    position: "top",
-                    isClosable: true,
-                });
+                toastSuccess();
                 addUserIntoLocalStorage(res.data);
                 login();
                 setTimeout(() => navigate("/"), 500);
             },
             onError: (err: AxiosError) => {
-                toast({
-                    title: 'Failure.',
-                    description: `Couldn't login: ${err.message}`,
-                    status: 'error',
-                    duration: 1000,
-                    position: "top",
-                    isClosable: true,
-                });
+                toastFailure(err);
             }
         }
     );

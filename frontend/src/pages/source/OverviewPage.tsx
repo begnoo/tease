@@ -9,7 +9,7 @@ export default function OverviewPage(): JSX.Element {
 
   return (
     <Flex mt={10}>
-      {!isLoading && sources !== undefined && <SourceList sources={sources}/>}
+      {!isLoading && sources !== null && sources !== undefined && <SourceList sources={sources}/>}
     </Flex>
   );
 }

@@ -15,7 +15,7 @@ export default function UserViewPage(): JSX.Element {
   return (
     <Flex mt={10} flexDirection="column">
       <Center>
-        {!isLoading && sources !== undefined && <SourceList sources={sources}/>}
+        {!isLoading && sources !== null && sources !== undefined && <SourceList sources={sources}/>}
       </Center>
     </Flex>
   );

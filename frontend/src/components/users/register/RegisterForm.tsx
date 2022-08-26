@@ -1,7 +1,8 @@
-import { Button, Flex, FormControl, FormLabel, Input, useToast } from "@chakra-ui/react";
+import { Button, Flex, FormControl, FormLabel, Input } from "@chakra-ui/react";
 import { AxiosError } from "axios";
 import { FieldValues, useForm } from "react-hook-form";
 import { useMutation } from "react-query";
+import { useRequestToast } from "../../../hooks/useRequestToast";
 import { registerUser, RegisterUserRequest } from "../../../services/RegisterService";
 import { EMAIL_PATTERN } from "../../../utils/validation";
 
@@ -13,31 +14,17 @@ const RegisterForm = () => {
         getValues,
         formState: { isSubmitting },
     } = useForm();
-    const toast = useToast();
+    const { toastSuccess, toastFailure } = useRequestToast("You've successfully registerd.", "Couldn't register");
 
 
     const { mutate: postRegisterUser } = useMutation(
         registerUser,
         {
             onSuccess: (res) => {
-                toast({
-                    title: 'Success.',
-                    description: `You've successfully registerd.`,
-                    status: 'success',
-                    duration: 1000,
-                    position: "top",
-                    isClosable: true,
-                });
+                toastSuccess();
             },
             onError: (err: AxiosError) => {
-                toast({
-                    title: 'Failure.',
-                    description: `Couldn't register: ${err.message}`,
-                    status: 'error',
-                    duration: 1000,
-                    position: "top",
-                    isClosable: true,
-                });
+                toastFailure(err);
             }
         }
     );
