@@ -1,7 +1,7 @@
 use crate::{file_utils::read_branch_head, has_access::{has_access, HasAccessRequest}, jwt::JwtToken};
 use rocket::serde::{Deserialize, json::Json};
 use serde::Serialize;
-use tease_common::read::blob_reader::{trail_commit_history, read_tree_from_commit, collect_objects_from_tree};
+use tease_common::read::blob_reader::{read_tree_from_commit, collect_objects_from_tree, trail_commits_incl};
 
 #[derive(Deserialize, Debug)]
 #[serde(crate = "rocket::serde")]
@@ -65,8 +65,10 @@ fn get_objects_to_send(root_folder: String, past_origin_head: String, origin_hea
         return objects;
     }
 
-    let mut commits: Vec<String> = vec![past_origin_head.to_string(), origin_head.to_string()];
-    trail_commit_history(&root_folder, &origin_head, &past_origin_head, &mut commits);
+    let mut commits: Vec<String> = trail_commits_incl(root_folder.to_string(), origin_head.to_string(), past_origin_head.to_string())
+                                    .iter()
+                                    .map(|obj| obj.sha1.to_string())
+                                    .collect();
     commits.retain(|commit| commit != "");
     println!("{:?}", commits);
 

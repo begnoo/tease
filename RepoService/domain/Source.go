@@ -8,11 +8,13 @@ import (
 
 type Source struct {
 	gorm.Model
-	Name          string
-	Owner         string
+	ID            int       `mapper:"ID"`
+	CreatedAt     time.Time `mapper:"CreatedAt"`
+	Name          string    `mapper:"Name"`
+	Owner         string    `mapper:"Owner"`
 	Collabarators []Collabarator
-	Visability    bool
-	Initialized   bool
+	Visability    bool `mapper:"Visability"`
+	Initialized   bool `mapper:"Initialized"`
 }
 
 type Collabarator struct {

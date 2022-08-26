@@ -1,5 +1,5 @@
 use rocket::serde::{Serialize, Deserialize, json::Json};
-use tease_common::read::blob_reader::{contains_commit,  get_missing_objects, trail_commit_history};
+use tease_common::read::blob_reader::{contains_commit,  get_missing_objects, trail_commits_all};
 
 use crate::{jwt::JwtToken, file_utils::read_branch_head, has_access::{HasAccessRequest, has_access}};
 use std::fs::metadata;
@@ -61,8 +61,10 @@ pub async fn can_push(
     let branch_commit = if branch_head.is_ok() { branch_head.unwrap() } else { "".to_string() };
 
     if branch_commit != "" {
-        let mut trail: Vec<String> = vec![];
-        trail_commit_history(&root_folder.to_string(), &branch_commit.to_string(), &"#".to_string(), &mut trail);
+        let trail: Vec<String> = trail_commits_all(root_folder.to_string(), branch_commit.to_string())
+                                    .iter()
+                                    .map(|obj| obj.sha1.to_string())
+                                    .collect();
         let missing_objects = get_missing_objects(root_folder.to_string(), &src_data.objects, &trail);
         resp.diff = missing_objects;
     } else {

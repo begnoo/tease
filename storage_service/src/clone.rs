@@ -4,7 +4,7 @@ use rocket::fs::NamedFile;
 use tease_common::read::blob_reader::{
     read_tree_from_commit,
     collect_objects_from_tree,
-    trail_commit_history
+    trail_commits_all
 };
 
 use crate::{jwt::JwtToken, file_utils::read_branch_head};
@@ -64,9 +64,10 @@ pub fn get_objects(root_folder: String, branch: String) -> Vec<String> {
     }
 
     let head_commit = head_commit_res.unwrap();
-    let mut commits: Vec<String> = vec![head_commit.to_string()];
-
-    trail_commit_history(&root_folder, &head_commit, &"#".to_string(), &mut commits);
+    let mut commits: Vec<String> = trail_commits_all(root_folder.to_string(), head_commit.to_string())
+                                    .iter()
+                                    .map(|obj| obj.sha1.to_string())
+                                    .collect();
     commits.retain(|commit| commit != "");
 
     if commits.is_empty() {

@@ -33,7 +33,7 @@ func (r *SourceRepo) ReadById(id int) (*domain.Source, error) {
 
 func (repo *SourceRepo) ReadByOwner(owner string) (*[]domain.Source, error) {
 	var sources []domain.Source
-	res := repo.db.Where(&domain.Source{Owner: owner}).Take(&sources)
+	res := repo.db.Where(&domain.Source{Owner: owner}).Find(&sources)
 
 	return &sources, res.Error
 }

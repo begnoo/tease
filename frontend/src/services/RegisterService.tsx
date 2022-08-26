@@ -12,7 +12,7 @@ export interface RegisterUserRequest {
     profile: Profile;
 } 
 
-export const registerUser = async (creds: RegisterUserRequest) => {
-    let resp = await client.post(`${USER_SERVICE_URL}`, { ...creds })
+export const registerUser = async (user: RegisterUserRequest) => {
+    let resp = await client.post(`${USER_SERVICE_URL}`, { ...user })
     return resp;
 }
