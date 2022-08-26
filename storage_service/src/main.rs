@@ -1,16 +1,6 @@
 #[macro_use] extern crate rocket;
 
-mod has_access;
-
-mod can_push;
-mod push;
-
-mod what_to_pull;
-mod pull;
-
-mod clone;
-
-mod init;
+mod controllers;
 
 mod file_utils;
 mod jwt;
@@ -18,11 +8,13 @@ mod jwt;
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/source", routes![push::push])
-        .mount("/source", routes![can_push::can_push])
-        .mount("/source", routes![what_to_pull::what_to_pull])
-        .mount("/source", routes![pull::pull])
-        .mount("/source", routes![clone::clone])
-        .mount("/source", routes![clone::clone_branch])
-        .mount("/source", routes![init::init])
+        .mount("/source", routes![controllers::push::push])
+        .mount("/source", routes![controllers::can_push::can_push])
+        .mount("/source", routes![controllers::what_to_pull::what_to_pull])
+        .mount("/source", routes![controllers::pull::pull])
+        .mount("/source", routes![controllers::clone::clone])
+        .mount("/source", routes![controllers::clone::clone_branch])
+        .mount("/source", routes![controllers::init::init])
+        .mount("/read", routes![controllers::read::read_tree])
+
 }

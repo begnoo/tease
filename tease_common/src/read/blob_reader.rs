@@ -20,6 +20,22 @@ pub fn read_object(root_folder: &String, object_name: &String) -> String {
     decoded_str
 }
 
+pub fn safe_read_object(root_folder: &String, object_name: &String) -> Result<String, std::io::Error> {
+    let object_file_res = File::open(
+            &Path::new(root_folder)
+                    .join("objects")
+                    .join(object_name));
+    if object_file_res.is_err() {
+        return Err(object_file_res.err().unwrap());
+    }
+    let object_file = object_file_res.unwrap();
+    let mut decoder = ZlibDecoder::new(object_file);
+    let mut decoded_str = String::new();
+    decoder.read_to_string(&mut decoded_str).unwrap().to_string();
+
+    Ok(decoded_str)
+}
+
 pub struct CommitObject {
     pub sha1: String,
     pub date: u64,
@@ -126,6 +142,7 @@ pub fn collect_objects_from_tree(root_folder: String, root_tree: String) -> Vec<
 pub struct IndexObject {
     pub sha1: String,
     pub path: String,
+    pub data_type: String,
 }
 
 impl Display for IndexObject {
@@ -164,7 +181,8 @@ pub fn collect_from_tree(root_folder: String, root_tree: String) -> Vec<IndexObj
             if parts[0] == "blob" && !visited.contains(&path.to_string()) {
                 let blob = IndexObject {
                     sha1: parts[2].to_string(),
-                    path: path.to_string()
+                    path: path.to_string(),
+                    data_type: "blob".to_string()
                 };
                 objects.push(blob);
                 visited.push(path.to_string());
@@ -173,7 +191,8 @@ pub fn collect_from_tree(root_folder: String, root_tree: String) -> Vec<IndexObj
             if parts[0] == "tree" && !visited.contains(&path.to_string()){
                 let tree = IndexObject {
                     sha1: parts[2].to_string(),
-                    path: path.to_string() 
+                    path: path.to_string(), 
+                    data_type: "tree".to_string()
                 };
                 objects.push(tree);
                 trees.push(parts[2].to_string());

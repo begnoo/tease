@@ -1,8 +1,10 @@
 use rocket::serde::{Serialize, Deserialize, json::Json};
 use tease_common::read::blob_reader::{contains_commit,  get_missing_objects, trail_commits_all};
 
-use crate::{jwt::JwtToken, file_utils::read_branch_head, has_access::{HasAccessRequest, has_access}};
+use crate::{jwt::JwtToken, file_utils::read_branch_head};
 use std::fs::metadata;
+
+use super::has_access::{HasAccessRequest, has_access};
 
 
 #[derive(Deserialize, Debug)]

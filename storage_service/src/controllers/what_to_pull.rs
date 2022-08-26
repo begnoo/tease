@@ -1,7 +1,9 @@
-use crate::{file_utils::read_branch_head, has_access::{has_access, HasAccessRequest}, jwt::JwtToken};
+use crate::{file_utils::read_branch_head, jwt::JwtToken};
 use rocket::serde::{Deserialize, json::Json};
 use serde::Serialize;
 use tease_common::read::blob_reader::{read_tree_from_commit, collect_objects_from_tree, trail_commits_incl};
+
+use super::has_access::{HasAccessRequest, has_access};
 
 #[derive(Deserialize, Debug)]
 #[serde(crate = "rocket::serde")]
