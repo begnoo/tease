@@ -5,7 +5,7 @@ use serde::Serialize;
 pub struct HasAccessRequest {
     pub user: String,
     pub owner: String,
-    #[serde(alias = "sourceName")] 
+    #[serde(rename = "sourceName")] 
     pub source_name: String,
 }
 

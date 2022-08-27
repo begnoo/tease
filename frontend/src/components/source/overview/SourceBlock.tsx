@@ -28,7 +28,7 @@ export default function SourceBlock({ source }: SourceBoxProp): JSX.Element {
           </Flex>
         </Flex>
         <Flex>
-          <Button mt={"5px"} size={"sm"}>
+          <Button mt={"5px"} size={"sm"} onClick={() => navigate(`/source/${source.owner}/${source.name}`)}>
             View
           </Button>
         </Flex>

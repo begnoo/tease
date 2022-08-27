@@ -3,7 +3,7 @@ import { useQuery } from "react-query";
 import SourceList from "../../components/source/overview/SourceList";
 import { readSources } from "../../services/SourceService";
 
-export default function OverviewPage(): JSX.Element {
+export default function AllSourcesPage(): JSX.Element {
 
   const {isLoading, data: sources} = useQuery("all_sources", () => readSources());  
 

@@ -14,7 +14,7 @@ use crate::{
 use tease_common::{
     read::blob_reader::{
         collect_objects_from_tree,
-        read_tree_from_commit, contains_commit, trail_commits_to,
+        read_tree_from_commit, contains_commit, trail_commits_incl,
     },
     write::bolb_writer::create_tease_file
 };
@@ -143,7 +143,7 @@ fn get_objects_to_send() -> Vec<String> {
         return objects;
     }
 
-    let mut commits: Vec<String> = trail_commits_to(root_folder.to_string(), local_head, origin_head)
+    let mut commits: Vec<String> = trail_commits_incl(root_folder.to_string(), local_head, origin_head)
                                     .iter()
                                     .map(|obj| obj.sha1.to_string())
                                     .collect();

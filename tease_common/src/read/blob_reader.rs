@@ -142,7 +142,7 @@ pub fn collect_objects_from_tree(root_folder: String, root_tree: String) -> Vec<
 pub struct IndexObject {
     pub sha1: String,
     pub path: String,
-    pub data_type: String,
+    pub dtype: String,
 }
 
 impl Display for IndexObject {
@@ -182,7 +182,7 @@ pub fn collect_from_tree(root_folder: String, root_tree: String) -> Vec<IndexObj
                 let blob = IndexObject {
                     sha1: parts[2].to_string(),
                     path: path.to_string(),
-                    data_type: "blob".to_string()
+                    dtype: "blob".to_string()
                 };
                 objects.push(blob);
                 visited.push(path.to_string());
@@ -192,7 +192,7 @@ pub fn collect_from_tree(root_folder: String, root_tree: String) -> Vec<IndexObj
                 let tree = IndexObject {
                     sha1: parts[2].to_string(),
                     path: path.to_string(), 
-                    data_type: "tree".to_string()
+                    dtype: "tree".to_string()
                 };
                 objects.push(tree);
                 trees.push(parts[2].to_string());
@@ -211,6 +211,25 @@ pub fn collect_from_tree(root_folder: String, root_tree: String) -> Vec<IndexObj
 
     objects
 
+}
+
+pub fn shallow_collect_from_tree(root_folder: String, root_tree: String) -> Vec<IndexObject> {
+    let mut objects: Vec<IndexObject> = vec![];
+
+    let tree_content = read_object(&root_folder, &root_tree.to_string());
+    let lines: Vec<&str> = tree_content.split("\n").collect();
+
+    for line in lines {
+        let parts: Vec<&str> = line.split(" ").collect();
+        let blob = IndexObject {
+            sha1: parts[2].to_string(),
+            path: parts[1].to_string(),
+            dtype: parts[0].to_string()
+        };
+        objects.push(blob);
+    }
+
+    objects
 }
 
 pub fn get_missing_objects(root_folder: String, incoming_objects: &Vec<String>, trail: &Vec<String>) -> Vec<String> {

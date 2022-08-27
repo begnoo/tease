@@ -4,7 +4,7 @@ import { useParams } from "react-router";
 import SourceList from "../../components/source/overview/SourceList";
 import { readSourcesByUser } from "../../services/SourceService";
 
-export default function UserViewPage(): JSX.Element {
+export default function UserSourcesPage(): JSX.Element {
 
   const { user } = useParams();
   const { isLoading, data: sources } = useQuery(["user_sources", user], () => readSourcesByUser(user),

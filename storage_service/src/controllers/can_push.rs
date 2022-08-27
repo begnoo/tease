@@ -53,7 +53,6 @@ pub async fn can_push(
     let root_folder = format!("source/{}/{}", user.to_string(), source_name.to_string());
     let md = metadata(root_folder.to_string());
     if md.is_err() {
-        resp.present = false;
         return Json(resp);
     }
 

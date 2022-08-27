@@ -1,4 +1,4 @@
-import { SOURCE_SERVICE_URL, USER_SERVICE_URL } from "../constatns";
+import { SOURCE_SERVICE_URL } from "../constatns";
 import { client } from "./apiClient"
 
 export interface Source {
