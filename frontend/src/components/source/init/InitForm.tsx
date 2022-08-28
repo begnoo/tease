@@ -37,7 +37,6 @@ const InitForm = () => {
             ...values,
             owner: user?.email
         }
-        console.log(source);
         postInitSource(source as InitSourceRequest);
     }
 

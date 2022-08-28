@@ -165,7 +165,7 @@ func AddColabaratorHandler(w http.ResponseWriter, r *http.Request) {
 	owner := token.Claims.(jwt.MapClaims)["email"].(string)
 
 	sourceService := di.InitializeSourceService()
-	data, err := sourceService.AddColabarator(requestBody.Source, requestBody.Collabarator, owner)
+	data, err := sourceService.AddColabarator(requestBody.Collabarator, requestBody.Owner, requestBody.Name, owner)
 
 	if !errors.HandleHttpError(err, w) {
 		return

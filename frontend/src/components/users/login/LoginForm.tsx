@@ -29,7 +29,6 @@ export default function LoginForm() {
         loginUser,
         {
             onSuccess: (res) => {
-                console.log(res);
                 toastSuccess();
                 addUserIntoLocalStorage(res.data);
                 login();

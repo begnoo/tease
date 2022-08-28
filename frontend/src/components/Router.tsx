@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import {
-  HOME_PAGE, INIT_SOURCE_PAGE, LOGIN_PAGE, REGISTER_PAGE, SOURCE_OVERVIEW_PAGE, SOURCE_PAGE, SOURCE_USERVIEW_PAGE,
+  HOME_PAGE, INIT_SOURCE_PAGE, LOGIN_PAGE, REGISTER_PAGE, SOURCE_COLLABS_PAGE, SOURCE_OVERVIEW_PAGE, SOURCE_PAGE, SOURCE_USERVIEW_PAGE,
 } from "../constatns";
 import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/LoginPage";
@@ -9,6 +9,7 @@ import InitPage from "../pages/source/InitPage";
 import AllSourcesPage from "../pages/source/AllSourcesPage";
 import UserSourcesPage from "../pages/source/UserSourcesPage";
 import SourcePage from "../pages/source/SourcePage";
+import CollabPage from "../pages/source/CollabPage";
 
 export default function Router(): JSX.Element {
   return (
@@ -40,6 +41,10 @@ export default function Router(): JSX.Element {
       <Route
         path={SOURCE_PAGE}
         element={<SourcePage/>}
+      />
+      <Route
+        path={SOURCE_COLLABS_PAGE}
+        element={<CollabPage/>}
       />
     </Routes>
   );

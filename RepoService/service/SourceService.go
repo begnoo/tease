@@ -99,6 +99,18 @@ func (service *SourceService) ReadByOwner(owner string) (*[]domain.Source, error
 	return res, err
 }
 
+func (service *SourceService) GetCollabarators(owner, name string) (*[]domain.Collabarator, error) {
+	res, err := service.sourceRepo.ReadByOwnerAndName(owner, name)
+
+	if err != nil {
+		return nil, err
+	}
+
+	collabs := res.Collabarators
+
+	return &collabs, err
+}
+
 func (service *SourceService) CollabaratorHasAccess(collab, owner, name string) (bool, error) {
 	res, err := service.sourceRepo.ReadByOwnerAndName(owner, name)
 
@@ -119,13 +131,17 @@ func (service *SourceService) CollabaratorHasAccess(collab, owner, name string) 
 	return false, err
 }
 
-func (service *SourceService) AddColabarator(sourceId int, collab_email, owner string) (*domain.Collabarator, error) {
-	source, err := service.sourceRepo.ReadById(sourceId)
+func (service *SourceService) AddColabarator(collab_email, owner, name, sent_by string) (*domain.Collabarator, error) {
+	source, err := service.sourceRepo.ReadByOwnerAndName(owner, name)
 	if err != nil {
 		return nil, err
 	}
 
-	if source.Owner != owner {
+	if collab_email == owner {
+		return nil, &errors.OwnerMismatch{Message: "Can't add self as collabalator."}
+	}
+
+	if source.Owner != sent_by {
 		return nil, &errors.OwnerMismatch{Message: "Posted source id doesn't match requester."}
 	}
 

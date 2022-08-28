@@ -6,8 +6,9 @@ import { useParams } from "react-router";
 import BlobView from "../../components/source/overview/BlobView";
 import SourceBrowser from "../../components/source/overview/SourceBrowser";
 import { Item, readBlob, readBranches, readTree } from "../../services/StorageService";
-import { CopyIcon } from '@chakra-ui/icons'
+import { AtSignIcon, CopyIcon } from '@chakra-ui/icons'
 import { SOURCE_CLONE_URL } from "../../constatns";
+import { useNavigate } from "react-router-dom";
 
 interface ItemWithId extends Item{
   id: number
@@ -87,6 +88,8 @@ export default function SourcePage(): JSX.Element {
     navigator.clipboard.writeText(`${SOURCE_CLONE_URL}/${user}/${source}`);
   }
 
+  const navigate = useNavigate();
+
   return (
     <>
 
@@ -97,7 +100,27 @@ export default function SourcePage(): JSX.Element {
         ))}
       </Select>
     }
-
+    <Flex
+      borderWidth={"2px"}
+      color={"gray.400"} 
+      fontSize={"14px"} 
+      alignItems={"center"}
+      alignContent="space-between" 
+      justifyContent={"space-between"}
+      padding={"10px"}
+    >
+      <Flex>Collabs</Flex>
+      <Flex>
+        <IconButton
+          onClick={() => navigate(`/source/${user}/${source}/collabs`)}
+          aria-label="Collabs"
+          variant={"ghost"}
+          children={
+            <AtSignIcon/>
+          }
+        />
+      </Flex>
+    </Flex>
     <Flex
       mt="5px"
       borderWidth={"2px"}

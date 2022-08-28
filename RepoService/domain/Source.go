@@ -20,11 +20,12 @@ type Source struct {
 
 type Collabarator struct {
 	gorm.Model
-	Name            string
-	ReactedToInvite bool
-	AcceptedInvite  bool
-	ExpiersAt       time.Time
-	SourceID        int
+	ID              int       `mapper:"ID"`
+	Name            string    `mapper:"Name"`
+	ReactedToInvite bool      `mapper:"ReactedToInvite"`
+	AcceptedInvite  bool      `mapper:"AcceptedInvite"`
+	ExpiersAt       time.Time `mapper:"ExpiersAt"`
+	SourceID        int       `mapper:"SourceID"`
 }
 
 type TreeBlob struct {

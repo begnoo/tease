@@ -5,6 +5,7 @@ import (
 	"UserService/domain"
 	"UserService/errors"
 	"UserService/request"
+	"UserService/responses"
 	"UserService/utils"
 	"encoding/json"
 	"io"
@@ -69,5 +70,31 @@ func VerifyUserExistsHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	result := utils.StructToJson(data)
+	io.WriteString(w, result)
+}
+
+func SearchUsersHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	keyword := vars["keyword"]
+	if keyword == "" {
+		return
+	}
+
+	userService := di.InitializeUserService()
+	res, err := userService.SearchUsers(keyword)
+
+	if !errors.HandleHttpError(err, w) {
+		return
+	}
+
+	var users []responses.SearchResult
+	for _, s := range *res {
+		var source responses.SearchResult
+		mapper.Mapper(&s, &source)
+		users = append(users, source)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	result := utils.StructToJson(users)
 	io.WriteString(w, result)
 }

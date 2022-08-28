@@ -3,7 +3,7 @@ import { AxiosError } from "axios";
 import { FieldValues, useForm } from "react-hook-form";
 import { useMutation } from "react-query";
 import { useRequestToast } from "../../../hooks/useRequestToast";
-import { registerUser, RegisterUserRequest } from "../../../services/RegisterService";
+import { registerUser, RegisterUserRequest } from "../../../services/UserService";
 import { EMAIL_PATTERN } from "../../../utils/validation";
 
 const RegisterForm = () => {

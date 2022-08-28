@@ -8,16 +8,17 @@ import (
 )
 
 var authReg = map[string][]string{
-	"/source,GET":                        {"ALL"},
-	"/source?owner=":                     {"ALL"},
-	"/source/{id}":                       {"ALL"},
-	"/source,POST":                       {"ROLE_USER"},
-	"/source,DELETE":                     {"ROLE_USER", "ROLE_ADMIN"},
-	"/source/collabs/add,POST":           {"ROLE_USER"},
-	"/source/collabs/{id}/accept,GET":    {"ROLE_USER"},
-	"/source/collabs/{id}/reject,GET":    {"ROLE_USER"},
-	"/source/collabs/{id}/delete,DELETE": {"ROLE_USER"},
-	"/source/access,POST":                {"ROLE_USER"},
+	"/source,GET":                          {"ALL"},
+	"/source?owner=":                       {"ALL"},
+	"/source/{id}":                         {"ALL"},
+	"/source,POST":                         {"ROLE_USER"},
+	"/source,DELETE":                       {"ROLE_USER", "ROLE_ADMIN"},
+	"/source/collabs/add,POST":             {"ROLE_USER"},
+	"/source/collabs/{id}/accept,GET":      {"ROLE_USER"},
+	"/source/collabs/{id}/reject,GET":      {"ROLE_USER"},
+	"/source/collabs/{id}/delete,DELETE":   {"ROLE_USER"},
+	"/source/access,POST":                  {"ROLE_USER"},
+	"/source/collabs/{owner}/{source},GET": {"ALL"},
 }
 
 func SetupRouter() http.Handler {
@@ -43,6 +44,8 @@ func SetupRouter() http.Handler {
 		handleJwt(controllers.DeleteCollabaratorHandler, authReg["/source/collabs/{id}/delete,DELETE"])).Methods(http.MethodDelete)
 	r.HandleFunc("/source/access",
 		handleJwt(controllers.HasAccessHandler, authReg["/source/access,POST"])).Methods(http.MethodPost)
+	r.HandleFunc("/source/collabs/{owner}/{source}",
+		handleJwt(controllers.GetCollabaratorsHandler, authReg["/source/collabs/{owner}/{source},GET"])).Methods(http.MethodGet)
 	// r.HandleFunc("/pull/{id}", controllers.DeleteRepo).Methods(http.MethodGet)
 	// r.HandleFunc("/push", controllers.DeleteRepo).Methods(http.MethodPost)
 	// r.HandleFunc("/clone/{id}", controllers.DeleteRepo).Methods(http.MethodGet)
