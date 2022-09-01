@@ -6,3 +6,4 @@ pub mod pull;
 pub mod push;
 pub mod what_to_pull;
 pub mod read;
+pub mod diff;

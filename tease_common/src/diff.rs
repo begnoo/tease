@@ -27,6 +27,10 @@ pub struct DiffLine {
     pub new_number: usize
 }
 
+pub trait PlainDisplay {
+    fn plain_string(&self) -> String;
+}
+
 impl Display for DiffLine {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self.state.as_str() {
@@ -37,16 +41,26 @@ impl Display for DiffLine {
     }
 }
 
+impl PlainDisplay for DiffLine {
+    fn plain_string(&self) -> String {
+        match self.state.as_str() {
+            "add" => format!("+ {} {} {}", self.line.number, self.new_number, self.line.content),
+            "del" => format!("- {} {} {}", self.line.number, self.new_number, self.line.content),
+            _ => format!("= {} {} {}", self.line.number, self.new_number, self.line.content),
+        }
+    }
+}
+
 pub struct DiffCommitsResult {
     pub out_map: HashMap<String, Vec<DiffLine>>,
 }
 
 pub fn diff_commits(root_folder: String, a_sha1_commit: String, b_sha1_commit: String) -> core::result::Result<DiffCommitsResult, Error> {
-    let a_map_res = collect_and_map_for_diff(".tease".to_string(), a_sha1_commit);
+    let a_map_res = collect_and_map_for_diff(root_folder.to_string(), a_sha1_commit);
     if a_map_res.is_err() {
         return Err(Error::new(ErrorKind::NotFound, "Something went wrong while reading first commit."))
     }
-    let b_map_res = collect_and_map_for_diff(".tease".to_string(), b_sha1_commit);
+    let b_map_res = collect_and_map_for_diff(root_folder.to_string(), b_sha1_commit);
     if b_map_res.is_err() {
         return Err(Error::new(ErrorKind::NotFound, "Something went wrong while reading second commit."))
     }

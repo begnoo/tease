@@ -18,6 +18,7 @@ fn rocket() -> _ {
         .mount("/source", routes![controllers::clone::clone])
         .mount("/source", routes![controllers::clone::clone_branch])
         .mount("/source", routes![controllers::init::init])
+        .mount("/source", routes![controllers::diff::read_diff_commits])
         .mount("/source", routes![all_options])
         .mount("/read", routes![controllers::read::read_tree])
         .mount("/read", routes![controllers::read::read_blob])
