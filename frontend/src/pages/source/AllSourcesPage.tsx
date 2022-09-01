@@ -1,4 +1,4 @@
-import { Center, Flex } from "@chakra-ui/layout";
+import { Flex } from "@chakra-ui/layout";
 import { useQuery } from "react-query";
 import SourceList from "../../components/source/overview/SourceList";
 import { readSources } from "../../services/SourceService";

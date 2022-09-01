@@ -13,6 +13,7 @@ var authReg = map[string][]string{
 	"/source/{id}":                         {"ALL"},
 	"/source,POST":                         {"ROLE_USER"},
 	"/source,DELETE":                       {"ROLE_USER", "ROLE_ADMIN"},
+	"/source/search/{keyword},GET":         {"ALL"},
 	"/source/access,POST":                  {"ROLE_USER"},
 	"/collabs/add,POST":                    {"ROLE_USER"},
 	"/collabs/{id}/accept,POST":            {"ROLE_USER"},
@@ -36,6 +37,8 @@ func SetupRouter() http.Handler {
 		handleJwt(controllers.CreateSourceHandler, authReg["/source,POST"])).Methods(http.MethodPost)
 	r.HandleFunc("/source/{id}",
 		handleJwt(controllers.DeleteSourceByIdHandler, authReg["/source,DELETE"])).Methods(http.MethodDelete)
+	r.HandleFunc("/source/search/{keyword}",
+		handleJwt(controllers.SearchSourcesHandler, authReg["/source/search/{keyword},GET"])).Methods(http.MethodGet)
 	r.HandleFunc("/source/access",
 		handleJwt(controllers.HasAccessHandler, authReg["/source/access,POST"])).Methods(http.MethodPost)
 

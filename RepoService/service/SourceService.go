@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -95,6 +96,16 @@ func (service *SourceService) ReadById(id int) (*domain.Source, error) {
 
 func (service *SourceService) ReadByOwner(owner string) (*[]domain.Source, error) {
 	res, err := service.sourceRepo.ReadByOwner(owner)
+
+	return res, err
+}
+
+func (service *SourceService) Search(keyword string) (*[]domain.Source, error) {
+	trimmed := strings.Trim(keyword, " ")
+	if trimmed == "" {
+		return service.ReadAll()
+	}
+	res, err := service.sourceRepo.Search(trimmed)
 
 	return res, err
 }

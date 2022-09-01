@@ -1,14 +1,15 @@
 import { Flex } from "@chakra-ui/layout";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, IconButton, Input, InputGroup, InputRightElement, Select } from "@chakra-ui/react";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, IconButton, Input, InputGroup, InputRightElement, Portal, Select } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { useParams } from "react-router";
 import BlobView from "../../components/source/overview/BlobView";
 import SourceBrowser from "../../components/source/overview/SourceBrowser";
-import { Item, readBlob, readBranches, readTree } from "../../services/StorageService";
+import { BranchContent, Item, readBlob, readBranches, readTree } from "../../services/StorageService";
 import { AtSignIcon, CopyIcon } from '@chakra-ui/icons'
 import { SOURCE_CLONE_URL } from "../../constatns";
 import { useNavigate } from "react-router-dom";
+import { fromMilis } from "../../utils/dateUtils";
 
 interface ItemWithId extends Item{
   id: number
@@ -20,6 +21,7 @@ export default function SourcePage(): JSX.Element {
   const [ tree, setTree ] = useState<string>();
   const [ blob, setBlob ] = useState<string>();
   const { user, source } = useParams();
+  const [ selectedBranch, setSelectedBranch ] = useState<BranchContent>();
   const { isLoading: branchIsLoading, data: branches } = useQuery(
     ["branches", user, source], 
     () => readBranches({user, source}),
@@ -42,12 +44,17 @@ export default function SourcePage(): JSX.Element {
   });  
 
   useEffect(() => {
-    const master_tree = branches?.find((branch) => branch.name === "master")?.sha;
-    if (master_tree !== undefined) {
-      setTree(master_tree);
-      setTrailStack([{sha1: master_tree, name: "root", dtype: "tree", id: 0}])
+    const masterBranch = branches?.find((branch) => branch.name === "master");
+    if (masterBranch == undefined) {
+      return;
     }
+    setSelectedBranch(masterBranch);
   }, [JSON.stringify(branches)]);
+
+  useEffect(() => {
+    setTree(selectedBranch?.tree_sha1);
+    !!selectedBranch && setTrailStack([{sha1: selectedBranch?.tree_sha1, name: "root", dtype: "tree", id: 0}])
+  }, [selectedBranch]);
 
   useEffect(() => {
     if (tree == undefined) {
@@ -96,10 +103,41 @@ export default function SourcePage(): JSX.Element {
     {!branchIsLoading && branches !== undefined && branches !== null && 
       <Select>
         {branches.map(branch => (
-          <option key={branch.sha + branch.name} value={branch.sha}>{branch.name}</option>
+          <option key={branch.tree_sha1 + branch.name} value={branch.tree_sha1}>{branch.name}</option>
         ))}
       </Select>
-    }
+    }      
+    {!!selectedBranch && <Flex
+      _hover={
+        { cursor: 'pointer', color: 'black', backgroundColor: 'gray.400' }
+      }
+      onClick={() => navigate(`/source/${user}/${source}/commits/${selectedBranch.name}`)}
+      mt="5px"
+      width={"100%"}
+      direction={"column"}
+      borderWidth={"2px"}
+      color={"gray.400"} 
+      fontSize={"14px"} 
+      padding={"10px"}
+    >
+        <Flex
+          alignContent="space-between" 
+          justifyContent={"space-between"}
+        >
+          <Flex direction={"column"}>
+              {selectedBranch.commit.author}
+          </Flex>
+          <Flex>{fromMilis(selectedBranch.commit.date)}</Flex>
+        </Flex>
+        <Flex>
+          {selectedBranch.commit.sha1}
+        </Flex>
+        <Flex>
+          <Flex>
+            Message: {selectedBranch.commit.message}
+          </Flex>
+        </Flex>
+    </Flex>}
     <Flex
       mt="5px"
       borderWidth={"2px"}
@@ -116,13 +154,12 @@ export default function SourcePage(): JSX.Element {
           defaultValue={`${SOURCE_CLONE_URL}/${user}/${source}`}
           isReadOnly={true}
           placeholder='Enter password'
-          // border={"0px"}
         />
         <InputRightElement
           borderColor={"gray"}
           children={
             <IconButton
-              colorScheme={"teal"}
+              colorScheme={"white"}
               variant={"ghost"}
               aria-label='Copy to clipboard'
               size={"sm"}
@@ -133,7 +170,7 @@ export default function SourcePage(): JSX.Element {
     </InputGroup>
     </Flex>
     
-    <Flex padding={2} borderWidth={"2px"}>
+    <Flex padding={"10px"} borderWidth={"2px"}>
       <Breadcrumb>
         {trailStack.map(itemWithId => (
           <BreadcrumbItem key={itemWithId.id}>

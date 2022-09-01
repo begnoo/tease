@@ -40,7 +40,8 @@ pub struct CommitObject {
     pub sha1: String,
     pub date: u64,
     pub author: String,
-    pub message: String 
+    pub message: String,
+    pub parents: Vec<String>
 }
 
 impl Display for CommitObject {
@@ -97,6 +98,7 @@ pub fn trail_commits_incl(root_folder: String, starting_commit: String, end_comm
             author: author[1].to_string(),
             date,
             message: commit_lines[5].to_string(),
+            parents: parents[1..].iter().map(|s| s.to_string()).collect(),
         };
 
         trail.push(commit_obj);

@@ -70,6 +70,13 @@ func (repo *SourceRepo) ReadByOwnerAndName(owner, name string) (*domain.Source, 
 	return &source, res.Error
 }
 
+func (repo *SourceRepo) Search(keyword string) (*[]domain.Source, error) {
+	var sources []domain.Source
+	res := repo.db.Where("name like ?", "%"+keyword+"%").Find(&sources)
+
+	return &sources, res.Error
+}
+
 func (r *SourceRepo) HandleError(res *gorm.DB) error {
 	if res.Error != nil && res.Error != gorm.ErrRecordNotFound {
 		err := fmt.Errorf("error: %w", res.Error)

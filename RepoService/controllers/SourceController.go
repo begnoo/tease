@@ -104,6 +104,30 @@ func GetSourcesByOwnerHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, result)
 }
 
+func SearchSourcesHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	keyword := vars["keyword"]
+
+	sourceService := di.InitializeSourceService()
+	println(keyword)
+	data, err := sourceService.Search(keyword)
+
+	if !errors.HandleHttpError(err, w) {
+		return
+	}
+
+	var sources []responses.Source
+	for _, s := range *data {
+		var source responses.Source
+		mapper.Mapper(&s, &source)
+		sources = append(sources, source)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	result := utils.StructToJson(sources)
+	io.WriteString(w, result)
+}
+
 func GetSourceByIdHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id_string := vars["id"]

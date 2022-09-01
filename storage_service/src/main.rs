@@ -23,6 +23,7 @@ fn rocket() -> _ {
         .mount("/read", routes![controllers::read::read_blob])
         .mount("/read", routes![controllers::read::read_branch])
         .mount("/read", routes![controllers::read::read_branches])
+        .mount("/read", routes![controllers::read::read_commits])
         .mount("/read", routes![all_options])
 
 }

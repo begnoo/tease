@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import {
   COLLABS_PAGE,
+  COMMITS_PAGE,
   HOME_PAGE, INIT_SOURCE_PAGE, LOGIN_PAGE, REGISTER_PAGE, SOURCE_COLLABS_PAGE, SOURCE_OVERVIEW_PAGE, SOURCE_PAGE, SOURCE_USERVIEW_PAGE,
 } from "../constatns";
 import HomePage from "../pages/HomePage";
@@ -12,6 +13,7 @@ import UserSourcesPage from "../pages/source/UserSourcesPage";
 import SourcePage from "../pages/source/SourcePage";
 import SourceCollabPage from "../pages/source/SourceCollabPage";
 import CollabPage from "../pages/collab/CollabPage";
+import CommitsPage from "../pages/commits/CommitsPage";
 
 export default function Router(): JSX.Element {
   return (
@@ -51,6 +53,10 @@ export default function Router(): JSX.Element {
       <Route
         path={COLLABS_PAGE}
         element={<CollabPage/>}
+      />
+      <Route
+        path={COMMITS_PAGE}
+        element={<CommitsPage/>}
       />
     </Routes>
   );
