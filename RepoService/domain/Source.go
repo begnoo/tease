@@ -13,15 +13,17 @@ type Source struct {
 	Name          string    `mapper:"Name"`
 	Description   string    `mapper:"Description"`
 	Owner         string    `mapper:"Owner"`
+	Visability    bool      `mapper:"Visability"`
+	Initialized   bool      `mapper:"Initialized"`
 	Collabarators []Collabarator
-	Visability    bool `mapper:"Visability"`
-	Initialized   bool `mapper:"Initialized"`
 }
 
 type Collabarator struct {
 	gorm.Model
 	ID              int       `mapper:"ID"`
 	Name            string    `mapper:"Name"`
+	SourceName      string    `mapper:"SourceName"`
+	From            string    `mapper:"From"`
 	ReactedToInvite bool      `mapper:"ReactedToInvite"`
 	AcceptedInvite  bool      `mapper:"AcceptedInvite"`
 	ExpiersAt       time.Time `mapper:"ExpiersAt"`

@@ -152,6 +152,8 @@ func (service *SourceService) AddColabarator(collab_email, owner, name, sent_by 
 	expires_mult, err := strconv.Atoi(os.Getenv("COLLAB_EXPIRES_IN"))
 	collab := domain.Collabarator{
 		Name:            collab_email,
+		SourceName:      source.Name,
+		From:            source.Owner,
 		ReactedToInvite: false,
 		AcceptedInvite:  false,
 		ExpiersAt:       time.Now().Add(time.Hour * time.Duration(expires_mult)),

@@ -27,7 +27,15 @@ func (r *CollabRepo) ReadById(id int) (*domain.Collabarator, error) {
 
 func (repo *CollabRepo) ReadBySource(sourceId int) (*[]domain.Collabarator, error) {
 	var collabarators []domain.Collabarator
-	res := repo.db.Where(&domain.Collabarator{SourceID: sourceId}).Take(&collabarators)
+	res := repo.db.Where(&domain.Collabarator{SourceID: sourceId}).Find(&collabarators)
+
+	return &collabarators, res.Error
+}
+
+func (repo *CollabRepo) ReadByName(name string) (*[]domain.Collabarator, error) {
+	var collabarators []domain.Collabarator
+	res := repo.db.Order("created_at desc").Where(&domain.Collabarator{Name: name}).Find(&collabarators)
+	println("rows affected: %d", res.RowsAffected)
 
 	return &collabarators, res.Error
 }

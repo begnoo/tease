@@ -2,7 +2,7 @@ import { AddIcon } from "@chakra-ui/icons";
 import { Box, Button, Flex, IconButton, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from "@chakra-ui/react"
 import { AxiosError } from "axios";
 import { useEffect, useState } from "react";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useRequestToast } from "../../../hooks/useRequestToast";
 import { addCollab } from "../../../services/SourceService";
 import { searchUsers } from "../../../services/UserService";
@@ -17,6 +17,7 @@ interface AddCollabProps {
 
 export function AddCollabModal({isOpen, onClose, source, owner}: AddCollabProps) {
 
+    const queryClient = useQueryClient();
     const [search, setSearch] = useState<string>("");
     const {isLoading, data: users, refetch} = useQuery(["users_search", search], () => searchUsers(search), {
         enabled: !!search 
@@ -26,6 +27,7 @@ export function AddCollabModal({isOpen, onClose, source, owner}: AddCollabProps)
         addCollab,
         {
             onSuccess: (res) => {
+                queryClient.invalidateQueries("collabs");
                 toastSuccess();
             },
             onError: (err: AxiosError) => {
@@ -88,9 +90,6 @@ export function AddCollabModal({isOpen, onClose, source, owner}: AddCollabProps)
             </ModalBody>
   
             <ModalFooter>
-              <Button colorScheme='blue' mr={3} onClick={onClose}>
-                Close
-              </Button>
             </ModalFooter>
           </ModalContent>
         </Modal>

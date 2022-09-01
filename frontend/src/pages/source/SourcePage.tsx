@@ -101,27 +101,6 @@ export default function SourcePage(): JSX.Element {
       </Select>
     }
     <Flex
-      borderWidth={"2px"}
-      color={"gray.400"} 
-      fontSize={"14px"} 
-      alignItems={"center"}
-      alignContent="space-between" 
-      justifyContent={"space-between"}
-      padding={"10px"}
-    >
-      <Flex>Collabs</Flex>
-      <Flex>
-        <IconButton
-          onClick={() => navigate(`/source/${user}/${source}/collabs`)}
-          aria-label="Collabs"
-          variant={"ghost"}
-          children={
-            <AtSignIcon/>
-          }
-        />
-      </Flex>
-    </Flex>
-    <Flex
       mt="5px"
       borderWidth={"2px"}
       alignContent="space-between" 
@@ -155,29 +134,50 @@ export default function SourcePage(): JSX.Element {
     </Flex>
     
     <Flex padding={2} borderWidth={"2px"}>
-        <Breadcrumb>
-          {trailStack.map(itemWithId => (
-            <BreadcrumbItem key={itemWithId.id}>
-              <BreadcrumbLink href='#' onClick={() => back(itemWithId)}>{itemWithId.name}</BreadcrumbLink>
-            </BreadcrumbItem>
-          ))}
-        </Breadcrumb>
-      </Flex>
+      <Breadcrumb>
+        {trailStack.map(itemWithId => (
+          <BreadcrumbItem key={itemWithId.id}>
+            <BreadcrumbLink onClick={() => back(itemWithId)}>{itemWithId.name}</BreadcrumbLink>
+          </BreadcrumbItem>
+        ))}
+      </Breadcrumb>
+    </Flex>
     
-      <Flex flexDirection="column">
-          {!branchIsLoading &&
-           !treeIsLoading &&
-           blob === undefined &&
-           items !== null &&
-           items !== undefined &&
-           <SourceBrowser items={items} push={push}/>}
-          
-          {!blobIsLoading &&
-           blob != undefined &&
-           blobContent != undefined &&
-           blobContent != null &&
-           <BlobView content={blobContent.content} size={blobContent.size}/>}
+    <Flex flexDirection="column">
+        {!branchIsLoading &&
+          !treeIsLoading &&
+          blob === undefined &&
+          items !== null &&
+          items !== undefined &&
+          <SourceBrowser items={items} push={push}/>}
+        
+        {!blobIsLoading &&
+          blob != undefined &&
+          blobContent != undefined &&
+          blobContent != null &&
+          <BlobView content={blobContent.content} size={blobContent.size}/>}
+    </Flex>
+    <Flex
+      borderWidth={"2px"}
+      color={"gray.400"} 
+      fontSize={"14px"} 
+      alignItems={"center"}
+      alignContent="space-between" 
+      justifyContent={"space-between"}
+      padding={"10px"}
+    >
+      <Flex>Collabs</Flex>
+      <Flex>
+        <IconButton
+          onClick={() => navigate(`/source/${user}/${source}/collabs`)}
+          aria-label="Collabs"
+          variant={"ghost"}
+          children={
+            <AtSignIcon/>
+          }
+        />
       </Flex>
+    </Flex>
     </>
   );
 }

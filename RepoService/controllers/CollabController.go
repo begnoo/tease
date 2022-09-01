@@ -71,8 +71,11 @@ func DeleteCollabaratorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var resp_collab responses.Collabarator
+	mapper.Mapper(data, &resp_collab)
+
 	w.WriteHeader(http.StatusOK)
-	result := utils.StructToJson(data)
+	result := utils.StructToJson(resp_collab)
 	io.WriteString(w, result)
 }
 
@@ -83,6 +86,30 @@ func GetCollabaratorsHandler(w http.ResponseWriter, r *http.Request) {
 	owner := vars["owner"]
 
 	data, err := sourceService.GetCollabarators(owner, name)
+
+	if !errors.HandleHttpError(err, w) {
+		return
+	}
+
+	var res []responses.Collabarator
+	for _, collab := range *data {
+		var resp_collab responses.Collabarator
+		mapper.Mapper(&collab, &resp_collab)
+		res = append(res, resp_collab)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	result := utils.StructToJson(res)
+	io.WriteString(w, result)
+}
+
+func GetCollabaratorsByNameHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	name := vars["name"]
+
+	collabService := di.InitializeCollabService()
+	data, err := collabService.ReadByName(name)
+	println("ovo je name: %s", name)
 
 	if !errors.HandleHttpError(err, w) {
 		return

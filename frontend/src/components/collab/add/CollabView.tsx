@@ -21,10 +21,11 @@ export default function CollabView({ source, user }: CollabViewProps): JSX.Eleme
             <Flex>Add</Flex>
             <Flex>
                 <IconButton
+                    onClick={() => onOpen()}
                     aria-label="Add Collab"
-                    variant={"ghost"}
+                    variant={"outline"}
                     children={
-                        <AddIcon onClick={() => onOpen()}/>
+                        <AddIcon/>
                     }
                 />
             </Flex>

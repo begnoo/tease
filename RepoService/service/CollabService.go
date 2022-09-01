@@ -66,3 +66,9 @@ func (service *CollabService) DeleteCollabarator(id int) (*domain.Collabarator, 
 
 	return res, err
 }
+
+func (service *CollabService) ReadByName(name string) (*[]domain.Collabarator, error) {
+	res, err := service.collabRepo.ReadByName(name)
+
+	return res, err
+}

@@ -6,12 +6,15 @@ export const SOURCE_USERVIEW_PAGE: string = "/source/:user";
 export const INIT_SOURCE_PAGE: string = "/source/init";
 export const SOURCE_PAGE: string = "/source/:user/:source";
 export const SOURCE_COLLABS_PAGE: string = "/source/:user/:source/collabs";
+export const COLLABS_PAGE: string = "/collabs";
 
 export const AUTH_SERVICE_URL = process.env.REACT_APP_AUTH_SERVICE;
 export const USER_SERVICE_URL = process.env.REACT_APP_USER_SERVICE;
 export const SOURCE_SERVICE_URL = process.env.REACT_APP_SOURCE_SERVICE;
+export const COLLAB_SERVICE_URL = process.env.REACT_APP_COLLAB_SERVICE;
 export const SOURCE_STORAGE_URL = process.env.REACT_APP_STORAGE_SERVICE;
 export const SOURCE_CLONE_URL = process.env.REACT_APP_STORAGE_CLONE;
+
 
 interface TeaseRoute {
     href: string,
@@ -25,6 +28,7 @@ export const ROUTES: TeaseRoute[] = [
 
 export const AUTH_ROUTES: TeaseRoute[] = [
     { href: INIT_SOURCE_PAGE, name: "INIT" },
+    { href: COLLABS_PAGE, name: "COLLABS" },
 ];
 
 export const CRED_ROUTES: TeaseRoute[] = [

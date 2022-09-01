@@ -16,6 +16,8 @@ type Source struct {
 type Collabarator struct {
 	ID              int       `json:"id" mapper:"ID"`
 	Name            string    `json:"name" mapper:"Name"`
+	SourceName      string    `json:"sourceName" mapper:"SourceName"`
+	From            string    `json:"from" mapper:"From"`
 	ReactedToInvite bool      `json:"reactedToInvite" mapper:"ReactedToInvite"`
 	AcceptedInvite  bool      `json:"acceptedInvite" mapper:"AcceptedInvite"`
 	ExpiersAt       time.Time `json:"expiersAt" mapper:"ExpiersAt"`
