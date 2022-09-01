@@ -16,7 +16,7 @@ use crate::{commands::{
 use commands::{
     status::status,
     branch::{create_branch, switch_to_branch, create_from_remote},
-    diff::diff_file,
+    diff::{diff_commits_out, diff_file_out},
     merge::merge_branch, 
     command_enum::{Args, Commands}, 
     set_origin::set_origin, set_user::set_user, push::push, goback::go_back, pull::pull, clone::clone, init::init
@@ -129,16 +129,18 @@ fn main() {
             }
         }
 
-        Some(Commands::Diff {blob_a, blob_b}) => {
+        Some(Commands::Diff {mode, blob_a, blob_b}) => {
             if !in_working_tree() {
                 println!("Not in working tree.");
                 return ;
             }
 
-            let diff_lines = diff_file(blob_a.to_string(), blob_b.to_string());
-            for diff_line in diff_lines.iter() {
-                println!("{}", diff_line);
+            if mode == "commit" {
+                diff_commits_out(blob_a.to_string(), blob_b.to_string());
+                return;
             }
+            diff_file_out(blob_a.to_string(), blob_b.to_string());
+            return ;
         }
 
         Some(Commands::MergeFile {blob_a, blob_b, blob_o}) => {

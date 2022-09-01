@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter, Result};
 
-use crate::commands::read::read_object;
+use crate::read::blob_reader::read_object;
 
 #[derive(Debug)]
 pub struct Line {
@@ -27,7 +27,7 @@ pub fn get_lines_from_blob_content(blob: String) -> Vec<Line> {
             .collect()
 }
 
-pub fn get_content_from_sha1(sha1: String) -> Vec<Line> {
-    let blob = read_object(&sha1);
+pub fn get_content_from_sha1(root_folder: String, sha1: String) -> Vec<Line> {
+    let blob = read_object(&root_folder, &sha1);
     get_lines_from_blob_content(blob)
 }

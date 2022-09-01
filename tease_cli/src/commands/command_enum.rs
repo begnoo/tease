@@ -57,6 +57,7 @@ pub enum Commands {
 
     // show difference between two files
     Diff {
+        mode: String,
         blob_a: String,
         blob_b: String
     },

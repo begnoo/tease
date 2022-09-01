@@ -118,7 +118,7 @@ export default function SourcePage(): JSX.Element {
       borderWidth={"2px"}
       color={"gray.400"} 
       fontSize={"14px"} 
-      padding={"10px"}
+      padding={"15px"}
     >
         <Flex
           alignContent="space-between" 
