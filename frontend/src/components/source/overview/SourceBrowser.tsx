@@ -12,12 +12,16 @@ interface SourceBrowserProp {
 export default function SourceBrowser({ items, push }: SourceBrowserProp): JSX.Element {
 
   return (
-    <Box borderWidth={"2px"} padding={"10px 10px 10px 10px"}>
+    <Box
+      borderRadius={"10px"}
+      borderWidth={"2px"} 
+      padding={"10px 10px 10px 10px"}>
       {items.map(item => (
           <Flex 
             _hover={
               { cursor: 'pointer', color: 'black', backgroundColor: 'gray.400' }
             }
+            borderRadius={"10px"}
             key={item.sha1 + item.name} 
             alignContent={"space-between"} 
             justifyContent={"space-between"}

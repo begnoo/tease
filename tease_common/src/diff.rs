@@ -56,18 +56,27 @@ pub struct DiffCommitsResult {
 }
 
 pub fn diff_commits(root_folder: String, a_sha1_commit: String, b_sha1_commit: String) -> core::result::Result<DiffCommitsResult, Error> {
+    let mut out_map: HashMap<String, Vec<DiffLine>> = HashMap::new();
+
     let a_map_res = collect_and_map_for_diff(root_folder.to_string(), a_sha1_commit);
     if a_map_res.is_err() {
         return Err(Error::new(ErrorKind::NotFound, "Something went wrong while reading first commit."))
     }
+    let a_map = a_map_res.unwrap();
+
+    if b_sha1_commit == "#" {
+        for a_key in a_map.keys() {
+            let lines = diff_lines_from_content(root_folder.to_string(), a_map[a_key].to_string(), "add".to_string());
+            out_map.insert(a_key.to_string(), lines);
+        }
+        return Ok(DiffCommitsResult {out_map});
+    }
+
     let b_map_res = collect_and_map_for_diff(root_folder.to_string(), b_sha1_commit);
     if b_map_res.is_err() {
         return Err(Error::new(ErrorKind::NotFound, "Something went wrong while reading second commit."))
     }
-
-    let a_map = a_map_res.unwrap();
     let b_map = b_map_res.unwrap();
-    let mut out_map: HashMap<String, Vec<DiffLine>> = HashMap::new();
 
     for a_key in a_map.keys() {
         if b_map.contains_key(a_key) {

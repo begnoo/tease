@@ -10,6 +10,11 @@ interface SearchProps {
 export default function SearchUsersForm({ callback }: SearchProps): JSX.Element {
 
   const [search, setSearch] = useState<string>("");
+  const handleKeyDown = (event: React.KeyboardEvent): any => {
+    if (event.key === 'Enter') {
+      callback(search);
+    }
+  }
 
   return (
     <>
@@ -26,6 +31,7 @@ export default function SearchUsersForm({ callback }: SearchProps): JSX.Element 
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder='Enter user email'
+                    onKeyDown={handleKeyDown}
                     />
                     <InputRightElement
                         children={
@@ -33,7 +39,6 @@ export default function SearchUsersForm({ callback }: SearchProps): JSX.Element 
                                 aria-label={"Search Users"}
                                 variant={"ghost"}
                                 icon={<SearchIcon/>}
-                                onClick={() => callback(search)}
                             />
                         }
                     />

@@ -90,17 +90,8 @@ pub fn trail_commits_incl(root_folder: String, starting_commit: String, end_comm
         let commit_content = read_object(&root_folder, &current_commit);
         let commit_lines: Vec<&str> = commit_content.split("\n").collect();
         let parents: Vec<&str> = commit_lines[1].split(" ").collect();
-        let author: Vec<&str> = commit_lines[2].split(" ").collect();
-        let date = author[2].parse::<u64>().unwrap();
-
-        let commit_obj = CommitObject {
-            sha1: current_commit.to_string(),
-            author: author[1].to_string(),
-            date,
-            message: commit_lines[5].to_string(),
-            parents: parents[1..].iter().map(|s| s.to_string()).collect(),
-        };
-
+        let commit_obj = build_commit_obj(&current_commit, &commit_lines);
+        
         trail.push(commit_obj);
         to_visit.push(parents[1].to_string());
 
@@ -110,6 +101,20 @@ pub fn trail_commits_incl(root_folder: String, starting_commit: String, end_comm
     }
 
     trail
+}
+
+pub fn build_commit_obj(current_commit: &String, commit_lines: &Vec<&str>) -> CommitObject {
+    let parents: Vec<&str> = commit_lines[1].split(" ").collect();
+    let author: Vec<&str> = commit_lines[2].split(" ").collect();
+    let date = author[2].parse::<u64>().unwrap();
+
+    CommitObject {
+        sha1: current_commit.to_string(),
+        author: author[1].to_string(),
+        date,
+        message: commit_lines[5].to_string(),
+        parents: parents[1..].iter().map(|s| s.to_string()).collect(),
+    }
 }
 
 pub fn paths_to_string(paths: Paths) -> Vec<String> {

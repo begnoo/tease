@@ -14,7 +14,7 @@ pub struct DiffCommits {
 #[serde(crate = "rocket::serde")]
 pub struct DiffFile {
     pub path: String,
-    pub diff: String,
+    pub diff: Vec<String>,
     pub added: usize,
     pub deleted: usize
 }
@@ -36,7 +36,7 @@ pub async fn read_diff_commits(user: &str, source_name: &str, commits: Json<Diff
     }
 
     let diff = diff_res.unwrap();
-    let items: Vec<DiffFile> = diff.out_map.iter()
+    let mut items: Vec<DiffFile> = diff.out_map.iter()
                 .map(|(key, value)| {
                     let counts = count_add_del(value);
                     DiffFile { 
@@ -46,6 +46,7 @@ pub async fn read_diff_commits(user: &str, source_name: &str, commits: Json<Diff
                         deleted: counts.1
                     } 
                 }).collect();
+    items.sort_by(|a, b| a.path.cmp(&b.path));
 
     Some(Json(DiffContent {items}))
 }
@@ -57,8 +58,6 @@ fn count_add_del(lines: &Vec<DiffLine>) -> (usize, usize) {
     (add_count, del_count)
 }
 
-fn format_diff_lines(lines: &Vec<DiffLine>) -> String {
-    let formated_lines: Vec<String> = lines.iter().map(|line| line.plain_string()).collect();
-    
-    formated_lines.join("\n")
+fn format_diff_lines(lines: &Vec<DiffLine>) -> Vec<String> {
+    lines.iter().map(|line| line.plain_string()).collect()    
 }

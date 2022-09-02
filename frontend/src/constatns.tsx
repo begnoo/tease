@@ -8,6 +8,7 @@ export const SOURCE_PAGE: string = "/source/:user/:source";
 export const SOURCE_COLLABS_PAGE: string = "/source/:user/:source/collabs";
 export const COLLABS_PAGE: string = "/collabs";
 export const COMMITS_PAGE: string = "/source/:user/:source/commits/:branch";
+export const DIFF_PAGE: string = "/source/:user/:source/commits/diff/:commit";
 
 
 export const AUTH_SERVICE_URL = process.env.REACT_APP_AUTH_SERVICE;

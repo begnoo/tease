@@ -1,23 +1,30 @@
 import { Flex } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 import { CommitItem } from "../../services/StorageService";
 import { fromMilis, fromMilisTime } from "../../utils/dateUtils";
 
 export const a = 3;
 
 interface CommitBlockProps {
+    user?: string,
+    source?: string,
+    showParent?: boolean,
     commit: CommitItem
 }
 
-export default function CommitsBlock({ commit }: CommitBlockProps): JSX.Element {
+export default function CommitsBlock({ user, source, commit, showParent }: CommitBlockProps): JSX.Element {
   
+    const navigate = useNavigate();
+
     return (
       <>
         <Flex
           _hover={
             { cursor: 'pointer', color: 'black', backgroundColor: 'gray.400' }
           }
-          onClick={() => console.log(commit.sha1)}
+          onClick={() => !!user && !!source && navigate(`/source/${user}/${source}/commits/diff/${commit.sha1}`)}
           mt="5px"
+          borderRadius={"10px"}
           width={"100%"}
           direction={"column"}
           borderWidth={"2px"}
@@ -43,6 +50,17 @@ export default function CommitsBlock({ commit }: CommitBlockProps): JSX.Element 
               <Flex>{commit.sha1}</Flex>
               <Flex>{fromMilisTime(commit.date)}</Flex>
             </Flex>
+            {showParent && commit.parents.length !== 3 && <Flex direction={"column"}>
+              Parents:
+              <Flex>
+                <Flex>
+                {commit.parents[0]}
+                </Flex>
+                {commit.parents.length > 1 && <Flex>
+                +{commit.parents[1]}
+                </Flex>}
+              </Flex>
+            </Flex>}
             <Flex>
               <Flex>
                 Message: {commit.message}

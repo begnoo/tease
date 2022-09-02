@@ -111,6 +111,7 @@ export default function SourcePage(): JSX.Element {
       _hover={
         { cursor: 'pointer', color: 'black', backgroundColor: 'gray.400' }
       }
+      borderRadius={"10px"}
       onClick={() => navigate(`/source/${user}/${source}/commits/${selectedBranch.name}`)}
       mt="5px"
       width={"100%"}
@@ -139,7 +140,9 @@ export default function SourcePage(): JSX.Element {
         </Flex>
     </Flex>}
     <Flex
+      borderRadius={"10px"}
       mt="5px"
+      mb={"5px"}
       borderWidth={"2px"}
       alignContent="space-between" 
       justifyContent={"space-between"}
@@ -170,7 +173,11 @@ export default function SourcePage(): JSX.Element {
     </InputGroup>
     </Flex>
     
-    <Flex padding={"10px"} borderWidth={"2px"}>
+    <Flex
+      mb={"5px"}
+      borderRadius={"10px"}
+      padding={"10px"}
+      borderWidth={"2px"}>
       <Breadcrumb>
         {trailStack.map(itemWithId => (
           <BreadcrumbItem key={itemWithId.id}>
@@ -180,7 +187,9 @@ export default function SourcePage(): JSX.Element {
       </Breadcrumb>
     </Flex>
     
-    <Flex flexDirection="column">
+    <Flex
+      mb={"5px"}
+      flexDirection="column">
         {!branchIsLoading &&
           !treeIsLoading &&
           blob === undefined &&
@@ -195,6 +204,7 @@ export default function SourcePage(): JSX.Element {
           <BlobView content={blobContent.content} size={blobContent.size}/>}
     </Flex>
     <Flex
+      borderRadius={"10px"}
       borderWidth={"2px"}
       color={"gray.400"} 
       fontSize={"14px"} 

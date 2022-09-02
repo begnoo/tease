@@ -15,6 +15,13 @@ export interface CommitItem {
     parents: String[],
 } 
 
+export interface DiffItem {
+    path: string,
+    diff: String[],
+    added: number,
+    deleted: number
+} 
+
 export interface ReadBranchRequest {
     user: string | undefined,
     source: string | undefined,
@@ -24,6 +31,19 @@ export interface ReadCommitsRequest {
     user: string | undefined,
     source: string | undefined,
     branch: string | undefined,
+}
+
+export interface ReadCommitRequest {
+    user: string | undefined,
+    source: string | undefined,
+    commit: string | undefined,
+}
+
+export interface DiffCommitsRequest {
+    user: string | undefined,
+    source: string | undefined,
+    commit: string | undefined,
+    parentCommit: string | undefined
 }
 
 export interface ReadDataRequest {
@@ -64,5 +84,17 @@ export const readBranches = async ({user, source}: ReadBranchRequest) => {
 export const readCommits = async ({user, source, branch}: ReadCommitsRequest) => {
     let resp = await client.get(`${SOURCE_STORAGE_URL}/${user}/${source}/commits/branch/${branch}`);
     let data: CommitItem[] = resp.data.items;
+    return data;
+}
+
+export const readCommit = async ({user, source, commit}: ReadCommitRequest): Promise<CommitItem> => {
+    let resp = await client.get(`${SOURCE_STORAGE_URL}/${user}/${source}/commits/commit/${commit}`);
+    let data: CommitItem = resp.data;
+    return data;
+}
+
+export const diffCommits = async ({user, source, commit, parentCommit}: DiffCommitsRequest) => {
+    let resp = await client.post(`${SOURCE_STORAGE_URL}/${user}/${source}/diff`, {commit, parentCommit});
+    let data: DiffItem[] = resp.data.items;
     return data;
 }

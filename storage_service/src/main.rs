@@ -18,13 +18,14 @@ fn rocket() -> _ {
         .mount("/source", routes![controllers::clone::clone])
         .mount("/source", routes![controllers::clone::clone_branch])
         .mount("/source", routes![controllers::init::init])
-        .mount("/source", routes![controllers::diff::read_diff_commits])
         .mount("/source", routes![all_options])
         .mount("/read", routes![controllers::read::read_tree])
         .mount("/read", routes![controllers::read::read_blob])
         .mount("/read", routes![controllers::read::read_branch])
         .mount("/read", routes![controllers::read::read_branches])
         .mount("/read", routes![controllers::read::read_commits])
+        .mount("/read", routes![controllers::read::read_commit])
+        .mount("/read", routes![controllers::diff::read_diff_commits])
         .mount("/read", routes![all_options])
 
 }

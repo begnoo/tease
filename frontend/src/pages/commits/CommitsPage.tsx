@@ -18,7 +18,7 @@ export default function CommitsPage(): JSX.Element {
     <>
       {!commitsAreLoading && commits?.map((commit) => (
         <Flex key={commit.sha1}>
-          <CommitsBlock commit={commit}/>
+          <CommitsBlock user={user} source={source} commit={commit}/>
         </Flex>
       ))}
     </>

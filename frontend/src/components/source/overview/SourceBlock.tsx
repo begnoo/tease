@@ -13,7 +13,10 @@ export default function SourceBlock({ source }: SourceBoxProp): JSX.Element {
   const navigate = useNavigate();
 
   return (
-    <Box mt={2} borderWidth={"2px"} padding={"30px 30px 20px 30px"}>
+    <Box 
+      borderRadius={"10px"} 
+      borderWidth={"2px"} 
+      padding={"30px 30px 20px 30px"}>
       <Flex alignContent={"space-between"} justifyContent={"space-between"}>
         <Flex>{source.name}</Flex>
         <Flex>

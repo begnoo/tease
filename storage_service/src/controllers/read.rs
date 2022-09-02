@@ -1,7 +1,7 @@
 use glob::glob;
 use rocket::{serde::json::Json};
 use serde::Serialize;
-use tease_common::read::blob_reader::{IndexObject, safe_read_object, shallow_collect_from_tree, paths_to_string, read_object, trail_commits_all, CommitObject};
+use tease_common::read::blob_reader::{IndexObject, safe_read_object, shallow_collect_from_tree, paths_to_string, read_object, trail_commits_all, CommitObject, build_commit_obj};
 
 use crate::file_utils::read_branch_head;
 
@@ -61,6 +61,22 @@ fn new_tree_item(obj: &IndexObject) -> TreeItem {
         sha1: obj.sha1.to_string(),
         name: obj.path.to_string()
     }
+}
+
+#[get("/<user>/<source_name>/commits/commit/<commit>")]
+pub async fn read_commit(user: &str, source_name: &str, commit: &str) -> Option<Json<CommitItem>> {
+    let root_folder = format!("source/{}/{}", user, source_name);
+
+    let commit_content_res = safe_read_object(&root_folder, &commit.to_string());
+    if commit_content_res.is_err() {
+        return None;
+    }
+    let commit_content = commit_content_res.unwrap();
+    let commit_lines: Vec<&str> = commit_content.split("\n").collect();
+    let commit_obj = build_commit_obj(&commit.to_string(), &commit_lines);
+    let commit_item = new_commit_item(&commit_obj);
+
+    Some(Json(commit_item))
 }
 
 #[get("/<user>/<source_name>/commits/branch/<branch>")]

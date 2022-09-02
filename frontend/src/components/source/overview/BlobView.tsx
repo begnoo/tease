@@ -7,7 +7,9 @@ import { javascript } from '@codemirror/lang-javascript';
 export default function BlobView({ size, content }: Blob): JSX.Element {
 
   return (
-    <Box borderWidth={"2px"} >
+    <Box 
+      borderRadius={"10px"}
+      borderWidth={"2px"} >
       <Flex 
         alignContent="space-between" 
         justifyContent={"space-between"}

@@ -58,6 +58,7 @@ export default function CollabBlock({ collab, userReacts, userCreated }: CollabB
   return (
     <>
         <Flex
+            borderRadius={"10px"}
             mt={"10px"}
             flexDirection={"column"}
             borderWidth={"2px"}
