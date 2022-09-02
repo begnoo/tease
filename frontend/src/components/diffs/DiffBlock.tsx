@@ -10,7 +10,20 @@ export default function DiffBlock({ diff }: DiffBlockProps): JSX.Element {
 
   return (
     <>
-      <Flex key={diff.path} m={"5px"}>{diff.path}</Flex>
+      <Flex
+        justifyContent={"space-between"}
+        alignContent={"space-between"} 
+        key={diff.path}  
+        mt={"5px"} 
+        ml={"5px"}>
+        <Flex key={diff.path}>{diff.path}</Flex>
+        <Flex color={"gray.500"} gap={"10px"}>
+          (
+          <Flex color={"green.400"}> + {diff.added}</Flex>
+          <Flex color={"red.300"}> - {diff.deleted}</Flex>
+          )
+        </Flex>
+      </Flex>
       <Flex>
         <Flex
           borderRadius={"10px"}

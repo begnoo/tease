@@ -14,3 +14,9 @@ pub async fn push(user: &str, source_name: &str, src_data: Data<'_>) -> std::io:
     
     Ok(format!("Uploaded files for {}/{}", user, source_name))
 }
+
+
+// pokupim ovde stari head_commit, user, source_name
+// trail do novog mastera
+// odradim diff
+// posaljem na stats async
