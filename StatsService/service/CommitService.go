@@ -3,6 +3,7 @@ package service
 import (
 	"StatsService/domain"
 	"StatsService/repo"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -19,6 +20,17 @@ func ProvideCommitService(commitRepo repo.CommitRepo) CommitService {
 
 func (service *CommitService) Create(commit domain.Commit) (*mongo.InsertOneResult, error) {
 	res, err := service.commitRepo.Create(commit)
+
+	return res, err
+}
+
+func (service *CommitService) CreateCommits(commits []domain.Commit) (*mongo.InsertManyResult, error) {
+	newValue := make([]interface{}, len(commits))
+	for i, v := range commits {
+		newValue[i] = v
+	}
+	fmt.Printf("\n%+v\n", newValue)
+	res, err := service.commitRepo.CreateCommits(newValue)
 
 	return res, err
 }

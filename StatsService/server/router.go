@@ -9,6 +9,7 @@ import (
 
 var authReg = map[string][]string{
 	"/commits,POST":                         {"ROLE_USER"},
+	"/commits/multi,POST":                   {"ROLE_USER"},
 	"/commits/{user}/by-user,GET":           {"ALL"},
 	"/commits/{owner}/{source},GET":         {"ALL"},
 	"/commits/{owner}/{source}/by-user,GET": {"ALL"},
@@ -23,6 +24,9 @@ func SetupRouter() http.Handler {
 
 	r.HandleFunc("/commits",
 		handleJwt(controllers.CreateCommitHandler, authReg["/commits,POST"])).
+		Methods(http.MethodPost)
+	r.HandleFunc("/commits/multi",
+		handleJwt(controllers.CreateCommitsHandler, authReg["/commits/multi,POST"])).
 		Methods(http.MethodPost)
 	r.HandleFunc("/commits/{owner}/{source}",
 		handleJwt(controllers.ReadBySourceHandler, authReg["/commits/{owner}/{source},GET"])).

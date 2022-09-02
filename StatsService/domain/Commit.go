@@ -6,13 +6,13 @@ import (
 
 type Commit struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	CreatedAt int                `bson:"created_at" json:"created_at"`
-	Added     int                `bson:"added" json:"added"`
-	Deleted   int                `bson:"deleted" json:"deleted"`
-	Owner     string             `bson:"owner" json:"owner"`
-	User      string             `bson:"user" json:"user"`
-	Source    string             `bson:"source" json:"source"`
-	Sha       string             `bson:"sha" json:"sha"`
+	CreatedAt int                `mapper:"CreatedAt" bson:"created_at" json:"created_at"`
+	Added     int                `mapper:"Added" bson:"added" json:"added"`
+	Deleted   int                `mapper:"Deleted" bson:"deleted" json:"deleted"`
+	Owner     string             `mapper:"Owner" bson:"owner" json:"owner"`
+	User      string             `mapper:"User" bson:"user" json:"user"`
+	Source    string             `mapper:"Source" bson:"source" json:"source"`
+	Sha       string             `mapper:"Sha" bson:"sha" json:"sha"`
 }
 
 type CommitCountByUser struct {

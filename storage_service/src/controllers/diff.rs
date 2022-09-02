@@ -51,7 +51,7 @@ pub async fn read_diff_commits(user: &str, source_name: &str, commits: Json<Diff
     Some(Json(DiffContent {items}))
 }
 
-fn count_add_del(lines: &Vec<DiffLine>) -> (usize, usize) {
+pub fn count_add_del(lines: &Vec<DiffLine>) -> (usize, usize) {
     let add_count = lines.iter().filter(|line| line.state == "add").count();
     let del_count = lines.iter().filter(|line| line.state == "del").count();
     

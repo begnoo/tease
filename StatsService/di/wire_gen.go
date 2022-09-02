@@ -19,3 +19,10 @@ func InitializeCommitService() service.CommitService {
 	commitService := service.ProvideCommitService(commitRepo)
 	return commitService
 }
+
+func InitializeCloneService() service.CloneService {
+	client := repo.ProvideConnection()
+	cloneRepo := repo.ProvideCloneRepo(client)
+	cloneService := service.ProvideCloneService(cloneRepo)
+	return cloneService
+}

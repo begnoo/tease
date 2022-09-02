@@ -36,6 +36,7 @@ pub fn safe_read_object(root_folder: &String, object_name: &String) -> Result<St
     Ok(decoded_str)
 }
 
+#[derive(Debug)]
 pub struct CommitObject {
     pub sha1: String,
     pub date: u64,

@@ -34,6 +34,15 @@ func (r *CommitRepo) Create(commit domain.Commit) (*mongo.InsertOneResult, error
 	return res, err
 }
 
+func (r *CommitRepo) CreateCommits(commits []interface{}) (*mongo.InsertManyResult, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), mongoQueryTimeout)
+	defer cancel()
+
+	res, err := r.db.InsertMany(ctx, commits)
+
+	return res, err
+}
+
 func (repo *CommitRepo) ReadBySource(owner, name string) (*[]domain.Commit, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), mongoQueryTimeout)

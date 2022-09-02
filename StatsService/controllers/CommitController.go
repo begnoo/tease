@@ -46,6 +46,42 @@ func CreateCommitHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, result)
 }
 
+func CreateCommitsHandler(w http.ResponseWriter, r *http.Request) {
+	var requestBody request.Commits
+	json.NewDecoder(r.Body).Decode(&requestBody)
+	r.Body.Close()
+
+	_, err := security.ParseTokenFromRequest(r)
+	if !errors.HandleHttpError(err, w) {
+		return
+	}
+
+	err = ValidateStruct(requestBody)
+	if !errors.HandleHttpError(err, w) {
+		return
+	}
+	fmt.Printf("reqBody: %+v", requestBody)
+
+	var commits []domain.Commit
+	for _, sent_commit := range requestBody.Items {
+		var commit domain.Commit
+		mapper.AutoMapper(&sent_commit, &commit)
+		commits = append(commits, commit)
+	}
+
+	fmt.Printf("commits: %+v", commits)
+
+	commitService := di.InitializeCommitService()
+	data, err := commitService.CreateCommits(commits)
+	if !errors.HandleHttpError(err, w) {
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	result := utils.StructToJson(data)
+	io.WriteString(w, result)
+}
+
 func ReadBySourceHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	owner := vars["owner"]

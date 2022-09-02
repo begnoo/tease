@@ -18,7 +18,7 @@ import (
 )
 
 func CreateCloneHandler(w http.ResponseWriter, r *http.Request) {
-	var requestBody request.Commit
+	var requestBody request.Clone
 	json.NewDecoder(r.Body).Decode(&requestBody)
 	r.Body.Close()
 
@@ -27,8 +27,8 @@ func CreateCloneHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var commit domain.Commit
-	mapper.AutoMapper(&requestBody, &commit)
+	var clone domain.Clone
+	mapper.AutoMapper(&requestBody, &clone)
 
 	token, err := security.ParseTokenFromRequest(r)
 	if !errors.HandleHttpError(err, w) {
@@ -38,8 +38,8 @@ func CreateCloneHandler(w http.ResponseWriter, r *http.Request) {
 	claims := token.Claims.(jwt.MapClaims)
 	fmt.Printf("%+v\n", claims)
 
-	commitService := di.InitializeCommitService()
-	data, err := commitService.Create(commit)
+	cloneService := di.InitializeCloneService()
+	data, err := cloneService.Create(clone)
 
 	if !errors.HandleHttpError(err, w) {
 		return
@@ -55,7 +55,7 @@ func CloneReadBySourceHandler(w http.ResponseWriter, r *http.Request) {
 	owner := vars["owner"]
 	name := vars["source"]
 
-	cloneService := di.InitializeCommitService()
+	cloneService := di.InitializeCloneService()
 	data, err := cloneService.ReadBySource(owner, name)
 
 	if !errors.HandleHttpError(err, w) {

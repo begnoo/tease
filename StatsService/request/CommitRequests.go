@@ -9,3 +9,7 @@ type Commit struct {
 	Source    string `mapper:"Source" json:"source" validate:"required"`
 	Sha       string `mapper:"Sha" json:"sha" validate:"required"`
 }
+
+type Commits struct {
+	Items []Commit `json:"items"`
+}

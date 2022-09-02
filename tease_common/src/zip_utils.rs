@@ -68,7 +68,10 @@ pub fn extraxt(name: String, root_folder: String) {
 
         if (*file.name()).ends_with('/') {
             println!("File {} extracted to \"{}\"", i, outpath.display());
-            fs::create_dir_all(&outpath).unwrap();
+            let res = fs::create_dir_all(&outpath);
+            if res.is_err() {
+                continue;
+            }
         } else {
             println!(
                 "File {} extracted to \"{}\" ({} bytes)",
@@ -76,6 +79,7 @@ pub fn extraxt(name: String, root_folder: String) {
                 outpath.display(),
                 file.size()
             );
+
             if let Some(p) = outpath.parent() {
                 if !p.exists() {
                     fs::create_dir_all(&p).unwrap();
@@ -93,6 +97,29 @@ pub fn extraxt(name: String, root_folder: String) {
             if let Some(mode) = file.unix_mode() {
                 fs::set_permissions(&outpath, fs::Permissions::from_mode(mode)).unwrap();
             }
+        }        
+    }
+}
+
+pub fn extract_branch_name(name: String, root_folder: String) -> String {
+    let fname = std::path::Path::new(&name);
+    let file = fs::File::open(&fname).unwrap();
+
+    let mut archive = zip::ZipArchive::new(file).unwrap();
+
+    for i in 0..archive.len() {
+        let file = archive.by_index(i).unwrap();
+        let outpath = match file.enclosed_name() {
+            Some(path) => Path::new(root_folder.as_str()).join(path).to_owned(),
+            None => continue,
+        };
+
+        if outpath.to_str().unwrap().contains("refs") {
+            let branch_path = outpath.to_str().unwrap();
+            let parts: Vec<&str> = branch_path.split("/").collect();
+            return parts.last().unwrap().to_string();
         }
     }
+    
+    "".to_string()
 }
