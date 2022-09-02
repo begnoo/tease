@@ -1,6 +1,7 @@
 use std::{fs::File};
 
 use rocket::fs::NamedFile;
+use serde::Serialize;
 use tease_common::read::blob_reader::{
     read_tree_from_commit,
     collect_objects_from_tree, 
@@ -8,14 +9,15 @@ use tease_common::read::blob_reader::{
 };
 
 use crate::{jwt::JwtToken, file_utils::read_branch_head};
+use chrono::UTC;
 
 #[get("/<user>/<source_name>", format = "application/json")]
 pub async fn clone(
-        _jwt_token: JwtToken,
+        jwt_token: JwtToken,
         user: &str,
         source_name: &str,
     ) -> Option<NamedFile> {
-    let root_folder = format!("source/{}/{}", user, source_name);
+    let root_folder = format!("source/{}/{}", user.to_string(), source_name.to_string());
     let temp_zip_path = format!("{}/temp_zip", root_folder);
     let mut objects: Vec<String> = get_objects(root_folder.to_string(), "master".to_string()).iter()
                         .map(|obj| format!("{}/objects/{}", root_folder.to_string(), obj.to_string()))
@@ -28,6 +30,7 @@ pub async fn clone(
         return None{};
     }
 
+    clone_stats(jwt_token.email, jwt_token.token, user.to_string(), source_name.to_string()).await;
     NamedFile::open(temp_zip_path.to_string()).await.ok()
 }
 
@@ -52,6 +55,32 @@ pub async fn clone_branch(
     }
 
     NamedFile::open(temp_zip_path.to_string()).await.ok()
+}
+
+#[derive(Debug, Serialize)]
+struct CloneStatsRequest {
+    #[serde(alias = "createdAt")]
+    created_at: i64,
+    owner: String,
+    source: String,
+    user: String
+}
+
+async fn clone_stats(user: String, token: String, owner: String, source_name: String) {
+    let dt = UTC::now();
+    let created_at: i64 = dt.timestamp();
+    let req_body = CloneStatsRequest { user, owner, source: source_name, created_at };
+
+    let client = reqwest::Client::new();
+    client.post("http://localhost:8083/clones")
+        .header("Authorization", format!("Bearer {}", token.to_string()))
+        .json(&req_body)
+        .send()
+        .await
+        .expect("Couldn't get response")
+        .json::<rocket::serde::json::Value>()
+        .await
+        .expect("Couldn't decode...");
 }
 
 

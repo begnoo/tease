@@ -21,6 +21,7 @@ func CreateCloneHandler(w http.ResponseWriter, r *http.Request) {
 	var requestBody request.Clone
 	json.NewDecoder(r.Body).Decode(&requestBody)
 	r.Body.Close()
+	fmt.Printf("%+v\n", requestBody)
 
 	err := ValidateStruct(requestBody)
 	if !errors.HandleHttpError(err, w) {

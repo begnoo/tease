@@ -41,9 +41,9 @@ func SetupRouter() http.Handler {
 	r.HandleFunc("/clones/{owner}/{source}",
 		handleJwt(controllers.CloneReadBySourceHandler, authReg["/clones/{owner}/{source},GET"])).
 		Methods(http.MethodGet)
-	r.HandleFunc("/clones/{owner}/{source}",
+	r.HandleFunc("/clones",
 		handleJwt(controllers.CreateCloneHandler, authReg["/clones,POST"])).
-		Methods(http.MethodGet)
+		Methods(http.MethodPost)
 
 	r.Use(logRoute)
 	r.Use(setupRouteAsJson)
