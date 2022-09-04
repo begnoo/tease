@@ -21,3 +21,10 @@ type CommitCountByUser struct {
 	Added   int    `json:"added" bson:"added"`
 	Deleted int    `json:"deleted" bson:"deleted"`
 }
+
+type CommitCountByDay struct {
+	ID      string `bson:"_id,omitempty" json:"id"`
+	Count   int    `json:"count" bson:"count"`
+	Added   int    `json:"added" bson:"added"`
+	Deleted int    `json:"deleted" bson:"deleted"`
+}

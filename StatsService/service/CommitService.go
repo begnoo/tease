@@ -35,8 +35,8 @@ func (service *CommitService) CreateCommits(commits []domain.Commit) (*mongo.Ins
 	return res, err
 }
 
-func (service *CommitService) ReadBySource(owner, name string) (*[]domain.Commit, error) {
-	res, err := service.commitRepo.ReadBySource(owner, name)
+func (service *CommitService) ReadBySource(owner, name string) (*[]domain.CommitCountByDay, error) {
+	res, err := service.commitRepo.ReadBySourceGroupByDay(owner, name)
 
 	return res, err
 }

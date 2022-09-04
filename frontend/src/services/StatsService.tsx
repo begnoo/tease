@@ -17,6 +17,13 @@ export interface CommitStats {
 	sha: string,
 }
 
+export interface CommitStatsByDay {
+	id: string
+	count: number
+	added: number
+	deleted: number
+}
+
 export interface CommitStatsByCollab {
 	user: string
 	count: number
@@ -24,9 +31,9 @@ export interface CommitStatsByCollab {
 	deleted: number
 }
 
-export const readCommitsStats = async ({user, source}: ReadCommitsStats) => {
+export const readCommitsStatsByDate = async ({user, source}: ReadCommitsStats) => {
     let resp = await client.get(`${STATS_SERVICE_URL}/commits/${user}/${source}`);
-    let data: CommitStats[] = resp.data;
+    let data: CommitStatsByDay[] = resp.data;
     return data;
 }
 

@@ -70,6 +70,63 @@ func (repo *CommitRepo) ReadBySource(owner, name string) (*[]domain.Commit, erro
 	return &commits, err
 }
 
+func (repo *CommitRepo) ReadBySourceGroupByDay(owner, name string) (*[]domain.CommitCountByDay, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), mongoQueryTimeout)
+	defer cancel()
+
+	matchStage := bson.D{{
+		Key: "$match", Value: bson.D{
+			{Key: "owner", Value: owner},
+			{Key: "source", Value: name},
+		},
+	}}
+	groupStage := bson.D{{
+		Key: "$group",
+		Value: bson.D{
+			{Key: "_id", Value: bson.D{
+				{Key: "$dateToString", Value: bson.D{
+					{Key: "format", Value: "%d-%m-%Y"},
+					{Key: "date", Value: bson.D{
+						{Key: "$toDate", Value: bson.D{
+							{Key: "$multiply", Value: bson.A{1000, "$created_at"}},
+						}},
+					}},
+				}},
+			}},
+			{Key: "count", Value: bson.D{
+				{Key: "$count", Value: bson.D{}},
+			}},
+			{Key: "added", Value: bson.D{
+				{Key: "$sum", Value: "$added"},
+			}},
+			{Key: "deleted", Value: bson.D{
+				{Key: "$sum", Value: "$deleted"},
+			}},
+		},
+	}}
+
+	var commits []domain.CommitCountByDay
+	cursor, err := repo.db.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage})
+
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		fmt.Printf("%+v", cursor.Current)
+		commit := new(domain.CommitCountByDay)
+		if err := cursor.Decode(commit); err != nil {
+			return nil, err
+		}
+
+		commits = append(commits, *commit)
+	}
+
+	return &commits, err
+}
+
 func (repo *CommitRepo) ReadBySourceGroupByUser(owner, name string) (*[]domain.CommitCountByUser, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), mongoQueryTimeout)

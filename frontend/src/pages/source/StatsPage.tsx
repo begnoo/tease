@@ -2,12 +2,13 @@ import { Flex, Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react"
 import { useQuery } from "react-query";
 import { useParams } from "react-router";
 import CollabDoughnut from "../../components/source/stats/CollabDoughnut";
-import { readCommitsStats, readCommitsStatsByUser } from "../../services/StatsService";
+import CommitsLineChart from "../../components/source/stats/CommitsLineChart";
+import { readCommitsStatsByDate, readCommitsStatsByUser } from "../../services/StatsService";
 
 export default function StatsPage(): JSX.Element {
 
   const { user, source } = useParams();
-  const { isLoading: loadingCommitStats, data: commitStats } = useQuery(["commitStats", user, source], () => readCommitsStats({user, source}),
+  const { isLoading: loadingCommitStatsByDay, data: commitStatsByDay } = useQuery(["commitStatsByDay", user, source], () => readCommitsStatsByDate({user, source}),
   {
     enabled: !!user && !!source
   });  
@@ -22,7 +23,7 @@ export default function StatsPage(): JSX.Element {
         <Tabs>
           <TabList>
             <Tab key={1}>Collabarators Effect</Tab>
-            <Tab>Two</Tab>
+            <Tab key={2}>Added & Deleted</Tab>
           </TabList>
 
         <TabPanels>
@@ -32,12 +33,10 @@ export default function StatsPage(): JSX.Element {
               && commitStatsByUser.length !== 0 
               && <CollabDoughnut items={commitStatsByUser}/>}
           </TabPanel>
-          <TabPanel key={"tab2"}>
-          {!loadingCommitStats 
-            && commitStats !== undefined 
-            && commitStats.map((commit) => (
-            <Flex key={commit.id}>{commit.sha}</Flex>
-          ))}
+          <TabPanel key={2}>
+          {!loadingCommitStatsByDay 
+            && commitStatsByDay !== undefined 
+            && <CommitsLineChart items={commitStatsByDay}/>}
           </TabPanel>
         </TabPanels>
       </Tabs>
