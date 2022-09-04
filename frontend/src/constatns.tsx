@@ -9,7 +9,7 @@ export const SOURCE_COLLABS_PAGE: string = "/source/:user/:source/collabs";
 export const COLLABS_PAGE: string = "/collabs";
 export const COMMITS_PAGE: string = "/source/:user/:source/commits/:branch";
 export const DIFF_PAGE: string = "/source/:user/:source/commits/diff/:commit";
-
+export const STATS_PAGE: string = "/source/:user/:source/stats";
 
 export const AUTH_SERVICE_URL = process.env.REACT_APP_AUTH_SERVICE;
 export const USER_SERVICE_URL = process.env.REACT_APP_USER_SERVICE;
@@ -17,6 +17,7 @@ export const SOURCE_SERVICE_URL = process.env.REACT_APP_SOURCE_SERVICE;
 export const COLLAB_SERVICE_URL = process.env.REACT_APP_COLLAB_SERVICE;
 export const SOURCE_STORAGE_URL = process.env.REACT_APP_STORAGE_SERVICE;
 export const SOURCE_CLONE_URL = process.env.REACT_APP_STORAGE_CLONE;
+export const STATS_SERVICE_URL = process.env.REACT_APP_STATS_SERVICE;
 
 
 interface TeaseRoute {

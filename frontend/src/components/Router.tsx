@@ -3,7 +3,7 @@ import {
   COLLABS_PAGE,
   COMMITS_PAGE,
   DIFF_PAGE,
-  HOME_PAGE, INIT_SOURCE_PAGE, LOGIN_PAGE, REGISTER_PAGE, SOURCE_COLLABS_PAGE, SOURCE_OVERVIEW_PAGE, SOURCE_PAGE, SOURCE_USERVIEW_PAGE,
+  HOME_PAGE, INIT_SOURCE_PAGE, LOGIN_PAGE, REGISTER_PAGE, SOURCE_COLLABS_PAGE, SOURCE_OVERVIEW_PAGE, SOURCE_PAGE, SOURCE_USERVIEW_PAGE, STATS_PAGE,
 } from "../constatns";
 import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/LoginPage";
@@ -16,6 +16,7 @@ import SourceCollabPage from "../pages/source/SourceCollabPage";
 import CollabPage from "../pages/collab/CollabPage";
 import CommitsPage from "../pages/commits/CommitsPage";
 import DiffPage from "../pages/diffs/DiffPage";
+import StatsPage from "../pages/source/StatsPage";
 
 export default function Router(): JSX.Element {
   return (
@@ -63,6 +64,10 @@ export default function Router(): JSX.Element {
       <Route
         path={DIFF_PAGE}
         element={<DiffPage/>}
+      />
+      <Route
+        path={STATS_PAGE}
+        element={<StatsPage/>}
       />
     </Routes>
   );

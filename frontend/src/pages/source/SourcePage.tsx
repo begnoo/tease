@@ -6,7 +6,7 @@ import { useParams } from "react-router";
 import BlobView from "../../components/source/overview/BlobView";
 import SourceBrowser from "../../components/source/overview/SourceBrowser";
 import { BranchContent, Item, readBlob, readBranches, readTree } from "../../services/StorageService";
-import { AtSignIcon, CopyIcon } from '@chakra-ui/icons'
+import { AtSignIcon, CopyIcon, InfoIcon } from '@chakra-ui/icons'
 import { SOURCE_CLONE_URL } from "../../constatns";
 import { useNavigate } from "react-router-dom";
 import { fromMilis } from "../../utils/dateUtils";
@@ -221,6 +221,30 @@ export default function SourcePage(): JSX.Element {
           variant={"ghost"}
           children={
             <AtSignIcon/>
+          }
+        />
+      </Flex>
+    </Flex>
+
+    <Flex
+      mt={"5px"}
+      borderRadius={"10px"}
+      borderWidth={"2px"}
+      color={"gray.400"} 
+      fontSize={"14px"} 
+      alignItems={"center"}
+      alignContent="space-between" 
+      justifyContent={"space-between"}
+      padding={"10px"}
+    >
+      <Flex>Stats</Flex>
+      <Flex>
+        <IconButton
+          onClick={() => navigate(`/source/${user}/${source}/stats`)}
+          aria-label="Stats"
+          variant={"ghost"}
+          children={
+            <InfoIcon/>
           }
         />
       </Flex>
