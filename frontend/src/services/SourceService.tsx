@@ -51,6 +51,12 @@ export const initSource = async (initRequest: InitSourceRequest | undefined): Pr
     return data;
 }
 
+export const deleteSource = async (id: number | undefined): Promise<Source> => {
+    let resp = await client.delete(`${SOURCE_SERVICE_URL}/${id}`);
+    const data: Promise<Source> = resp.data;
+    return data;
+}
+
 export const addCollab = async (req: AddCollabRequest | undefined) => {
     let resp = await client.post(`${COLLAB_SERVICE_URL}/add`, req);
     return resp;

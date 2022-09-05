@@ -61,7 +61,7 @@ const InitForm = () => {
                     {...register('description')}
                 />
             </FormControl>
-            <FormControl mt="4px" justifyContent={"space-between"} alignItems={"center"}>
+            {/* <FormControl mt="4px" justifyContent={"space-between"} alignItems={"center"}>
                 <Flex gap={"10px"} mt={"10px"}>
                     <Text>
                         Public
@@ -76,7 +76,7 @@ const InitForm = () => {
                         Private
                     </Text>
                 </Flex>
-            </FormControl>
+            </FormControl> */}
 
 
             <Flex justifyContent="right">

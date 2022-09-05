@@ -4,6 +4,7 @@ import (
 	"RepoService/domain"
 	"RepoService/errors"
 	"RepoService/repo"
+	"RepoService/utils"
 	"fmt"
 	"os"
 	"strconv"
@@ -179,6 +180,6 @@ func (service *SourceService) AddColabarator(collab_email, owner, name, sent_by 
 
 	service.sourceRepo.Update(*source)
 
-	//dodati slanje mail-a
+	defer utils.SendMail(owner, name, collab_email)
 	return &collab, err
 }

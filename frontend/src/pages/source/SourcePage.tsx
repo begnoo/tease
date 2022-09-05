@@ -52,6 +52,7 @@ export default function SourcePage(): JSX.Element {
   }, [JSON.stringify(branches)]);
 
   useEffect(() => {
+    setBlob(undefined);
     setTree(selectedBranch?.tree_sha1);
     !!selectedBranch && setTrailStack([{sha1: selectedBranch?.tree_sha1, name: "root", dtype: "tree", id: 0}])
   }, [selectedBranch]);

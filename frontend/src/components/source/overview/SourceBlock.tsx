@@ -1,16 +1,35 @@
 import { Button } from "@chakra-ui/button";
 import { Box, Center, Flex } from "@chakra-ui/layout";
+import { AxiosError } from "axios";
+import { useMutation, useQueryClient } from "react-query";
 import { Link, useNavigate } from "react-router-dom";
-import { Source } from "../../../services/SourceService";
+import { useRequestToast } from "../../../hooks/useRequestToast";
+import { deleteSource, Source } from "../../../services/SourceService";
 import { howMuchAgo } from "../../../utils/dateUtils"
 
 interface SourceBoxProp {
   source: Source
+  owner?: boolean
 }
 
-export default function SourceBlock({ source }: SourceBoxProp): JSX.Element {
+export default function SourceBlock({ source, owner }: SourceBoxProp): JSX.Element {
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { toastSuccess, toastFailure } = useRequestToast("You've successfully deleted a source.", "Couldn't delete source")
+  const { mutate: delSource } = useMutation(
+      deleteSource,
+      {
+          onSuccess: (_res) => {
+              queryClient.invalidateQueries("user_sources");
+              queryClient.invalidateQueries("all_sources");
+              toastSuccess();
+          },
+          onError: (err: AxiosError) => {
+              toastFailure(err);
+          }
+      }
+  );
 
   return (
     <Box 
@@ -34,6 +53,9 @@ export default function SourceBlock({ source }: SourceBoxProp): JSX.Element {
           <Button mt={"5px"} size={"sm"} onClick={() => navigate(`/source/${source.owner}/${source.name}`)}>
             View
           </Button>
+          {owner && <Button ml={"5px"} mt={"5px"} size={"sm"} onClick={() => delSource(source.id)}>
+            Delete
+          </Button>}
         </Flex>
       </Flex>
     </Box>

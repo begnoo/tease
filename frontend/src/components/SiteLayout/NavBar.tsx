@@ -37,8 +37,13 @@ export default function NavBar() {
                     </Link>
                 ))}
             </Flex>}
-            {user !== null && 
+            {user !== null && user !== undefined && 
             <Flex>
+                <Link to={`/source/${user.email}`}>
+                    <Button variant="ghost" aria-label="Home" my={5} w="100%">
+                        {user.email}
+                    </Button>
+                </Link>
                 {<a>
                     <Button 
                         variant="ghost"
