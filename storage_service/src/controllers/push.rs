@@ -35,7 +35,7 @@ pub async fn push(
         prev_head_commit: head_commit,
         source_name: source_name.to_string(),
         root_folder: dir_path.to_string(),
-        branch
+        branch,
     };
 
     push_stats(props).await;
@@ -50,9 +50,11 @@ struct PushStatsProps {
     prev_head_commit: String,
     source_name: String,
     root_folder: String,
-    branch: String
+    branch: String,
 }
 
+//stats servis pogleda da li vec postoje, ako posotoje i branch je master -> update
+// ako ne postoje tada ide -> create
 async fn push_stats(props: PushStatsProps) {
     let head_commit_res = read_branch_head(&props.root_folder.to_string(), &props.branch.to_string());
     let curr_head_commit = head_commit_res.unwrap();
@@ -67,8 +69,9 @@ async fn push_stats(props: PushStatsProps) {
     let items = stats_from_commits(&objects, &props);
     let req_body = PushStatRequests { items };
 
+    let url = format!("http://localhost:8083/commits/multi");
     let client = reqwest::Client::new();
-    client.post("http://localhost:8083/commits/multi")
+    client.post(url)
         .header("Authorization", format!("Bearer {}", props.token.to_string()))
         .json(&req_body)
         .send()
@@ -82,7 +85,7 @@ async fn push_stats(props: PushStatsProps) {
 
 #[derive(Debug, Serialize)]
 struct PushStatRequests {
-    pub items: Vec<PushStatRequest>
+    pub items: Vec<PushStatRequest>,
 }
 
 fn stats_from_commits(objects: &Vec<CommitObject>, props: &PushStatsProps) -> Vec<PushStatRequest> {
@@ -108,7 +111,8 @@ fn stats_from_commits(objects: &Vec<CommitObject>, props: &PushStatsProps) -> Ve
                 user: props.email.to_string(),
                 owner: props.user.to_string(),
                 source: props.source_name.to_string(),
-                sha: next.sha1.to_string()
+                sha: next.sha1.to_string(),
+                branch: props.branch.to_string()
             }
         );
     }
@@ -126,6 +130,7 @@ struct PushStatRequest {
     pub user: String,
     pub source: String,
     pub sha: String,
+    pub branch: String
 }
 
 // posaljem na stats async

@@ -1,8 +1,8 @@
 import { Box } from "@chakra-ui/layout";
 import { Chart as ChartJS, Legend, Tooltip, TimeSeriesScale, LinearScale, BarElement, CategoryScale, TimeScale, PointElement, LineElement, Title, Filler } from "chart.js";
 import { useEffect, useState } from "react";
-import { Bar, Line } from "react-chartjs-2";
-import { CommitStats, CommitStatsByDay } from "../../../services/StatsService";
+import { Line } from "react-chartjs-2";
+import { CommitStatsByDay } from "../../../services/StatsService";
 import 'chartjs-adapter-moment';
 import { parse } from "date-fns";
 import { Select } from "@chakra-ui/react";
@@ -59,15 +59,15 @@ export default function CommitsLineChart({ items }: CommitsBarChartProp): JSX.El
   );
 }
 
-interface Temp {
+interface TimePoint {
     x: Date,
     y: number
 }
 
 const formatData = (items: CommitStatsByDay[]): any => {
 
-    const added_data: Temp[] = items.map((commit) => ({x: parse(commit.id, "dd-MM-yyyy", new Date()), y: commit.added}));
-    const deleted_data: Temp[] = items.map((commit) => ({x: parse(commit.id, "dd-MM-yyyy", new Date()), y: commit.deleted}));
+    const added_data: TimePoint[] = items.map((commit) => ({x: parse(commit.id, "dd-MM-yyyy", new Date()), y: commit.added}));
+    const deleted_data: TimePoint[] = items.map((commit) => ({x: parse(commit.id, "dd-MM-yyyy", new Date()), y: commit.deleted}));
     added_data.sort((a, b) => a.x.getTime() > b.x.getTime() ? 1 : -1);
     deleted_data.sort((a, b) => a.x.getTime() > b.x.getTime() ? 1 : -1);
 

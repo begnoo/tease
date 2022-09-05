@@ -23,7 +23,6 @@ export default function CollabDoughnut({ items }: CollabDoughnutProps): JSX.Elem
     let totalCommits = commits.reduce((acc, add) => acc + add, 0);
     let percentages = commits.map((count: number) => Math.floor(count/totalCommits * 100));
 
-    console.log(items);
     setPercentage(percentages);
     setData(formatData(items));
   }, [JSON.stringify(items)]); 
@@ -64,7 +63,6 @@ const getOptions = (percentages: number[]): any => {
             tooltip: {
                 callbacks: {
                     label: (context: any) => {
-                        console.log(context);
                         var dataset = context.dataset.data[context.dataIndex];
                         var percentage = percentages[context.dataIndex];                  
                         return [context.label, `count: ${dataset}`, `percent: ${percentage}%`];

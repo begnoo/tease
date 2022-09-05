@@ -92,7 +92,7 @@ async fn post_can_push() -> Result<CanPushResponse, CanPushError> {
         sha1: branch_head,
         objects
     };
-
+    // println!("{:?}", req_body);
     let client = reqwest::Client::new();
     let url = format!("{}/can-push", origin);
     let resp = client.post(url)

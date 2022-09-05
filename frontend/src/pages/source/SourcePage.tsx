@@ -101,9 +101,17 @@ export default function SourcePage(): JSX.Element {
     <>
 
     {!branchIsLoading && branches !== undefined && branches !== null && 
-      <Select>
+      <Select defaultValue={"master"} onChange={(e) => {
+        console.log(e.target.value);
+        const newBranch = branches?.find((branch) => branch.name === e.target.value);
+        console.log(newBranch);
+        if (newBranch == undefined) {
+          return;
+        }
+        setSelectedBranch(newBranch);
+      }}>
         {branches.map(branch => (
-          <option key={branch.tree_sha1 + branch.name} value={branch.tree_sha1}>{branch.name}</option>
+          <option key={branch.tree_sha1 + branch.name} value={branch.name}>{branch.name}</option>
         ))}
       </Select>
     }      

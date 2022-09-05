@@ -59,14 +59,12 @@ export const addCollab = async (req: AddCollabRequest | undefined) => {
 export const getCollabs = async (owner: string | undefined, source: string | undefined): Promise<Collab[]> => {
     let resp = await client.get(`${COLLAB_SERVICE_URL}/${owner}/source/${source}`);
     const data: Promise<Collab[]> = resp.data;
-    console.log(data);
     return data;
 }
 
 export const getCollabsByName = async (name: string | undefined): Promise<Collab[]> => {
     let resp = await client.get(`${COLLAB_SERVICE_URL}/${name}/by-name`);
     const data: Promise<Collab[]> = resp.data;
-    console.log(data);
     return data;
 }
 
