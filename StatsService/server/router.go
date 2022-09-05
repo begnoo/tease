@@ -8,13 +8,14 @@ import (
 )
 
 var authReg = map[string][]string{
-	"/commits,POST":                         {"ROLE_USER"},
-	"/commits/multi,POST":                   {"ROLE_USER"},
-	"/commits/{user}/by-user,GET":           {"ALL"},
-	"/commits/{owner}/{source},GET":         {"ALL"},
-	"/commits/{owner}/{source}/by-user,GET": {"ALL"},
-	"/clones/{owner}/{source},GET":          {"ALL"},
-	"/clones,POST":                          {"ROLE_USER"},
+	"/commits,POST":                                  {"ROLE_USER"},
+	"/commits/multi,POST":                            {"ROLE_USER"},
+	"/commits/{user}/by-user,GET":                    {"ALL"},
+	"/commits/{owner}/{source},GET":                  {"ALL"},
+	"/commits/{owner}/{source}/by-user,GET":          {"ALL"},
+	"/commits/{owner}/{source}/by-user-and-date,GET": {"ALL"},
+	"/clones/{owner}/{source},GET":                   {"ALL"},
+	"/clones,POST":                                   {"ROLE_USER"},
 }
 
 func SetupRouter() http.Handler {
@@ -36,6 +37,9 @@ func SetupRouter() http.Handler {
 		Methods(http.MethodGet)
 	r.HandleFunc("/commits/{owner}/{source}/by-user",
 		handleJwt(controllers.ReadBySourceGroupByUserHandler, authReg["/commits/{owner}/{source}/by-user,GET"])).
+		Methods(http.MethodGet)
+	r.HandleFunc("/commits/{owner}/{source}/by-user-and-date",
+		handleJwt(controllers.ReadBySourceGroupByUserAndDateHandler, authReg["/commits/{owner}/{source}/by-user,GET"])).
 		Methods(http.MethodGet)
 
 	r.HandleFunc("/clones/{owner}/{source}",

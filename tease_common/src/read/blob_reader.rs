@@ -4,7 +4,7 @@ use std::{fs::File, io::Read};
 use std::path::Path;
 
 use flate2::read::ZlibDecoder;
-use glob::Paths;
+use glob::{Paths, glob};
 
 pub fn read_object(root_folder: &String, object_name: &String) -> String {
     let object_file = File::open(
@@ -126,6 +126,18 @@ pub fn paths_to_string(paths: Paths) -> Vec<String> {
             .to_string()
             .replace("\\", "/"))
         .collect()
+}
+
+pub fn get_all_object_paths(root_folder: String) -> Vec<String> {
+    let pattern = format!("./{}/objects/*", root_folder.to_string());
+    let path_entries = glob(&pattern).expect("Failed to read glob pattern");
+    path_entries.into_iter().map(|entry| entry.unwrap()
+                                            .to_str()
+                                            .unwrap()
+                                            .to_string()
+                                            .replace(format!("{}/objects/", root_folder).as_str(), "")
+                                            .replace("\\", "/"))
+                                            .collect()
 }
 
 pub fn contains_commit(root_folder: String, branch_commit: String, new_commit: String) -> bool {

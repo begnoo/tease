@@ -8,6 +8,7 @@ type Commit struct {
 	User      string `mapper:"User" json:"user" validate:"required,email"`
 	Source    string `mapper:"Source" json:"source" validate:"required"`
 	Sha       string `mapper:"Sha" json:"sha" validate:"required"`
+	Branch    string `mapper:"Branch" json:"branch" validate:"required"`
 }
 
 type Commits struct {

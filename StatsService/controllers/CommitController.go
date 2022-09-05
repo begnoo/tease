@@ -132,3 +132,20 @@ func ReadBySourceGroupByUserHandler(w http.ResponseWriter, r *http.Request) {
 	result := utils.StructToJson(data)
 	io.WriteString(w, result)
 }
+
+func ReadBySourceGroupByUserAndDateHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	owner := vars["owner"]
+	name := vars["source"]
+
+	commitService := di.InitializeCommitService()
+	data, err := commitService.ReadBySourceGroupByCollabAndDay(owner, name)
+
+	if !errors.HandleHttpError(err, w) {
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	result := utils.StructToJson(data)
+	io.WriteString(w, result)
+}

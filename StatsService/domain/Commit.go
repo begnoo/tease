@@ -13,6 +13,7 @@ type Commit struct {
 	User      string             `mapper:"User" bson:"user" json:"user"`
 	Source    string             `mapper:"Source" bson:"source" json:"source"`
 	Sha       string             `mapper:"Sha" bson:"sha" json:"sha"`
+	Branch    string             `mapper:"Branch" bson:"branch" json:"branch"`
 }
 
 type CommitCountByUser struct {
@@ -27,4 +28,30 @@ type CommitCountByDay struct {
 	Count   int    `json:"count" bson:"count"`
 	Added   int    `json:"added" bson:"added"`
 	Deleted int    `json:"deleted" bson:"deleted"`
+}
+
+type CommitCountByUserAndDayId struct {
+	User string `bson:"user" json:"user"`
+	Date string `bson:"date" json:"date"`
+}
+
+type CommitCountByUserAndDay struct {
+	ID      CommitCountByUserAndDayId `bson:"_id"`
+	Count   int                       `json:"count" bson:"count"`
+	Added   int                       `json:"count" bson:"added"`
+	Deleted int                       `json:"count" bson:"deleted"`
+}
+
+type CommitDateAndCount struct {
+	Date    string `json:"date"`
+	Count   int    `json:"count"`
+	Added   int    `json:"added"`
+	Deleted int    `json:"deleted"`
+}
+
+type CommitsByUserAndDate struct {
+	User    string               `json:"user"`
+	Added   int                  `json:"added"`
+	Deleted int                  `json:"deleted"`
+	Items   []CommitDateAndCount `json:"items"`
 }
