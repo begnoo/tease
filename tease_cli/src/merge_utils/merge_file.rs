@@ -1,6 +1,8 @@
 use std::{collections::HashMap, fmt::{Display, Formatter, Result}};
 
-use crate::{commands::diff::{DiffLine, diff_file}, utils::lines::{Line, get_content_from_sha1}};
+use tease_common::diff::{diff_file, DiffLine};
+
+use crate::{utils::lines::{Line, get_content_from_sha1}};
 
 #[derive(Debug)]
 struct MatchIndex {
@@ -58,8 +60,8 @@ impl Default for ResolveType {
 
 
 pub fn merge_file(a_sha1: String, b_sha1: String, o_sha1: String) -> Vec<Chunk> {
-    let a_diff = diff_file(o_sha1.to_string(), a_sha1.to_string());
-    let b_diff = diff_file(o_sha1.to_string(), b_sha1.to_string());
+    let a_diff = diff_file(".tease".to_string(), o_sha1.to_string(), a_sha1.to_string());
+    let b_diff = diff_file(".tease".to_string(), o_sha1.to_string(), b_sha1.to_string());
 
     let a_matches = find_matches(a_diff);
     let b_matches = find_matches(b_diff);

@@ -5,6 +5,7 @@ import (
 	"RepoService/domain"
 	"RepoService/errors"
 	"RepoService/request"
+	"RepoService/responses"
 	"RepoService/security"
 	"RepoService/utils"
 	"encoding/json"
@@ -33,8 +34,15 @@ func GetAllSourcesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var sources []responses.Source
+	for _, s := range *data {
+		var source responses.Source
+		mapper.Mapper(&s, &source)
+		sources = append(sources, source)
+	}
+
 	w.WriteHeader(http.StatusOK)
-	result := utils.StructToJson(data)
+	result := utils.StructToJson(sources)
 	io.WriteString(w, result)
 }
 
@@ -84,8 +92,39 @@ func GetSourcesByOwnerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var sources []responses.Source
+	for _, s := range *data {
+		var source responses.Source
+		mapper.Mapper(&s, &source)
+		sources = append(sources, source)
+	}
+
 	w.WriteHeader(http.StatusOK)
-	result := utils.StructToJson(data)
+	result := utils.StructToJson(sources)
+	io.WriteString(w, result)
+}
+
+func SearchSourcesHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	keyword := vars["keyword"]
+
+	sourceService := di.InitializeSourceService()
+	println(keyword)
+	data, err := sourceService.Search(keyword)
+
+	if !errors.HandleHttpError(err, w) {
+		return
+	}
+
+	var sources []responses.Source
+	for _, s := range *data {
+		var source responses.Source
+		mapper.Mapper(&s, &source)
+		sources = append(sources, source)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	result := utils.StructToJson(sources)
 	io.WriteString(w, result)
 }
 
@@ -150,7 +189,7 @@ func AddColabaratorHandler(w http.ResponseWriter, r *http.Request) {
 	owner := token.Claims.(jwt.MapClaims)["email"].(string)
 
 	sourceService := di.InitializeSourceService()
-	data, err := sourceService.AddColabarator(requestBody.Source, requestBody.Collabarator, owner)
+	data, err := sourceService.AddColabarator(requestBody.Collabarator, requestBody.Owner, requestBody.Name, owner)
 
 	if !errors.HandleHttpError(err, w) {
 		return

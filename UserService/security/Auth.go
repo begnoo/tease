@@ -11,8 +11,8 @@ import (
 )
 
 type Credidentials struct {
-	Email    string `validate:"required,email"`
-	Password string `validate:"required"`
+	Email    string `validate:"required,email" json:"email"`
+	Password string `validate:"required" json:"password"`
 }
 
 type Token struct {

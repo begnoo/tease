@@ -8,20 +8,26 @@ import (
 
 type Source struct {
 	gorm.Model
-	Name          string
-	Owner         string
+	ID            int       `mapper:"ID"`
+	CreatedAt     time.Time `mapper:"CreatedAt"`
+	Name          string    `mapper:"Name"`
+	Description   string    `mapper:"Description"`
+	Owner         string    `mapper:"Owner"`
+	Visability    bool      `mapper:"Visability"`
+	Initialized   bool      `mapper:"Initialized"`
 	Collabarators []Collabarator
-	Visability    bool
-	Initialized   bool
 }
 
 type Collabarator struct {
 	gorm.Model
-	Name            string
-	ReactedToInvite bool
-	AcceptedInvite  bool
-	ExpiersAt       time.Time
-	SourceID        int
+	ID              int       `mapper:"ID"`
+	Name            string    `mapper:"Name"`
+	SourceName      string    `mapper:"SourceName"`
+	From            string    `mapper:"From"`
+	ReactedToInvite bool      `mapper:"ReactedToInvite"`
+	AcceptedInvite  bool      `mapper:"AcceptedInvite"`
+	ExpiersAt       time.Time `mapper:"ExpiersAt"`
+	SourceID        int       `mapper:"SourceID"`
 }
 
 type TreeBlob struct {

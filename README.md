@@ -33,4 +33,4 @@ prikaz razlika između određenih ažuriranja ili određenih grana
 * Email mikroservis - Go ili Python
 * Veb interfejs - TypeScript, React
 
-Kao potencijalno proširenje moguće je implementirati mikroservis koji bi nadgledao korisničku aktivnost i frekvenciju ažuriranja repozitorijuma. Takođe je moguće proširenje u vidu repozitorijuma specifično predviđenih za slike, video snimke ili binarne podatke.
+Kao potencijalno proširenje moguće je implementirati mikroservis koji bi nadgledao korisničku aktivnost i frekvenciju ažuriranja repozitorijuma.

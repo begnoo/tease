@@ -5,7 +5,7 @@ import "gorm.io/gorm"
 type User struct {
 	gorm.Model
 	Username string
-	Email    string
+	Email    string `mapper:"Email"`
 	Password string
 
 	Profile Profile

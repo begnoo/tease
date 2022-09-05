@@ -14,7 +14,7 @@ impl Display for Line {
     }
 }
 
-pub fn get_content_from_blob(blob: String) -> Vec<Line> {
+pub fn get_lines_from_blob_content(blob: String) -> Vec<Line> {
     let parts: Vec<&str> = blob.split("\0").collect();
     let content: Vec<String> = parts[1].to_string()
                             .split("\n")
@@ -29,5 +29,5 @@ pub fn get_content_from_blob(blob: String) -> Vec<Line> {
 
 pub fn get_content_from_sha1(sha1: String) -> Vec<Line> {
     let blob = read_object(&sha1);
-    get_content_from_blob(blob)
+    get_lines_from_blob_content(blob)
 }

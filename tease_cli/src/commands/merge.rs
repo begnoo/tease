@@ -91,7 +91,7 @@ fn handle_index_diff(current_index: &mut Index, common_index: &mut Vec<IndexObje
             current_index.rows.remove(current_position.unwrap());
         
         } else if current_position.is_some() && incoming_position.is_none() {
-            to_delete.push(IndexObject { sha1: common.sha1.to_string(), path: common.path.to_string() });
+            to_delete.push(IndexObject { sha1: common.sha1.to_string(), path: common.path.to_string(), dtype: "blob".to_string() });
             current_index.rows.remove(current_position.unwrap());
         }
     }
@@ -224,7 +224,7 @@ fn collect_from_branch(root_tree: String, prev_path: String, temp_index: & mut V
         
         if parts[0] == "blob" {
             let new_file = if prev_path.is_empty() { parts[1].to_string() } else { vec![prev_path.to_string(), parts[1].to_string()].join("/") };
-            temp_index.push(IndexObject { sha1: parts[2].to_string(), path: new_file });
+            temp_index.push(IndexObject { sha1: parts[2].to_string(), path: new_file, dtype: "blob".to_string() });
         }
 
         if parts[0] == "tree" {

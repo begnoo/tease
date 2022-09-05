@@ -44,9 +44,10 @@ pub fn clone(origin: String) {
 }
 
 fn execute_go_back_shell(repo_name: String, head_commit: String, email: String) {
+    let init = head_commit.contains("Starting");
     let go_back_res = Command::new("go_back".to_string())
         .arg(repo_name.to_string())    
-        .arg(head_commit.to_string())
+        .arg(if init { "Starting".to_string() } else { head_commit.to_string() } )
         .arg(email.to_string())
         .spawn();
     

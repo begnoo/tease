@@ -4,9 +4,11 @@ import (
 	"RepoService/domain"
 	"RepoService/errors"
 	"RepoService/repo"
+	"RepoService/utils"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -99,6 +101,28 @@ func (service *SourceService) ReadByOwner(owner string) (*[]domain.Source, error
 	return res, err
 }
 
+func (service *SourceService) Search(keyword string) (*[]domain.Source, error) {
+	trimmed := strings.Trim(keyword, " ")
+	if trimmed == "" {
+		return service.ReadAll()
+	}
+	res, err := service.sourceRepo.Search(trimmed)
+
+	return res, err
+}
+
+func (service *SourceService) GetCollabarators(owner, name string) (*[]domain.Collabarator, error) {
+	res, err := service.sourceRepo.ReadByOwnerAndName(owner, name)
+
+	if err != nil {
+		return nil, err
+	}
+
+	collabs := res.Collabarators
+
+	return &collabs, err
+}
+
 func (service *SourceService) CollabaratorHasAccess(collab, owner, name string) (bool, error) {
 	res, err := service.sourceRepo.ReadByOwnerAndName(owner, name)
 
@@ -119,13 +143,17 @@ func (service *SourceService) CollabaratorHasAccess(collab, owner, name string) 
 	return false, err
 }
 
-func (service *SourceService) AddColabarator(sourceId int, collab_email, owner string) (*domain.Collabarator, error) {
-	source, err := service.sourceRepo.ReadById(sourceId)
+func (service *SourceService) AddColabarator(collab_email, owner, name, sent_by string) (*domain.Collabarator, error) {
+	source, err := service.sourceRepo.ReadByOwnerAndName(owner, name)
 	if err != nil {
 		return nil, err
 	}
 
-	if source.Owner != owner {
+	if collab_email == owner {
+		return nil, &errors.OwnerMismatch{Message: "Can't add self as collabalator."}
+	}
+
+	if source.Owner != sent_by {
 		return nil, &errors.OwnerMismatch{Message: "Posted source id doesn't match requester."}
 	}
 
@@ -136,6 +164,8 @@ func (service *SourceService) AddColabarator(sourceId int, collab_email, owner s
 	expires_mult, err := strconv.Atoi(os.Getenv("COLLAB_EXPIRES_IN"))
 	collab := domain.Collabarator{
 		Name:            collab_email,
+		SourceName:      source.Name,
+		From:            source.Owner,
 		ReactedToInvite: false,
 		AcceptedInvite:  false,
 		ExpiersAt:       time.Now().Add(time.Hour * time.Duration(expires_mult)),
@@ -150,6 +180,6 @@ func (service *SourceService) AddColabarator(sourceId int, collab_email, owner s
 
 	service.sourceRepo.Update(*source)
 
-	//dodati slanje mail-a
+	defer utils.SendMail(owner, name, collab_email)
 	return &collab, err
 }
