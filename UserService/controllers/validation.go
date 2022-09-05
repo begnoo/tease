@@ -20,5 +20,5 @@ func ValidateStruct(data interface{}) error {
 	val := initValidator()
 	err := val.Struct(data)
 
-	return errors.NilOrError(err, &errors.RepoError{Err: err})
+	return errors.NilOrError(err, &errors.ValidationError{Err: err})
 }

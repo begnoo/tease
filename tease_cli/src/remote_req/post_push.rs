@@ -6,8 +6,10 @@ use tokio_util::codec::{FramedRead, BytesCodec};
 
 use crate::utils::blob_writer::{get_current_branch, update_origin_head, read_head_commit, get_origin};
 
-use super::can_push::CanPushResponse;
-use super::login::get_token;
+use super::{
+    login::get_token, 
+    responses::can_push::CanPushResponse
+};
 use tokio::fs::File as TokioFile;
 
 pub fn setup_post (cp: CanPushResponse) -> bool {

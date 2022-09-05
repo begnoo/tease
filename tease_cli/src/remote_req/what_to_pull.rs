@@ -1,25 +1,10 @@
 use std::{fmt::Display, path::Path};
 
-use serde::{Serialize, Deserialize};
 use tease_common::write::bolb_writer::create_tease_file;
 
 use crate::utils::blob_writer::{get_origin, get_current_branch, read_origin_head_commit, read_head_commit};
 
-use super::login::get_token;
-
-#[derive(Serialize, Debug)]
-pub struct ObjectCountRequest {
-    pub branch: String,
-    pub past_origin_head: String,
-    pub current_head: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct ObjectCountResponse {
-    pub origin_head: String,
-    pub merge_needed: bool,
-    pub objects: Vec<String>,
-}
+use super::{login::get_token, responses::what_to_pull::ObjectCountResponse, requests::what_to_pull::ObjectCountRequest};
 
 #[derive(Debug, Clone)]
 pub struct WhatToPullError {

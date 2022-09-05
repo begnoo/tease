@@ -4,6 +4,7 @@ import (
 	"RepoService/domain"
 	"RepoService/errors"
 	"RepoService/repo"
+	"RepoService/utils"
 )
 
 type CollabService struct {
@@ -28,8 +29,12 @@ func (service *CollabService) AcceptInvite(id int) (*domain.Collabarator, error)
 
 	res.ReactedToInvite = true
 	res.AcceptedInvite = true
-	service.collabRepo.Update(*res)
+	err = service.collabRepo.Update(*res)
+	if err != nil {
+		return nil, err
+	}
 
+	defer utils.SendAcceptMail(res.From, res.SourceName, res.Name)
 	return res, err
 }
 
@@ -45,8 +50,12 @@ func (service *CollabService) RejectInvite(id int) (*domain.Collabarator, error)
 
 	res.ReactedToInvite = true
 	res.AcceptedInvite = false
-	service.collabRepo.Update(*res)
+	err = service.collabRepo.Update(*res)
+	if err != nil {
+		return nil, err
+	}
 
+	defer utils.SendRejectMail(res.From, res.SourceName, res.Name)
 	return res, err
 }
 
@@ -63,6 +72,12 @@ func (service *CollabService) DeleteCollabarator(id int) (*domain.Collabarator, 
 	}
 
 	err = service.collabRepo.Delete(id)
+
+	return res, err
+}
+
+func (service *CollabService) ReadByName(name string) (*[]domain.Collabarator, error) {
+	res, err := service.collabRepo.ReadByName(name)
 
 	return res, err
 }

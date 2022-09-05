@@ -28,6 +28,8 @@ func SetupRouter() http.Handler {
 		controllers.Login).Methods(http.MethodPost)
 	r.HandleFunc("/users/verify-user-exists/{email}",
 		controllers.VerifyUserExistsHandler).Methods(http.MethodGet)
+	r.HandleFunc("/users/search/{keyword}",
+		controllers.SearchUsersHandler).Methods(http.MethodGet)
 
 	r.Use(logRoute)
 	r.Use(setupRouteAsJson)

@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -53,4 +56,52 @@ func RandStringRunes(n int) string {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
 	}
 	return string(b)
+}
+
+func SendMail(owner, source, user string) {
+	postBody, _ := json.Marshal(map[string]string{
+		"source": source,
+		"owner":  owner,
+		"user":   user,
+	})
+	responseBody := bytes.NewBuffer(postBody)
+	//Leverage Go's HTTP Post function to make request
+	resp, err := http.Post("http://0.0.0.0:30000/collab", "application/json", responseBody)
+	//Handle Error
+	if err != nil {
+		log.Fatalf("An Error Occured %v", err)
+	}
+	defer resp.Body.Close()
+}
+
+func SendAcceptMail(owner, source, user string) {
+	postBody, _ := json.Marshal(map[string]string{
+		"source": source,
+		"owner":  owner,
+		"user":   user,
+	})
+	responseBody := bytes.NewBuffer(postBody)
+	//Leverage Go's HTTP Post function to make request
+	resp, err := http.Post("http://0.0.0.0:30000/collab/accept", "application/json", responseBody)
+	//Handle Error
+	if err != nil {
+		log.Fatalf("An Error Occured %v", err)
+	}
+	defer resp.Body.Close()
+}
+
+func SendRejectMail(owner, source, user string) {
+	postBody, _ := json.Marshal(map[string]string{
+		"source": source,
+		"owner":  owner,
+		"user":   user,
+	})
+	responseBody := bytes.NewBuffer(postBody)
+	//Leverage Go's HTTP Post function to make request
+	resp, err := http.Post("http://0.0.0.0:30000/collab/reject", "application/json", responseBody)
+	//Handle Error
+	if err != nil {
+		log.Fatalf("An Error Occured %v", err)
+	}
+	defer resp.Body.Close()
 }

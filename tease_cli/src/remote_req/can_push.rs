@@ -3,8 +3,6 @@ use std::{
     path::Path, vec, fmt::Display
 };
 
-use serde::{Serialize, Deserialize};
-
 use crate::{
     utils::blob_writer::{
         get_current_branch,
@@ -15,14 +13,13 @@ use crate::{
 
 use tease_common::{
     read::blob_reader::{
-        trail_commit_history,
         collect_objects_from_tree,
-        read_tree_from_commit, contains_commit,
+        read_tree_from_commit, contains_commit, trail_commits_incl,
     },
     write::bolb_writer::create_tease_file
 };
 
-use super::login::get_token;
+use super::{login::get_token, responses::can_push::CanPushResponse, requests::can_push::CanPushRequest};
 
 pub fn can_push() -> Result<CanPushResponse, CanPushError> {
     let email = read_to_string(Path::new(".tease/user"))
@@ -54,22 +51,6 @@ pub fn can_push() -> Result<CanPushResponse, CanPushError> {
     }
 
     Ok(cp)
-}
-
-#[derive(Serialize, Debug)]
-pub struct CanPushRequest {
-    pub branch: String,
-    pub sha1: String,
-    pub objects: Vec<String>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct CanPushResponse {
-    pub result: bool,
-    pub diff: Vec<String>,
-    pub head_commit: String,
-    pub present: bool,
-    // pub empty: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -111,7 +92,7 @@ async fn post_can_push() -> Result<CanPushResponse, CanPushError> {
         sha1: branch_head,
         objects
     };
-
+    // println!("{:?}", req_body);
     let client = reqwest::Client::new();
     let url = format!("{}/can-push", origin);
     let resp = client.post(url)
@@ -148,6 +129,7 @@ fn get_objects_to_send() -> Vec<String> {
     let mut objects: Vec<String> = vec![]; 
     let local_head = read_head_commit();
     let mut origin_head = read_origin_head_commit();
+    let root_folder = ".tease".to_string();
 
     if local_head == "# Starting commit" {
         return objects;
@@ -161,8 +143,10 @@ fn get_objects_to_send() -> Vec<String> {
         return objects;
     }
 
-    let mut commits: Vec<String> = vec![local_head.to_string()];
-    trail_commit_history(&".tease".to_string(), &local_head, &origin_head, &mut commits);
+    let mut commits: Vec<String> = trail_commits_incl(root_folder.to_string(), local_head, origin_head)
+                                    .iter()
+                                    .map(|obj| obj.sha1.to_string())
+                                    .collect();
     commits.retain(|commit| commit != "");
 
     if commits.is_empty() {
@@ -171,9 +155,11 @@ fn get_objects_to_send() -> Vec<String> {
 
     for commit in commits.iter() {
         objects.push(commit.to_string());
-        let tree = read_tree_from_commit(&".tease".to_string(), commit);
+        let tree = read_tree_from_commit(&root_folder, commit);
         objects.push(tree.to_string());
-        collect_objects_from_tree(".tease".to_string(), tree, &mut objects);
+
+        let mut collected_objects = collect_objects_from_tree(root_folder.to_string(), tree);
+        objects.append(&mut collected_objects);
     }
 
     objects.sort();

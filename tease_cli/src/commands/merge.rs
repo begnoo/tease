@@ -20,7 +20,7 @@ use std::{fs::{read_to_string, create_dir_all}, path::Path};
 
 use tease_common::{
     write::bolb_writer::create_tease_file,
-    read::blob_reader::trail_commit_history,
+    read::blob_reader::trail_commits_all,
     read::blob_reader::IndexObject,
     read::blob_reader::read_tree_from_commit,
 };
@@ -91,7 +91,7 @@ fn handle_index_diff(current_index: &mut Index, common_index: &mut Vec<IndexObje
             current_index.rows.remove(current_position.unwrap());
         
         } else if current_position.is_some() && incoming_position.is_none() {
-            to_delete.push(IndexObject { sha1: common.sha1.to_string(), path: common.path.to_string() });
+            to_delete.push(IndexObject { sha1: common.sha1.to_string(), path: common.path.to_string(), dtype: "blob".to_string() });
             current_index.rows.remove(current_position.unwrap());
         }
     }
@@ -190,15 +190,19 @@ fn is_already_merged(history: &Vec<String>, branch_head: String) -> bool {
 }
 
 fn find_common_commit(current: String, incoming: String) -> String {
-    let mut current_history: Vec<String> = vec![current.to_string()];
-    trail_commit_history(&".tease".to_string(), &current, &"#".to_string(), &mut current_history);
+    let current_history: Vec<String> = trail_commits_all(".tease".to_string(), current)
+                                        .iter()
+                                        .map(|obj| obj.sha1.to_string())
+                                        .collect();
 
     if is_already_merged(&current_history, incoming.to_string()) {
         return "merged".to_string();
     }
 
-    let mut incoming_history: Vec<String> = vec![incoming.to_string()];
-    trail_commit_history(&".tease".to_string(), &incoming, &"#".to_string(), &mut incoming_history);
+    let incoming_history: Vec<String> = trail_commits_all(".tease".to_string(), incoming)
+                                        .iter()
+                                        .map(|obj| obj.sha1.to_string())
+                                        .collect();
 
     for current_sha1 in current_history.iter() {
        for incoming_sha1 in incoming_history.iter() {
@@ -220,7 +224,7 @@ fn collect_from_branch(root_tree: String, prev_path: String, temp_index: & mut V
         
         if parts[0] == "blob" {
             let new_file = if prev_path.is_empty() { parts[1].to_string() } else { vec![prev_path.to_string(), parts[1].to_string()].join("/") };
-            temp_index.push(IndexObject { sha1: parts[2].to_string(), path: new_file });
+            temp_index.push(IndexObject { sha1: parts[2].to_string(), path: new_file, dtype: "blob".to_string() });
         }
 
         if parts[0] == "tree" {

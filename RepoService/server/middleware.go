@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/rs/cors"
 	"gorm.io/gorm/utils"
 )
 
@@ -50,4 +51,16 @@ func handleJwt(f func(w http.ResponseWriter, r *http.Request), roles []string) f
 
 		w.WriteHeader(http.StatusUnauthorized)
 	}
+}
+
+func SetupCors(routes *http.Handler) http.Handler {
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{http.MethodPost, http.MethodConnect, http.MethodGet, http.MethodDelete,
+			http.MethodHead, http.MethodOptions, http.MethodPut, http.MethodTrace},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: false,
+	})
+
+	return corsHandler.Handler(*routes)
 }

@@ -3,18 +3,22 @@ package responses
 import "time"
 
 type Source struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Owner       string `json:"owner"`
-	Visability  bool   `json:"visability"`
-	Initialized bool   `json:"initialized"`
+	ID          int       `json:"id" mapper:"ID"`
+	Name        string    `json:"name" mapper:"Name"`
+	Owner       string    `json:"owner" mapper:"Owner"`
+	Description string    `json:"description" mapper:"Description"`
+	Visability  bool      `json:"visability" mapper:"Visability"`
+	Initialized bool      `json:"initialized" mapper:"Initialized"`
+	CreatedAt   time.Time `json:"createdAt" mapper:"CreatedAt"`
 	// Collabarators []Collabarator `json:"collabarators"`
 }
 
 type Collabarator struct {
-	ID              string    `json:"id"`
-	Name            string    `json:"name"`
-	ReactedToInvite bool      `json:"reactedToInvite"`
-	AcceptedInvite  bool      `json:"acceptedInvite"`
-	ExpiersAt       time.Time `json:"expiersAt"`
+	ID              int       `json:"id" mapper:"ID"`
+	Name            string    `json:"name" mapper:"Name"`
+	SourceName      string    `json:"sourceName" mapper:"SourceName"`
+	From            string    `json:"from" mapper:"From"`
+	ReactedToInvite bool      `json:"reactedToInvite" mapper:"ReactedToInvite"`
+	AcceptedInvite  bool      `json:"acceptedInvite" mapper:"AcceptedInvite"`
+	ExpiersAt       time.Time `json:"expiersAt" mapper:"ExpiersAt"`
 }

@@ -1,16 +1,10 @@
 use std::{path::Path, io::Cursor, fmt::Display};
 
-use serde::Serialize;
 use tease_common::write::bolb_writer::create_tease_file;
 
 use crate::utils::blob_writer::get_origin;
 
-use super::login::get_token;
-
-#[derive(Serialize, Debug)]
-pub struct PullRequest {
-    pub objects: Vec<String>,
-}
+use super::{login::get_token, requests::pull::PullRequest};
 
 pub struct PullError {
     pub message: String,

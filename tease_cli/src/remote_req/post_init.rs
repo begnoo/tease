@@ -1,25 +1,12 @@
 use std::fmt::Display;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize};
 
-use super::get_clone::get_token;
-
-#[derive(Debug, Serialize)]
-struct InitRequest {
-    name: String,
-    owner: String,
-    visability: bool,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct InitResponse {
-    #[serde(alias = "ID")] 
-    pub id: u64,
-    #[serde(alias = "Name")] 
-    pub name: String,
-    #[serde(alias = "Owner")] 
-    pub owner: String,
-}
+use super::{
+    get_clone::get_token, 
+    responses::init::InitResponse, 
+    requests::init::InitRequest, REPO_SERVICE
+};
 
 #[derive(Debug)]
 pub struct InitError {
@@ -56,8 +43,7 @@ pub async fn post_init(email: String, name: String) -> Result<InitResponse, Init
 
     // println!("{:?}", req_body);
 
-    let url = format!("http://localhost:8081/source");
-    let resp = client.post(url)
+    let resp = client.post(REPO_SERVICE)
         .header("Authorization", format!("Bearer {}", token))
         .json(&req_body)
         .send()

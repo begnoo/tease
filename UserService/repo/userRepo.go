@@ -44,6 +44,13 @@ func (repo *UserRepo) ReadByEmail(email string) (*domain.User, error) {
 	return &user, res.Error
 }
 
+func (repo *UserRepo) SearchByEmail(keyword string) (*[]domain.User, error) {
+	var users []domain.User
+	res := repo.db.Where("email like ?", "%"+keyword+"%").Find(&users)
+
+	return &users, res.Error
+}
+
 func (r *UserRepo) HandleError(res *gorm.DB) error {
 	if res.Error != nil && res.Error != gorm.ErrRecordNotFound {
 		err := fmt.Errorf("error: %w", res.Error)

@@ -16,19 +16,18 @@ use crate::{commands::{
 use commands::{
     status::status,
     branch::{create_branch, switch_to_branch, create_from_remote},
-    diff::diff_file,
+    diff::{diff_commits_out, diff_file_out},
     merge::merge_branch, 
     command_enum::{Args, Commands}, 
     set_origin::set_origin, set_user::set_user, push::push, goback::go_back, pull::pull, clone::clone, init::init
 };
 use clap::Parser;
 use merge_utils::merge_file::merge_file;
-use utils::blob_writer::has_added_files;
+use tease_common::read::blob_reader::trail_commits_all;
+use utils::blob_writer::{has_added_files, read_head_commit};
 
 // TODO: packfile
-// TODO: rekurzivne funkcije -> iterativne (collect_objects_from_tree -> collect_from_tree)
 // TODO: skinuti lock za branch pri create modu i preneti trenutne izmene i dodate fajlove
-// TODO: sredi log da prikazuje commitove po redosledu a ne po roditeljima (mozda bitno samo za front)
 // TODO: dodaj info o razlici kod commitova (+) (-)
 fn main() {
     let args = Args::parse();
@@ -130,16 +129,18 @@ fn main() {
             }
         }
 
-        Some(Commands::Diff {blob_a, blob_b}) => {
+        Some(Commands::Diff {mode, blob_a, blob_b}) => {
             if !in_working_tree() {
                 println!("Not in working tree.");
                 return ;
             }
 
-            let diff_lines = diff_file(blob_a.to_string(), blob_b.to_string());
-            for diff_line in diff_lines.iter() {
-                println!("{}", diff_line);
+            if mode == "commit" {
+                diff_commits_out(blob_a.to_string(), blob_b.to_string());
+                return;
             }
+            diff_file_out(blob_a.to_string(), blob_b.to_string());
+            return ;
         }
 
         Some(Commands::MergeFile {blob_a, blob_b, blob_o}) => {
@@ -218,6 +219,17 @@ fn main() {
 
         Some(Commands::Init { name }) => {
             init(name.to_string());   
+        }
+
+        Some(Commands::Log {}) => {
+            let head = read_head_commit();
+            let mut log_trail = trail_commits_all(".tease".to_string(), head);
+            log_trail.sort_by(|a, b| b.date.cmp(&a.date));
+            log_trail.dedup_by(|a, b| a.sha1 == b.sha1);
+
+            for commit in log_trail.iter() {
+                println!("{}\n", commit);
+            }
         }
 
         None => {
