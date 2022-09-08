@@ -5,7 +5,7 @@ use tease_common::{read::blob_reader::{CommitObject, trail_commits_all, trail_co
 
 use crate::{file_utils::read_branch_head, jwt::JwtToken};
 
-use super::diff::{count_add_del};
+use super::{diff::{count_add_del}, has_access::{HasAccessRequest, has_access}};
 
 #[post("/<user>/<source_name>/push", data = "<src_data>")]
 pub async fn push(
@@ -14,6 +14,17 @@ pub async fn push(
         source_name: &str,
         src_data: Data<'_>
     ) -> std::io::Result<String> {
+
+    let has_access_req = HasAccessRequest {
+        user: jwt_token.email.to_string(),
+        owner: user.to_string(),
+        source_name: source_name.to_string()
+    };
+
+    if !has_access(has_access_req, jwt_token.token.to_string()).await {
+        return Ok("No access.".to_string()); 
+    }
+    
     let dir_path = format!("source/{}/{}", user, source_name);
     let zip_path = format!("{}/temp_zip", dir_path);
 

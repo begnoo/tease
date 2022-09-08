@@ -15,11 +15,14 @@ pub async fn get_clone(origin: String, repo_name: String) -> Result<String, Clon
     let client = reqwest::Client::new();
     let url = origin;
     let token = get_token(repo_name.to_string());
-    let resp = client.get(url)
+    let pre_resp = client.get(url)
         .header("Authorization", format!("Bearer {}", token))
         .send()
-        .await
-        .expect("Couldn't get response");
+        .await;
+    if pre_resp.is_err() {
+        return Err(CloneError{message: "Couldn't access source.".to_string()});
+    }
+    let resp = pre_resp.unwrap();
 
     let file_res = std::fs::File::create("temp_zip");
     if file_res.is_err() {

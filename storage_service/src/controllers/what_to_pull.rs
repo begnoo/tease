@@ -1,7 +1,7 @@
 use crate::{file_utils::read_branch_head, jwt::JwtToken};
 use rocket::serde::{Deserialize, json::Json};
 use serde::Serialize;
-use tease_common::read::blob_reader::{read_tree_from_commit, collect_objects_from_tree, trail_commits_incl};
+use tease_common::read::blob_reader::{read_tree_from_commit, collect_objects_from_tree, trail_commits_incl, trail_commits_all};
 
 use super::has_access::{HasAccessRequest, has_access};
 
@@ -40,8 +40,7 @@ pub async fn what_to_pull(
         source_name: source_name.to_string()
     };
 
-    let res = has_access(has_access_req, jwt_token.token).await;
-    if res.is_err() || res.unwrap() != true {
+    if !has_access(has_access_req, jwt_token.token).await {
         return Json(resp); 
     }
     
@@ -52,9 +51,15 @@ pub async fn what_to_pull(
     }
 
     let head_commit = branch_head.unwrap();
+    let temp_solution: Vec<String> = trail_commits_all(root_folder.to_string(), head_commit.to_string())
+                                                            .iter()
+                                                            .map(|obj| obj.sha1.to_string())
+                                                            .collect();
     let objects = get_objects_to_send(root_folder, src_data.past_origin_head.to_string(), head_commit.to_string());
+
     resp.origin_head = head_commit;
-    resp.merge_needed = !objects.contains(&src_data.current_head);
+    println!("{}", &src_data.current_head);
+    resp.merge_needed = if &src_data.current_head == "# Starting commit" { false } else { !temp_solution.contains(&src_data.current_head) };
     resp.objects = objects;
     
     Json(resp)

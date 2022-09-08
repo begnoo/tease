@@ -6,6 +6,8 @@ import { CommitStatsByDay } from "../../../services/StatsService";
 import 'chartjs-adapter-moment';
 import { parse } from "date-fns";
 import { Select } from "@chakra-ui/react";
+import { srLatn } from 'date-fns/locale';
+
 
 interface CommitsBarChartProp {
     items: CommitStatsByDay[]
@@ -66,8 +68,8 @@ interface TimePoint {
 
 const formatData = (items: CommitStatsByDay[]): any => {
 
-    const added_data: TimePoint[] = items.map((commit) => ({x: parse(commit.id, "dd-MM-yyyy", new Date()), y: commit.added}));
-    const deleted_data: TimePoint[] = items.map((commit) => ({x: parse(commit.id, "dd-MM-yyyy", new Date()), y: commit.deleted}));
+    const added_data: TimePoint[] = items.map((commit) => ({x: parse(commit.id, "dd-MM-yyyy", new Date(), {locale: srLatn}), y: commit.added}));
+    const deleted_data: TimePoint[] = items.map((commit) => ({x: parse(commit.id, "dd-MM-yyyy", new Date(), {locale: srLatn}), y: commit.deleted}));
     added_data.sort((a, b) => a.x.getTime() > b.x.getTime() ? 1 : -1);
     deleted_data.sort((a, b) => a.x.getTime() > b.x.getTime() ? 1 : -1);
 

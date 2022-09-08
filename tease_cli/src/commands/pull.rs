@@ -34,7 +34,12 @@ pub fn pull() {
         return ;
     }
 
+
     let count_response = res_count_response.unwrap();
+    if count_response.origin_head.to_string() == "" {
+        println!("Nothing to pull.");
+        return ;
+    }
 
     let head_commit = read_head_commit();
     

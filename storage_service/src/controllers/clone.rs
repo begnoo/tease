@@ -11,12 +11,25 @@ use tease_common::read::blob_reader::{
 use crate::{jwt::JwtToken, file_utils::read_branch_head};
 use chrono::UTC;
 
+use super::has_access::{has_access, HasAccessRequest};
+
 #[get("/<user>/<source_name>", format = "application/json")]
 pub async fn clone(
         jwt_token: JwtToken,
         user: &str,
         source_name: &str,
     ) -> Option<NamedFile> {
+    
+    let has_access_req = HasAccessRequest {
+        user: jwt_token.email.to_string(),
+        owner: user.to_string(),
+        source_name: source_name.to_string()
+    };
+
+    if !has_access(has_access_req, jwt_token.token.to_string()).await {
+        return None; 
+    }
+
     let root_folder = format!("source/{}/{}", user.to_string(), source_name.to_string());
     let temp_zip_path = format!("{}/temp_zip", root_folder);
     let mut objects: Vec<String> = get_objects(root_folder.to_string(), "master".to_string()).iter()
@@ -36,11 +49,22 @@ pub async fn clone(
 
 #[get("/<user>/<source_name>/clone/<branch_name>")]
 pub async fn clone_branch(
-        _jwt_token: JwtToken,
+        jwt_token: JwtToken,
         user: &str,
         source_name: &str,
         branch_name: &str,
     ) -> Option<NamedFile> {
+
+    let has_access_req = HasAccessRequest {
+        user: jwt_token.email.to_string(),
+        owner: user.to_string(),
+        source_name: source_name.to_string()
+    };
+
+    if !has_access(has_access_req, jwt_token.token.to_string()).await {
+        return None; 
+    }
+
     let root_folder = format!("source/{}/{}", user, source_name);
     let temp_zip_path = format!("{}/temp_zip", root_folder);
     let mut objects: Vec<String> = get_objects(root_folder.to_string(), branch_name.to_string()).iter()

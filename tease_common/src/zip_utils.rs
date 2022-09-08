@@ -50,8 +50,12 @@ pub fn extraxt(name: String, root_folder: String) {
     let fname = std::path::Path::new(&name);
     let file = fs::File::open(&fname).unwrap();
 
-    let mut archive = zip::ZipArchive::new(file).unwrap();
-
+    let pre_archive = zip::ZipArchive::new(file);
+    if pre_archive.is_err() {
+        println!("Couldn't find file.");
+        return;
+    }
+    let mut archive = pre_archive.unwrap(); 
     for i in 0..archive.len() {
         let mut file = archive.by_index(i).unwrap();
         let outpath = match file.enclosed_name() {

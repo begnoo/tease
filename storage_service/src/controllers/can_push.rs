@@ -45,8 +45,7 @@ pub async fn can_push(
         source_name: source_name.to_string()
     };
 
-    let res = has_access(has_access_req, jwt_token.token).await;
-    if res.is_err() || res.unwrap() != true {
+    if !has_access(has_access_req, jwt_token.token).await {
         return Json(resp); 
     }
 

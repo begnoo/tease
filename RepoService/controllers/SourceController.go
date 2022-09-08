@@ -9,6 +9,7 @@ import (
 	"RepoService/security"
 	"RepoService/utils"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -215,6 +216,7 @@ func HasAccessHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sourceService := di.InitializeSourceService()
+	fmt.Printf("%+v\n", requestBody)
 	res, err := sourceService.CollabaratorHasAccess(requestBody.User, requestBody.Owner, requestBody.SourceName)
 	if !errors.HandleHttpError(err, w) {
 		return

@@ -3,8 +3,9 @@ import { Chart as ChartJS, Legend, Tooltip, TimeSeriesScale, LinearScale, BarEle
 import { useEffect, useState } from "react";
 import { CommitDateAndCount, CommitStatsByCollabAndDate, CommitStatsByDay } from "../../../services/StatsService";
 import 'chartjs-adapter-moment';
-import { parse } from "date-fns";
+import { addDays, parse } from "date-fns";
 import { Line } from "react-chartjs-2";
+import { srLatn } from "date-fns/locale";
 
 interface CollabStatsBlockProps {
     props: CommitStatsByCollabAndDate
@@ -76,7 +77,7 @@ interface TimePoint {
 // TODO: sredi grafik ovde tako da pokazuje count po danu
 const formatData = (items: CommitDateAndCount[]): any => {
 
-    const count_data: TimePoint[] = items.map((commit) => ({x: parse(commit.date, "dd-MM-yyyy", new Date()), y: commit.count}));
+    const count_data: TimePoint[] = items.map((commit) => ({x: parse(commit.date, "dd-MM-yyyy", new Date(), {locale: srLatn}), y: commit.count}));
     count_data.sort((a, b) => a.x.getTime() > b.x.getTime() ? 1 : -1);
     
     return {

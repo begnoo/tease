@@ -123,19 +123,20 @@ func (service *SourceService) GetCollabarators(owner, name string) (*[]domain.Co
 	return &collabs, err
 }
 
-func (service *SourceService) CollabaratorHasAccess(collab, owner, name string) (bool, error) {
+func (service *SourceService) CollabaratorHasAccess(collab_user, owner, name string) (bool, error) {
 	res, err := service.sourceRepo.ReadByOwnerAndName(owner, name)
 
 	if err != nil {
 		return false, err
 	}
 
-	if res.Owner == owner {
+	if res.Owner == collab_user {
 		return true, nil
 	}
 
 	for _, collab := range res.Collabarators {
-		if collab.Name == owner {
+		fmt.Printf("%s\n", collab.Name)
+		if collab.Name == collab_user {
 			return true, nil
 		}
 	}

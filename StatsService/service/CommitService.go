@@ -54,7 +54,7 @@ func (service *CommitService) CreateCommits(commits []domain.Commit) (*mongo.Ins
 		return nil, err
 	}
 
-	if commits[0].Branch == "master" {
+	if commits[0].Branch == "master" && len(toUpdate) > 0 {
 		_, err = service.commitRepo.UpdateCommits(toUpdate)
 		if err != nil && err != mongo.ErrEmptySlice {
 			return nil, err

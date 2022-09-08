@@ -7,12 +7,15 @@ use flate2::read::ZlibDecoder;
 use glob::{Paths, glob};
 
 pub fn read_object(root_folder: &String, object_name: &String) -> String {
-    let object_file = File::open(
+    let pre_object_file = File::open(
             &Path::new(root_folder)
                     .join("objects")
-                    .join(object_name))
-                    .expect(&format!("Coundn't read object {}", object_name)
-            );
+                    .join(object_name));
+    if pre_object_file.is_err() {
+        println!("Coundn't read object {}", object_name);
+        return "".to_string();
+    }
+    let object_file = pre_object_file.unwrap();
     let mut decoder = ZlibDecoder::new(object_file);
     let mut decoded_str = String::new();
     decoder.read_to_string(&mut decoded_str).unwrap().to_string();
@@ -53,6 +56,9 @@ impl Display for CommitObject {
 
 
 pub fn trail_commits_all(root_folder: String, starting_commit: String) -> Vec<CommitObject> {
+    if starting_commit == "# Starting commit" {
+        return vec![];
+    }
     trail_commits_incl(root_folder, starting_commit, "#".to_string())
 }
 

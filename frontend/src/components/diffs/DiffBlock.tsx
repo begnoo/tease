@@ -40,6 +40,10 @@ export default function DiffBlock({ diff }: DiffBlockProps): JSX.Element {
               fontSize={"14px"} 
               padding={"0px"} 
               color={getColor(line as string)}
+              style={{
+                whiteSpace: "normal",
+                wordWrap: "break-word"
+              }}
               >
                 {line}
               </Text>
